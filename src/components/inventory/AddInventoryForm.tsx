@@ -4,14 +4,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
 
 interface AddInventoryFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+interface FormData {
+  name: string;
+  sku: string;
+  quantity: string;
+  minQuantity: string;
+  price: string;
+}
+
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
-  const form = useForm({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm<FormData>({
     defaultValues: {
       name: "",
       sku: "",
@@ -21,11 +33,43 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
     },
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Form submitted:", data);
-    toast.success("Item added to inventory");
-    form.reset();
-    onOpenChange(false);
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please login to add inventory items");
+        return;
+      }
+
+      const inventoryItem = {
+        name: data.name,
+        sku: data.sku,
+        quantity: parseInt(data.quantity),
+        minQuantity: parseInt(data.minQuantity),
+        price: parseFloat(data.price),
+        user_id: user.id
+      };
+
+      const { error } = await supabase
+        .from('inventory')
+        .insert([inventoryItem]);
+
+      if (error) {
+        console.error('Error adding inventory item:', error);
+        toast.error("Failed to add inventory item");
+        return;
+      }
+
+      toast.success("Item added to inventory");
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Failed to add inventory item");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,7 +145,9 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Add Item</Button>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Item"}
+            </Button>
           </form>
         </Form>
       </DialogContent>
