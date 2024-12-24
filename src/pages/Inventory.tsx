@@ -5,10 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Plus, Upload } from "lucide-react";
 import { AddInventoryForm } from "@/components/inventory/AddInventoryForm";
 import { BulkUploadModal } from "@/components/inventory/BulkUploadModal";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface InventoryItem {
+  name: string;
+  sku: string;
+  quantity: number;
+  minQuantity: number;
+  price: number;
+}
 
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+
+  const handleBulkUpload = (data: InventoryItem[]) => {
+    setInventoryItems((prevItems) => [...prevItems, ...data]);
+  };
 
   return (
     <SidebarProvider>
@@ -29,13 +43,42 @@ const Inventory = () => {
             </div>
           </div>
 
-          {/* Forms and Modals */}
           <AddInventoryForm open={showAddForm} onOpenChange={setShowAddForm} />
-          <BulkUploadModal open={showBulkUpload} onOpenChange={setShowBulkUpload} />
+          <BulkUploadModal 
+            open={showBulkUpload} 
+            onOpenChange={setShowBulkUpload} 
+            onDataUpload={handleBulkUpload}
+          />
 
-          {/* Inventory table will be implemented in the next iteration */}
-          <div className="rounded-lg border bg-card p-6">
-            <p className="text-muted-foreground">No inventory items yet.</p>
+          <div className="rounded-lg border bg-card">
+            {inventoryItems.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Min Quantity</TableHead>
+                    <TableHead>Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {inventoryItems.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.sku}</TableCell>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>{item.minQuantity}</TableCell>
+                      <TableCell>${item.price.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="p-6">
+                <p className="text-muted-foreground">No inventory items yet.</p>
+              </div>
+            )}
           </div>
         </main>
       </div>
