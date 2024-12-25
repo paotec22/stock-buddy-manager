@@ -15,10 +15,10 @@ interface Sale {
   sale_price: number;
   total_amount: number;
   sale_date: string;
+  item_name: string;
   inventory: {
     name: string;
   };
-  item_name?: string;
 }
 
 const Sales = () => {
@@ -35,7 +35,7 @@ const Sales = () => {
           sale_price,
           total_amount,
           sale_date,
-          inventory!inner (
+          inventory (
             name
           )
         `)
@@ -43,10 +43,11 @@ const Sales = () => {
 
       if (error) throw error;
 
-      return (data as Sale[]).map(sale => ({
+      // Transform the data to match our Sale interface
+      return (data || []).map((sale: any) => ({
         ...sale,
-        item_name: sale.inventory.name
-      }));
+        item_name: sale.inventory?.name || 'Unknown Item'
+      })) as Sale[];
     },
   });
 

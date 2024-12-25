@@ -1,10 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { Card } from "@/components/ui/card";
+import { ChartContainer } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { format, parseISO } from 'date-fns';
 
 interface Sale {
-  sale_date: string;
+  id: string;
+  quantity: number;
+  sale_price: number;
   total_amount: number;
+  sale_date: string;
+  item_name: string;
 }
 
 interface SalesChartProps {
@@ -12,46 +17,38 @@ interface SalesChartProps {
 }
 
 export function SalesChart({ sales }: SalesChartProps) {
-  // Group sales by date and calculate daily totals
+  // Process sales data for the chart
   const dailySales = sales.reduce((acc: { [key: string]: number }, sale) => {
-    const date = new Date(sale.sale_date).toLocaleDateString();
+    const date = format(parseISO(sale.sale_date), 'yyyy-MM-dd');
     acc[date] = (acc[date] || 0) + sale.total_amount;
     return acc;
   }, {});
 
-  const chartData = Object.entries(dailySales).map(([date, total]) => ({
-    date,
-    total,
+  const chartData = Object.entries(dailySales).map(([date, amount]) => ({
+    date: format(parseISO(date), 'MMM dd'),
+    amount: amount
   }));
 
   const chartConfig = {
-    sales: {
-      label: "Daily Sales",
-      theme: {
-        light: "#3b82f6",
-        dark: "#60a5fa"
-      }
-    }
+    width: '100%',
+    height: 300,
+    margin: { top: 20, right: 20, bottom: 20, left: 20 }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Daily Sales</CardTitle>
-      </CardHeader>
-      <CardContent className="h-[300px]">
-        <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <ChartTooltip />
-              <Bar dataKey="total" fill="var(--color-sales)" name="Sales" />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
+    <Card className="p-4">
+      <h3 className="text-lg font-semibold mb-4">Daily Sales Overview</h3>
+      <ChartContainer config={chartConfig}>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="amount" fill="#3b82f6" />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </Card>
   );
 }
