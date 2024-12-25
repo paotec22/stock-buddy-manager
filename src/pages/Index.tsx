@@ -27,7 +27,12 @@ const Index = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        console.error("Login error:", error);
+        if (error.message.includes('email_not_confirmed')) {
+          toast.error("Please check your email to confirm your account");
+        } else {
+          toast.error(error.message || "Failed to login");
+        }
         return;
       }
 
@@ -37,7 +42,7 @@ const Index = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("An error occurred during login");
+      toast.error("An unexpected error occurred during login");
     }
   };
 
@@ -55,17 +60,22 @@ const Index = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        console.error("Signup error:", error);
+        toast.error(error.message || "Failed to create account");
         return;
       }
 
       if (data.user) {
-        toast.success("Account created successfully! Please check your email for verification.");
-        navigate("/dashboard");
+        if (data.session) {
+          toast.success("Account created successfully!");
+          navigate("/dashboard");
+        } else {
+          toast.success("Please check your email to confirm your account");
+        }
       }
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("An error occurred during signup");
+      toast.error("An unexpected error occurred during signup");
     }
   };
 
