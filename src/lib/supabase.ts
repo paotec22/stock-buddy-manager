@@ -13,7 +13,9 @@ if (!supabaseUrl || !supabaseKey) {
 
 // Validate URL format
 try {
-  new URL(supabaseUrl);
+  // Remove any trailing slashes and ensure proper URL format
+  const cleanUrl = supabaseUrl.replace(/\/+$/, '');
+  new URL(cleanUrl);
 } catch (error) {
   console.error('Invalid Supabase URL format');
   throw new Error(
@@ -21,5 +23,5 @@ try {
   );
 }
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Create Supabase client with cleaned URL
+export const supabase = createClient(supabaseUrl.replace(/\/+$/, ''), supabaseKey);
