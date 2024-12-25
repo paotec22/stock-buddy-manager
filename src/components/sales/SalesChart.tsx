@@ -30,9 +30,10 @@ export function SalesChart({ sales }: SalesChartProps) {
   }));
 
   const chartConfig = {
-    width: '100%',
-    height: 300,
-    margin: { top: 20, right: 20, bottom: 20, left: 20 }
+    sales: {
+      label: "Daily Sales",
+      color: "#3b82f6"
+    }
   };
 
   return (
