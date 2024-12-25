@@ -9,6 +9,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Plus } from "lucide-react";
 
+interface Sale {
+  id: string;
+  quantity: number;
+  sale_price: number;
+  total_amount: number;
+  sale_date: string;
+  inventory: {
+    name: string;
+  };
+  item_name?: string;
+}
+
 const Sales = () => {
   const [showAddSale, setShowAddSale] = useState(false);
 
@@ -31,7 +43,7 @@ const Sales = () => {
 
       if (error) throw error;
 
-      return data.map(sale => ({
+      return (data as Sale[]).map(sale => ({
         ...sale,
         item_name: sale.inventory.name
       }));

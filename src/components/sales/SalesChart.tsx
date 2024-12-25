@@ -24,20 +24,30 @@ export function SalesChart({ sales }: SalesChartProps) {
     total,
   }));
 
+  const chartConfig = {
+    sales: {
+      label: "Daily Sales",
+      theme: {
+        light: "#3b82f6",
+        dark: "#60a5fa"
+      }
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Daily Sales</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
-        <ChartContainer>
+        <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <ChartTooltip />
-              <Bar dataKey="total" fill="#3b82f6" name="Sales" />
+              <Bar dataKey="total" fill="var(--color-sales)" name="Sales" />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
