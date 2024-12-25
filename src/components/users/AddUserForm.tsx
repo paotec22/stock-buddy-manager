@@ -45,7 +45,11 @@ export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
 
       if (signUpError) {
         console.error('Error creating user:', signUpError);
-        toast.error("Failed to create user");
+        if (signUpError.message.includes('email_not_confirmed')) {
+          toast.error("Please check your email to confirm your account");
+        } else {
+          toast.error(signUpError.message || "Failed to create user");
+        }
         return;
       }
 
@@ -65,14 +69,14 @@ export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
           toast.error("Failed to create user profile");
           return;
         }
-      }
 
-      toast.success("User created successfully");
-      form.reset();
-      onOpenChange(false);
+        toast.success("User created successfully! Please check your email for confirmation.");
+        form.reset();
+        onOpenChange(false);
+      }
     } catch (error) {
       console.error('Error:', error);
-      toast.error("Failed to create user");
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
