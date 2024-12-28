@@ -5,21 +5,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Download } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/lib/supabase";
+import { InventoryPreviewTable } from "./InventoryPreviewTable";
+import { InventoryItem, parseCSVData } from "@/utils/inventoryUtils";
 
 interface BulkUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDataUpload: (data: any) => void;
-}
-
-interface InventoryItem {
-  "Item Description": string;
-  Price: number;
-  Quantity: number;
-  Total: number;
-  location: string;
 }
 
 const LOCATIONS = ["Ikeja", "Cement"];
@@ -33,42 +26,17 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
     const selectedFile = event.target.files?.[0];
     if (selectedFile && selectedFile.type === "text/csv") {
       setFile(selectedFile);
-      const data = await parseCSV(selectedFile);
-      setPreviewData(data);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        const items = parseCSVData(text, selectedLocation);
+        setPreviewData(items);
+      };
+      reader.readAsText(selectedFile);
     } else {
       toast.error("Please select a valid CSV file");
       event.target.value = "";
     }
-  };
-
-  const parseCSV = (file: File): Promise<InventoryItem[]> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        const lines = text.split('\n');
-        const headers = lines[0].split(',');
-        
-        const items: InventoryItem[] = lines
-          .slice(1)
-          .filter(line => line.trim() !== '')
-          .map(line => {
-            const values = line.split(',');
-            const price = parseFloat(values[1]?.trim() || '0');
-            const quantity = parseInt(values[2]?.trim() || '0');
-            return {
-              "Item Description": values[0]?.trim() || '',
-              Price: price,
-              Quantity: quantity,
-              Total: price * quantity,
-              location: selectedLocation
-            };
-          });
-
-        resolve(items);
-      };
-      reader.readAsText(file);
-    });
   };
 
   const handleUpload = async () => {
@@ -78,7 +46,6 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
     }
 
     try {
-      // Check for existing items in the selected location
       const { data: existingItems } = await supabase
         .from('inventory list')
         .select('Item Description')
@@ -162,30 +129,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
           </div>
           
           {previewData.length > 0 && (
-            <div className="max-h-[400px] overflow-auto border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item Description</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Location</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {previewData.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{item["Item Description"]}</TableCell>
-                      <TableCell>${item.Price.toFixed(2)}</TableCell>
-                      <TableCell>{item.Quantity}</TableCell>
-                      <TableCell>${item.Total.toFixed(2)}</TableCell>
-                      <TableCell>{item.location}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <InventoryPreviewTable items={previewData} />
           )}
           
           <Button 

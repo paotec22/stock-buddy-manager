@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useState } from "react";
+import { addInventoryItem, checkExistingItem } from "@/utils/inventoryUtils";
 
 interface AddInventoryFormProps {
   open: boolean;
@@ -41,47 +41,29 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
       const quantity = parseInt(data.quantity);
       const total = price * quantity;
 
-      // Check if item already exists in the location
-      const { data: existingItem } = await supabase
-        .from('inventory list')
-        .select('id')
-        .eq('Item Description', data.itemDescription)
-        .eq('location', data.location)
-        .single();
-
+      const existingItem = await checkExistingItem(data.itemDescription, data.location);
       if (existingItem) {
         toast.error("This item already exists in the selected location");
         return;
       }
 
-      const inventoryItem = {
+      await addInventoryItem({
         "Item Description": data.itemDescription,
         Price: price,
         Quantity: quantity,
         Total: total,
         location: data.location
-      };
-
-      const { error } = await supabase
-        .from('inventory list')
-        .insert([inventoryItem]);
-
-      if (error) {
-        console.error('Error adding inventory item:', error);
-        if (error.code === '23505') {
-          toast.error("This item already exists in the selected location");
-        } else {
-          toast.error("Failed to add inventory item");
-        }
-        return;
-      }
+      });
 
       toast.success("Item added to inventory");
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error:', error);
-      toast.error("Failed to add inventory item");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to add inventory item");
+      }
     } finally {
       setIsSubmitting(false);
     }
