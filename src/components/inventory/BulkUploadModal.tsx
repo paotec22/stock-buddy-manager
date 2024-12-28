@@ -46,9 +46,10 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
     }
 
     try {
+      // Fix: Use correct column name "Item Description" in the select query
       const { data: existingItems } = await supabase
         .from('inventory list')
-        .select('Item Description')
+        .select('"Item Description"')
         .eq('location', selectedLocation);
 
       const existingItemNames = new Set(existingItems?.map(item => item['Item Description']));
