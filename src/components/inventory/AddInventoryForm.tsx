@@ -20,36 +20,19 @@ interface FormData {
   location: string;
 }
 
+const LOCATIONS = ["Ikeja", "Cement"];
+
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [locations, setLocations] = useState<string[]>([]);
   
   const form = useForm<FormData>({
     defaultValues: {
       itemDescription: "",
       price: "",
       quantity: "",
-      location: "Main Store",
+      location: "Ikeja",
     },
   });
-
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  const fetchLocations = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('inventory list')
-        .select('location')
-        .distinct();
-
-      if (error) throw error;
-      setLocations(data.map(item => item.location));
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-    }
-  };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -147,7 +130,7 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {locations.map((location) => (
+                      {LOCATIONS.map((location) => (
                         <SelectItem key={location} value={location}>
                           {location}
                         </SelectItem>

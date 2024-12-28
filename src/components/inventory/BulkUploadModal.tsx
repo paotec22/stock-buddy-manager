@@ -22,29 +22,12 @@ interface InventoryItem {
   location: string;
 }
 
+const LOCATIONS = ["Ikeja", "Cement"];
+
 export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<InventoryItem[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState("Main Store");
-  const [locations, setLocations] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchLocations();
-  }, []);
-
-  const fetchLocations = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('inventory list')
-        .select('location')
-        .distinct();
-
-      if (error) throw error;
-      setLocations(data.map(item => item.location));
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-    }
-  };
+  const [selectedLocation, setSelectedLocation] = useState("Ikeja");
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -136,7 +119,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
-                {locations.map((location) => (
+                {LOCATIONS.map((location) => (
                   <SelectItem key={location} value={location}>
                     {location}
                   </SelectItem>

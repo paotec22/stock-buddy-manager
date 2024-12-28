@@ -19,34 +19,19 @@ interface InventoryItem {
   location: string;
 }
 
+const LOCATIONS = ["Ikeja", "Cement"];
+
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLocation, setSelectedLocation] = useState("Main Store");
-  const [locations, setLocations] = useState<string[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    fetchLocations();
     fetchInventoryItems();
   }, [selectedLocation]);
-
-  const fetchLocations = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('inventory list')
-        .select('location')
-        .distinct();
-
-      if (error) throw error;
-      setLocations(data.map(item => item.location));
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-      toast.error("Failed to load locations");
-    }
-  };
 
   const fetchInventoryItems = async () => {
     try {
@@ -128,7 +113,7 @@ const Inventory = () => {
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
-                {locations.map((location) => (
+                {LOCATIONS.map((location) => (
                   <SelectItem key={location} value={location}>
                     {location}
                   </SelectItem>
