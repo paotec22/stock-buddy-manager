@@ -13,11 +13,9 @@ interface AddInventoryFormProps {
 }
 
 interface FormData {
-  name: string;
-  sku: string;
-  quantity: string;
-  minQuantity: string;
+  itemDescription: string;
   price: string;
+  quantity: string;
 }
 
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
@@ -25,34 +23,28 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
   
   const form = useForm<FormData>({
     defaultValues: {
-      name: "",
-      sku: "",
-      quantity: "",
-      minQuantity: "",
+      itemDescription: "",
       price: "",
+      quantity: "",
     },
   });
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please login to add inventory items");
-        return;
-      }
+      const price = parseFloat(data.price);
+      const quantity = parseInt(data.quantity);
+      const total = price * quantity;
 
       const inventoryItem = {
-        name: data.name,
-        sku: data.sku,
-        quantity: parseInt(data.quantity),
-        minQuantity: parseInt(data.minQuantity),
-        price: parseFloat(data.price),
-        user_id: user.id
+        "Item Description": data.itemDescription,
+        Price: price,
+        Quantity: quantity,
+        Total: total
       };
 
       const { error } = await supabase
-        .from('inventory')
+        .from('inventory list')
         .insert([inventoryItem]);
 
       if (error) {
@@ -82,51 +74,12 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
+              name="itemDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Item Name</FormLabel>
+                  <FormLabel>Item Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter item name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="sku"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SKU</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter SKU" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter quantity" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="minQuantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Minimum Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter minimum quantity" {...field} />
+                    <Input placeholder="Enter item description" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,6 +93,19 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
                   <FormLabel>Price</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" placeholder="Enter price" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Enter quantity" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

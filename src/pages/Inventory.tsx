@@ -10,13 +10,10 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface InventoryItem {
-  id?: string;
-  name: string;
-  sku: string;
-  quantity: number;
-  minQuantity: number;
-  price: number;
-  user_id?: string;
+  "Item Description": string;
+  Price: number;
+  Quantity: number;
+  Total: number;
 }
 
 const Inventory = () => {
@@ -31,16 +28,9 @@ const Inventory = () => {
 
   const fetchInventoryItems = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please login to view inventory");
-        return;
-      }
-
       const { data, error } = await supabase
-        .from('inventory')
-        .select('*')
-        .eq('user_id', user.id);
+        .from('inventory list')
+        .select('*');
 
       if (error) {
         console.error('Error fetching inventory:', error);
@@ -59,20 +49,9 @@ const Inventory = () => {
 
   const handleBulkUpload = async (items: InventoryItem[]) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please login to upload inventory");
-        return;
-      }
-
-      const itemsWithUserId = items.map(item => ({
-        ...item,
-        user_id: user.id
-      }));
-
       const { error } = await supabase
-        .from('inventory')
-        .insert(itemsWithUserId);
+        .from('inventory list')
+        .insert(items);
 
       if (error) {
         console.error('Error uploading inventory:', error);
@@ -121,21 +100,19 @@ const Inventory = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Min Quantity</TableHead>
+                    <TableHead>Item Description</TableHead>
                     <TableHead>Price</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {inventoryItems.map((item, index) => (
-                    <TableRow key={item.id || index}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.sku}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.minQuantity}</TableCell>
-                      <TableCell>${item.price.toFixed(2)}</TableCell>
+                    <TableRow key={index}>
+                      <TableCell>{item["Item Description"]}</TableCell>
+                      <TableCell>${item.Price?.toFixed(2)}</TableCell>
+                      <TableCell>{item.Quantity}</TableCell>
+                      <TableCell>${item.Total?.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

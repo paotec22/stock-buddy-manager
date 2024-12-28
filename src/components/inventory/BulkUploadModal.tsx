@@ -13,11 +13,10 @@ interface BulkUploadModalProps {
 }
 
 interface InventoryItem {
-  name: string;
-  sku: string;
-  quantity: number;
-  minQuantity: number;
-  price: number;
+  "Item Description": string;
+  Price: number;
+  Quantity: number;
+  Total: number;
 }
 
 export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUploadModalProps) {
@@ -49,12 +48,13 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
           .filter(line => line.trim() !== '')
           .map(line => {
             const values = line.split(',');
+            const price = parseFloat(values[1]?.trim() || '0');
+            const quantity = parseInt(values[2]?.trim() || '0');
             return {
-              name: values[0]?.trim() || '',
-              sku: values[1]?.trim() || '',
-              quantity: parseInt(values[2]?.trim() || '0'),
-              minQuantity: parseInt(values[3]?.trim() || '0'),
-              price: parseFloat(values[4]?.trim() || '0'),
+              "Item Description": values[0]?.trim() || '',
+              Price: price,
+              Quantity: quantity,
+              Total: price * quantity
             };
           });
 
@@ -70,16 +70,14 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
       return;
     }
 
-    console.log("Uploading inventory items:", previewData);
     onDataUpload(previewData);
-    toast.success("Inventory items uploaded successfully");
     setFile(null);
     setPreviewData([]);
     onOpenChange(false);
   };
 
   const downloadTemplate = () => {
-    const template = "Name,SKU,Quantity,Minimum Quantity,Price\n";
+    const template = "Item Description,Price,Quantity\n";
     const blob = new Blob([template], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -117,21 +115,19 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Min Quantity</TableHead>
+                    <TableHead>Item Description</TableHead>
                     <TableHead>Price</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {previewData.map((item, index) => (
                     <TableRow key={index}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.sku}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.minQuantity}</TableCell>
-                      <TableCell>${item.price.toFixed(2)}</TableCell>
+                      <TableCell>{item["Item Description"]}</TableCell>
+                      <TableCell>${item.Price.toFixed(2)}</TableCell>
+                      <TableCell>{item.Quantity}</TableCell>
+                      <TableCell>${item.Total.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
