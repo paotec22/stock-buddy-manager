@@ -12,18 +12,21 @@ export type Database = {
       "inventory list": {
         Row: {
           "Item Description": string
+          location: string
           Price: number | null
           Quantity: number | null
           Total: number | null
         }
         Insert: {
           "Item Description": string
+          location?: string
           Price?: number | null
           Quantity?: number | null
           Total?: number | null
         }
         Update: {
           "Item Description"?: string
+          location?: string
           Price?: number | null
           Quantity?: number | null
           Total?: number | null

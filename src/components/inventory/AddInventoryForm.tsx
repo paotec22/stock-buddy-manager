@@ -2,10 +2,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AddInventoryFormProps {
   open: boolean;
@@ -16,18 +17,39 @@ interface FormData {
   itemDescription: string;
   price: string;
   quantity: string;
+  location: string;
 }
 
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locations, setLocations] = useState<string[]>([]);
   
   const form = useForm<FormData>({
     defaultValues: {
       itemDescription: "",
       price: "",
       quantity: "",
+      location: "Main Store",
     },
   });
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+
+  const fetchLocations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('inventory list')
+        .select('location')
+        .distinct();
+
+      if (error) throw error;
+      setLocations(data.map(item => item.location));
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -40,7 +62,8 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
         "Item Description": data.itemDescription,
         Price: price,
         Quantity: quantity,
-        Total: total
+        Total: total,
+        location: data.location
       };
 
       const { error } = await supabase
@@ -107,6 +130,30 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
                   <FormControl>
                     <Input type="number" placeholder="Enter quantity" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {locations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -1,15 +1,17 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Download } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { supabase } from "@/lib/supabase";
 
 interface BulkUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDataUpload: (data: InventoryItem[]) => void;
+  onDataUpload: (data: any) => void;
 }
 
 interface InventoryItem {
@@ -17,11 +19,32 @@ interface InventoryItem {
   Price: number;
   Quantity: number;
   Total: number;
+  location: string;
 }
 
 export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<InventoryItem[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState("Main Store");
+  const [locations, setLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+
+  const fetchLocations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('inventory list')
+        .select('location')
+        .distinct();
+
+      if (error) throw error;
+      setLocations(data.map(item => item.location));
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -54,7 +77,8 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
               "Item Description": values[0]?.trim() || '',
               Price: price,
               Quantity: quantity,
-              Total: price * quantity
+              Total: price * quantity,
+              location: selectedLocation
             };
           });
 
@@ -64,16 +88,28 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
     });
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file || previewData.length === 0) {
       toast.error("Please select a file first");
       return;
     }
 
-    onDataUpload(previewData);
-    setFile(null);
-    setPreviewData([]);
-    onOpenChange(false);
+    try {
+      const { error } = await supabase
+        .from('inventory list')
+        .insert(previewData);
+
+      if (error) throw error;
+
+      toast.success("Inventory items uploaded successfully");
+      onDataUpload(previewData);
+      setFile(null);
+      setPreviewData([]);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error uploading inventory:', error);
+      toast.error("Failed to upload inventory items");
+    }
   };
 
   const downloadTemplate = () => {
@@ -94,10 +130,25 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
           <DialogTitle>Bulk Upload Inventory</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Button variant="outline" onClick={downloadTemplate} className="w-full">
-            <Download className="mr-2" />
-            Download Template
-          </Button>
+          <div className="flex items-center gap-4">
+            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((location) => (
+                  <SelectItem key={location} value={location}>
+                    {location}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={downloadTemplate}>
+              <Download className="mr-2" />
+              Download Template
+            </Button>
+          </div>
+          
           <div className="grid w-full items-center gap-1.5">
             <Input
               type="file"
@@ -119,6 +170,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
                     <TableHead>Price</TableHead>
                     <TableHead>Quantity</TableHead>
                     <TableHead>Total</TableHead>
+                    <TableHead>Location</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -128,6 +180,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
                       <TableCell>${item.Price.toFixed(2)}</TableCell>
                       <TableCell>{item.Quantity}</TableCell>
                       <TableCell>${item.Total.toFixed(2)}</TableCell>
+                      <TableCell>{item.location}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
