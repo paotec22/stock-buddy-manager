@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Download } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -78,6 +78,23 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
     }
 
     try {
+      // Check for existing items in the selected location
+      const { data: existingItems } = await supabase
+        .from('inventory list')
+        .select('Item Description')
+        .eq('location', selectedLocation);
+
+      const existingItemNames = new Set(existingItems?.map(item => item['Item Description']));
+      const duplicateItems = previewData.filter(item => 
+        existingItemNames.has(item['Item Description'])
+      );
+
+      if (duplicateItems.length > 0) {
+        const itemNames = duplicateItems.map(item => item['Item Description']).join(', ');
+        toast.error(`These items already exist in ${selectedLocation}: ${itemNames}`);
+        return;
+      }
+
       const { error } = await supabase
         .from('inventory list')
         .insert(previewData);

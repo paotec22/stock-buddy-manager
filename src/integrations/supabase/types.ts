@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       "inventory list": {
         Row: {
+          id: number
           "Item Description": string
           location: string
           Price: number | null
@@ -18,6 +19,7 @@ export type Database = {
           Total: number | null
         }
         Insert: {
+          id?: number
           "Item Description": string
           location?: string
           Price?: number | null
@@ -25,6 +27,7 @@ export type Database = {
           Total?: number | null
         }
         Update: {
+          id?: number
           "Item Description"?: string
           location?: string
           Price?: number | null
