@@ -77,7 +77,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
               <TableHead className="w-[50px]">
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
-                  onCheckedChange={handleSelectAll}
+                  onCheckedChange={(checked) => handleSelectAll(checked === true)}
                 />
               </TableHead>
               <TableHead>Item Description</TableHead>
@@ -96,7 +96,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                 <TableCell>
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
-                    onCheckedChange={(checked) => handleSelectItem(checked, item.id)}
+                    onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
                   />
                 </TableCell>
                 <TableCell className="min-w-[200px]">{item["Item Description"]}</TableCell>

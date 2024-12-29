@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface InventoryItem {
+  id: number;
   "Item Description": string;
   Price: number;
   Quantity: number;
@@ -44,6 +45,7 @@ export const parseCSVData = (text: string, selectedLocation: string): InventoryI
       const price = parseFloat(values[1]?.trim() || '0');
       const quantity = parseInt(values[2]?.trim() || '0');
       return {
+        id: 0, // This will be replaced by the database
         "Item Description": values[0]?.trim() || '',
         Price: price,
         Quantity: quantity,
