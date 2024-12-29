@@ -1,8 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { InventoryItem } from "@/utils/inventoryUtils";
+import { NewInventoryItem } from "@/utils/inventoryUtils";
 
 interface InventoryPreviewTableProps {
-  items: InventoryItem[];
+  items: NewInventoryItem[];
 }
 
 export function InventoryPreviewTable({ items }: InventoryPreviewTableProps) {

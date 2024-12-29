@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Download } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { InventoryPreviewTable } from "./InventoryPreviewTable";
-import { InventoryItem, parseCSVData } from "@/utils/inventoryUtils";
+import { NewInventoryItem, parseCSVData } from "@/utils/inventoryUtils";
 
 interface BulkUploadModalProps {
   open: boolean;
@@ -19,7 +19,7 @@ const LOCATIONS = ["Ikeja", "Cement"];
 
 export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [previewData, setPreviewData] = useState<InventoryItem[]>([]);
+  const [previewData, setPreviewData] = useState<NewInventoryItem[]>([]);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +46,6 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
     }
 
     try {
-      // Fix: Use correct column name "Item Description" in the select query
       const { data: existingItems } = await supabase
         .from('inventory list')
         .select('"Item Description"')
