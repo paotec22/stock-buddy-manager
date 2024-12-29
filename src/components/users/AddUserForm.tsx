@@ -54,22 +54,8 @@ export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
       }
 
       if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert([
-            {
-              user_id: authData.user.id,
-              email: data.email,
-              role: data.role
-            }
-          ]);
-
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-          toast.error("Failed to create user profile");
-          return;
-        }
-
+        // Note: We don't need to manually insert into profiles table anymore
+        // because the database trigger handle_new_user() will do it automatically
         toast.success("User created successfully! Please check your email for confirmation.");
         form.reset();
         onOpenChange(false);

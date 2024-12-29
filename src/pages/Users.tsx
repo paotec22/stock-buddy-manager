@@ -11,11 +11,11 @@ import { UsersTable } from "@/components/users/UsersTable";
 const Users = () => {
   const [showAddUser, setShowAddUser] = useState(false);
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('*');
       
       if (error) throw error;
@@ -25,10 +25,10 @@ const Users = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex flex-col md:flex-row w-full">
         <AppSidebar />
-        <main className="flex-1 p-6">
-          <div className="flex justify-between items-center mb-6">
+        <main className="flex-1 p-4 md:p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <h1 className="text-2xl font-bold">User Management</h1>
             <Button onClick={() => setShowAddUser(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -39,7 +39,7 @@ const Users = () => {
           {isLoading ? (
             <div>Loading users...</div>
           ) : (
-            <UsersTable users={users || []} />
+            <UsersTable users={users || []} onUserUpdated={refetch} />
           )}
 
           <AddUserForm 
