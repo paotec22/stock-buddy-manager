@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useState } from "react";
-import { addInventoryItem, checkExistingItem } from "@/utils/inventoryUtils";
+import { addInventoryItem, checkExistingItem, NewInventoryItem } from "@/utils/inventoryUtils";
 
 interface AddInventoryFormProps {
   open: boolean;
@@ -47,14 +47,15 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
         return;
       }
 
-      await addInventoryItem({
+      const newItem: NewInventoryItem = {
         "Item Description": data.itemDescription,
         Price: price,
         Quantity: quantity,
         Total: total,
         location: data.location
-      });
+      };
 
+      await addInventoryItem(newItem);
       toast.success("Item added to inventory");
       form.reset();
       onOpenChange(false);

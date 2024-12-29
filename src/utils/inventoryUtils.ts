@@ -10,6 +10,15 @@ export interface InventoryItem {
   location: string;
 }
 
+// Separate interface for adding new items where ID is optional
+export interface NewInventoryItem {
+  "Item Description": string;
+  Price: number;
+  Quantity: number;
+  Total: number;
+  location: string;
+}
+
 export const checkExistingItem = async (itemDescription: string, location: string) => {
   const { data: existingItem } = await supabase
     .from('inventory list')
@@ -21,7 +30,7 @@ export const checkExistingItem = async (itemDescription: string, location: strin
   return existingItem;
 };
 
-export const addInventoryItem = async (item: InventoryItem) => {
+export const addInventoryItem = async (item: NewInventoryItem) => {
   const { error } = await supabase
     .from('inventory list')
     .insert([item]);
@@ -35,9 +44,9 @@ export const addInventoryItem = async (item: InventoryItem) => {
   }
 };
 
-export const parseCSVData = (text: string, selectedLocation: string): InventoryItem[] => {
+export const parseCSVData = (text: string, selectedLocation: string): NewInventoryItem[] => {
   const lines = text.split('\n');
-  const items: InventoryItem[] = lines
+  const items: NewInventoryItem[] = lines
     .slice(1)
     .filter(line => line.trim() !== '')
     .map(line => {
@@ -45,7 +54,6 @@ export const parseCSVData = (text: string, selectedLocation: string): InventoryI
       const price = parseFloat(values[1]?.trim() || '0');
       const quantity = parseInt(values[2]?.trim() || '0');
       return {
-        id: 0, // This will be replaced by the database
         "Item Description": values[0]?.trim() || '',
         Price: price,
         Quantity: quantity,
