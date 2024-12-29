@@ -55,7 +55,11 @@ export function UsersTable({ users, onUserUpdated }: UsersTableProps) {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
       if (error) throw error;
       
       toast.success("User deleted successfully");
