@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { AddUserForm } from "@/components/users/AddUserForm";
 import { UsersTable } from "@/components/users/UsersTable";
+import { toast } from "sonner";
 
 const Users = () => {
   const [showAddUser, setShowAddUser] = useState(false);
@@ -14,11 +15,18 @@ const Users = () => {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
+      console.log('Fetching users...');
       const { data, error } = await supabase
         .from('profiles')
         .select('*');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast.error("Failed to load users");
+        throw error;
+      }
+      
+      console.log('Users fetched successfully:', data);
       return data;
     },
   });
