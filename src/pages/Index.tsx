@@ -38,7 +38,7 @@ const Index = () => {
 
       if (data.session) {
         toast.success("Login successful!");
-        navigate("/dashboard");
+        navigate("/inventory"); // Changed from /dashboard to /inventory
       }
     } catch (error) {
       console.error("Login error:", error);
