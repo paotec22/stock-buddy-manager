@@ -12,13 +12,14 @@ import { toast } from "sonner";
 const Users = () => {
   const [showAddUser, setShowAddUser] = useState(false);
 
-  const { data: users, isLoading, refetch } = useQuery({
+  const { data: users, isLoading, error, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       console.log('Fetching users...');
       const { data, error } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .throwOnError();
       
       if (error) {
         console.error('Error fetching users:', error);
@@ -30,6 +31,11 @@ const Users = () => {
       return data;
     },
   });
+
+  if (error) {
+    console.error('Query error:', error);
+    toast.error("Error loading users. Please try again.");
+  }
 
   return (
     <SidebarProvider>
@@ -46,6 +52,10 @@ const Users = () => {
 
           {isLoading ? (
             <div>Loading users...</div>
+          ) : error ? (
+            <div className="text-red-500">
+              Failed to load users. Please try refreshing the page.
+            </div>
           ) : (
             <UsersTable users={users || []} onUserUpdated={refetch} />
           )}
