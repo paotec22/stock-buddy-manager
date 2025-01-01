@@ -13,6 +13,7 @@ import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 interface AddSaleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 interface FormData {
@@ -24,7 +25,7 @@ interface FormData {
 
 const LOCATIONS = ["Ikeja", "Cement"];
 
-export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
+export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   
@@ -50,7 +51,6 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
   });
 
   const handleItemSelect = (itemId: string) => {
-    // Convert both to same type for comparison
     const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
     if (selectedItem) {
       form.setValue("salePrice", selectedItem.Price.toString());
@@ -62,7 +62,6 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Convert both to same type for comparison
       const selectedItem = inventoryItems?.find(
         item => item.id.toString() === data.itemId.toString()
       );
@@ -84,7 +83,7 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
 
       toast.success("Sale recorded successfully");
       form.reset();
-      onOpenChange(false);
+      onSuccess?.();
     } catch (error: any) {
       console.error('Error:', error);
       toast.error(error.message || "Failed to record sale");
