@@ -22,9 +22,9 @@ interface FormData {
 
 interface InventoryItem {
   id: string;
-  name: string;
-  price: number;
-  quantity: number;
+  "Item Description": string;
+  Price: number;
+  Quantity: number;
 }
 
 export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
@@ -34,10 +34,10 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
     queryKey: ['inventory'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('inventory')
+        .from('inventory list')
         .select('*');
       if (error) throw error;
-      return data as InventoryItem[];
+      return data;
     },
   });
 
@@ -65,7 +65,7 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
       }
 
       const quantity = parseInt(data.quantity);
-      if (quantity > selectedItem.quantity) {
+      if (quantity > selectedItem.Quantity) {
         toast.error("Not enough items in inventory");
         return;
       }
@@ -91,9 +91,9 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
 
       // Update inventory quantity
       const { error: updateError } = await supabase
-        .from('inventory')
-        .update({ quantity: selectedItem.quantity - quantity })
-        .eq('id', data.itemId);
+        .from('inventory list')
+        .update({ Quantity: selectedItem.Quantity - quantity })
+        .eq('id', selectedItem.id);
 
       if (updateError) {
         console.error('Error updating inventory:', updateError);
@@ -134,8 +134,8 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
                     </FormControl>
                     <SelectContent>
                       {inventoryItems?.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name} (${item.price})
+                        <SelectItem key={item.id} value={item.id.toString()}>
+                          {item["Item Description"]} (₦{item.Price?.toLocaleString()})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -162,7 +162,7 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
               name="salePrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sale Price</FormLabel>
+                  <FormLabel>Sale Price (₦)</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" placeholder="Enter sale price" {...field} />
                   </FormControl>

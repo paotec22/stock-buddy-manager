@@ -26,6 +26,13 @@ interface SalesTableProps {
 export function SalesTable({ sales }: SalesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
+
   const filteredSales = sales.filter((sale) =>
     sale.item_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -55,8 +62,8 @@ export function SalesTable({ sales }: SalesTableProps) {
                 <TableCell>{format(new Date(sale.sale_date), "PPP")}</TableCell>
                 <TableCell>{sale.item_name}</TableCell>
                 <TableCell>{sale.quantity}</TableCell>
-                <TableCell>${sale.sale_price.toFixed(2)}</TableCell>
-                <TableCell>${sale.total_amount.toFixed(2)}</TableCell>
+                <TableCell>{formatCurrency(sale.sale_price)}</TableCell>
+                <TableCell>{formatCurrency(sale.total_amount)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
