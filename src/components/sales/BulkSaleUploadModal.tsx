@@ -47,11 +47,16 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
 
             if (saleError) throw saleError;
 
-            // Update inventory quantities using a prepared statement
+            // Update inventory quantities
             for (const sale of sales) {
               const { error: updateError } = await supabase
-                .from('inventory')
-                .update({ quantity: supabase.sql`quantity - ${sale.quantity}` })
+                .from('inventory list')
+                .update({ 
+                  Quantity: supabase.rpc('decrement_quantity', { 
+                    row_id: sale.item_id, 
+                    amount: sale.quantity 
+                  })
+                })
                 .eq('id', sale.item_id);
 
               if (updateError) throw updateError;

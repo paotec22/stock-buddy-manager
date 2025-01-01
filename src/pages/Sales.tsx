@@ -17,9 +17,6 @@ interface Sale {
   total_amount: number;
   sale_date: string;
   item_name: string;
-  inventory: {
-    name: string;
-  };
 }
 
 const Sales = () => {
@@ -29,7 +26,7 @@ const Sales = () => {
   const { data: sales = [], isLoading, refetch } = useQuery({
     queryKey: ['sales'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: salesData, error } = await supabase
         .from('sales')
         .select(`
           id,
@@ -37,17 +34,18 @@ const Sales = () => {
           sale_price,
           total_amount,
           sale_date,
-          inventory (
-            name
+          item_id,
+          inventory_list!inner (
+            "Item Description"
           )
         `)
         .order('sale_date', { ascending: false });
 
       if (error) throw error;
 
-      return (data || []).map((sale: any) => ({
+      return (salesData || []).map((sale: any) => ({
         ...sale,
-        item_name: sale.inventory?.name || 'Unknown Item'
+        item_name: sale.inventory_list["Item Description"]
       })) as Sale[];
     },
   });
