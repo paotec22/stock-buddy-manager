@@ -40,19 +40,18 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
               sale_date: new Date().toISOString(),
             }));
 
+            // Insert sales records
             const { error: saleError } = await supabase
               .from('sales')
               .insert(sales);
 
             if (saleError) throw saleError;
 
-            // Update inventory quantities
+            // Update inventory quantities using a prepared statement
             for (const sale of sales) {
               const { error: updateError } = await supabase
                 .from('inventory')
-                .update({ 
-                  quantity: supabase.raw('quantity - ?', [sale.quantity])
-                })
+                .update({ quantity: supabase.sql`quantity - ${sale.quantity}` })
                 .eq('id', sale.item_id);
 
               if (updateError) throw updateError;
