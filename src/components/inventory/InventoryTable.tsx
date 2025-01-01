@@ -18,6 +18,13 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedItems(items.map(item => item.id));
@@ -46,7 +53,6 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
 
       toast.success(`Successfully deleted ${selectedItems.length} items`);
       setSelectedItems([]);
-      // Refresh the inventory list
       window.location.reload();
     } catch (error) {
       console.error('Error deleting items:', error);
@@ -120,7 +126,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                     />
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span>${item.Price?.toFixed(2)}</span>
+                      <span>{formatCurrency(item.Price)}</span>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -132,7 +138,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   )}
                 </TableCell>
                 <TableCell>{item.Quantity}</TableCell>
-                <TableCell>${item.Total?.toFixed(2)}</TableCell>
+                <TableCell>{formatCurrency(item.Total)}</TableCell>
                 <TableCell>
                   <Button
                     variant="ghost"

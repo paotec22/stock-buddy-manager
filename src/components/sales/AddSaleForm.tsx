@@ -18,6 +18,7 @@ interface FormData {
   itemId: string;
   quantity: string;
   salePrice: string;
+  location: string;
 }
 
 interface InventoryItem {
@@ -25,17 +26,22 @@ interface InventoryItem {
   "Item Description": string;
   Price: number;
   Quantity: number;
+  location: string;
 }
+
+const LOCATIONS = ["Ikeja", "Cement"];
 
 export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   
   const { data: inventoryItems } = useQuery({
-    queryKey: ['inventory'],
+    queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('inventory list')
-        .select('*');
+        .select('*')
+        .eq('location', selectedLocation);
       if (error) throw error;
       return data;
     },
@@ -46,8 +52,16 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
       itemId: "",
       quantity: "",
       salePrice: "",
+      location: LOCATIONS[0],
     },
   });
+
+  const handleItemSelect = (itemId: string) => {
+    const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId);
+    if (selectedItem) {
+      form.setValue("salePrice", selectedItem.Price.toString());
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -122,11 +136,47 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <Select
+                    value={selectedLocation}
+                    onValueChange={(value) => {
+                      setSelectedLocation(value);
+                      field.onChange(value);
+                    }}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="itemId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Item</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleItemSelect(value);
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select an item" />

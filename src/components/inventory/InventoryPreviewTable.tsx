@@ -6,6 +6,13 @@ interface InventoryPreviewTableProps {
 }
 
 export function InventoryPreviewTable({ items }: InventoryPreviewTableProps) {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
+
   return (
     <div className="max-h-[400px] overflow-auto border rounded-md">
       <Table>
@@ -22,9 +29,9 @@ export function InventoryPreviewTable({ items }: InventoryPreviewTableProps) {
           {items.map((item, index) => (
             <TableRow key={index}>
               <TableCell>{item["Item Description"]}</TableCell>
-              <TableCell>${item.Price.toFixed(2)}</TableCell>
+              <TableCell>{formatCurrency(item.Price)}</TableCell>
               <TableCell>{item.Quantity}</TableCell>
-              <TableCell>${item.Total.toFixed(2)}</TableCell>
+              <TableCell>{formatCurrency(item.Total)}</TableCell>
               <TableCell>{item.location}</TableCell>
             </TableRow>
           ))}
