@@ -57,6 +57,44 @@ export type Database = {
         }
         Relationships: []
       }
+      sales: {
+        Row: {
+          id: number
+          item_id: number | null
+          quantity: number
+          sale_date: string
+          sale_price: number
+          total_amount: number
+          user_id: string | null
+        }
+        Insert: {
+          id?: number
+          item_id?: number | null
+          quantity: number
+          sale_date?: string
+          sale_price: number
+          total_amount: number
+          user_id?: string | null
+        }
+        Update: {
+          id?: number
+          item_id?: number | null
+          quantity?: number
+          sale_date?: string
+          sale_price?: number
+          total_amount?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory list"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
