@@ -26,6 +26,7 @@ const Sales = () => {
   const { data: sales = [], isLoading, refetch } = useQuery({
     queryKey: ['sales'],
     queryFn: async () => {
+      console.log('Fetching sales data...');
       const { data: salesData, error } = await supabase
         .from('sales')
         .select(`
@@ -35,14 +36,25 @@ const Sales = () => {
           total_amount,
           sale_date,
           item_id,
-          "inventory list" ("Item Description")
+          "inventory list" (
+            "Item Description"
+          )
         `)
         .order('sale_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching sales:', error);
+        throw error;
+      }
+
+      console.log('Sales data received:', salesData);
 
       return (salesData || []).map((sale: any) => ({
-        ...sale,
+        id: sale.id,
+        quantity: sale.quantity,
+        sale_price: sale.sale_price,
+        total_amount: sale.total_amount,
+        sale_date: sale.sale_date,
         item_name: sale["inventory list"]["Item Description"]
       })) as Sale[];
     },
@@ -80,6 +92,10 @@ const Sales = () => {
           <AddSaleForm
             open={showAddSale}
             onOpenChange={setShowAddSale}
+            onSuccess={() => {
+              refetch();
+              setShowAddSale(false);
+            }}
           />
 
           <BulkSaleUploadModal
