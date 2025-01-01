@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 
 interface AddSaleFormProps {
   open: boolean;
@@ -18,14 +19,6 @@ interface FormData {
   itemId: string;
   quantity: string;
   salePrice: string;
-  location: string;
-}
-
-interface InventoryItem {
-  id: string;
-  "Item Description": string;
-  Price: number;
-  Quantity: number;
   location: string;
 }
 
@@ -57,7 +50,8 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
   });
 
   const handleItemSelect = (itemId: string) => {
-    const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId);
+    // Convert both to same type for comparison
+    const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
     if (selectedItem) {
       form.setValue("salePrice", selectedItem.Price.toString());
     }
@@ -67,60 +61,33 @@ export function AddSaleForm({ open, onOpenChange }: AddSaleFormProps) {
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please login to record sales");
-        return;
-      }
+      
+      // Convert both to same type for comparison
+      const selectedItem = inventoryItems?.find(
+        item => item.id.toString() === data.itemId.toString()
+      );
 
-      const selectedItem = inventoryItems?.find(item => item.id === data.itemId);
-      if (!selectedItem) {
-        toast.error("Invalid item selected");
-        return;
-      }
+      const { parsedQuantity } = await validateSaleSubmission({
+        itemId: data.itemId,
+        quantity: data.quantity,
+        selectedItem,
+        userId: user?.id
+      });
 
-      const quantity = parseInt(data.quantity);
-      if (quantity > selectedItem.Quantity) {
-        toast.error("Not enough items in inventory");
-        return;
-      }
-
-      const sale = {
-        item_id: data.itemId,
-        quantity: quantity,
-        sale_price: parseFloat(data.salePrice),
-        total_amount: quantity * parseFloat(data.salePrice),
-        user_id: user.id,
-        sale_date: new Date().toISOString(),
-      };
-
-      const { error: saleError } = await supabase
-        .from('sales')
-        .insert([sale]);
-
-      if (saleError) {
-        console.error('Error recording sale:', saleError);
-        toast.error("Failed to record sale");
-        return;
-      }
-
-      // Update inventory quantity
-      const { error: updateError } = await supabase
-        .from('inventory list')
-        .update({ Quantity: selectedItem.Quantity - quantity })
-        .eq('id', selectedItem.id);
-
-      if (updateError) {
-        console.error('Error updating inventory:', updateError);
-        toast.error("Failed to update inventory");
-        return;
-      }
+      await recordSale(
+        user!.id,
+        data.itemId,
+        parsedQuantity,
+        parseFloat(data.salePrice),
+        selectedItem
+      );
 
       toast.success("Sale recorded successfully");
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      toast.error("Failed to record sale");
+      toast.error(error.message || "Failed to record sale");
     } finally {
       setIsSubmitting(false);
     }
