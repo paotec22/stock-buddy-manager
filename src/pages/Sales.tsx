@@ -35,9 +35,7 @@ const Sales = () => {
           total_amount,
           sale_date,
           item_id,
-          inventory_list!inner (
-            "Item Description"
-          )
+          "inventory list" ("Item Description")
         `)
         .order('sale_date', { ascending: false });
 
@@ -45,7 +43,7 @@ const Sales = () => {
 
       return (salesData || []).map((sale: any) => ({
         ...sale,
-        item_name: sale.inventory_list["Item Description"]
+        item_name: sale["inventory list"]["Item Description"]
       })) as Sale[];
     },
   });
