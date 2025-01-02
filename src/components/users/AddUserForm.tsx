@@ -7,62 +7,51 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.enum(["admin", "user"])
+});
 
 interface AddUserFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
-interface FormData {
-  email: string;
-  password: string;
-  role: 'admin' | 'user';
-}
-
-export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
+export function AddUserForm({ open, onOpenChange, onSuccess }: AddUserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const form = useForm<FormData>({
+  const form = useForm({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
-      role: "user"
+      role: "user" as const
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.admin.createUser({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            role: data.role
-          }
-        }
+        email_confirm: true,
+        user_metadata: { role: data.role }
       });
 
-      if (signUpError) {
-        console.error('Error creating user:', signUpError);
-        if (signUpError.message.includes('email_not_confirmed')) {
-          toast.error("Please check your email to confirm your account");
-        } else {
-          toast.error(signUpError.message || "Failed to create user");
-        }
-        return;
-      }
+      if (error) throw error;
 
-      if (authData.user) {
-        // Note: We don't need to manually insert into profiles table anymore
-        // because the database trigger handle_new_user() will do it automatically
-        toast.success("User created successfully! Please check your email for confirmation.");
-        form.reset();
-        onOpenChange(false);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error("An unexpected error occurred");
+      toast.success("User created successfully!");
+      form.reset();
+      onSuccess();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create user");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +72,7 @@ export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Enter email" {...field} />
+                    <Input type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +85,7 @@ export function AddUserForm({ open, onOpenChange }: AddUserFormProps) {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter password" {...field} />
+                    <Input type="password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -15,27 +15,18 @@ const Users = () => {
   const { data: users, isLoading, error, refetch } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      console.log('Fetching users...');
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .throwOnError();
+        .select('*');
       
       if (error) {
-        console.error('Error fetching users:', error);
         toast.error("Failed to load users");
         throw error;
       }
       
-      console.log('Users fetched successfully:', data);
       return data;
     },
   });
-
-  if (error) {
-    console.error('Query error:', error);
-    toast.error("Error loading users. Please try again.");
-  }
 
   return (
     <SidebarProvider>
@@ -63,6 +54,7 @@ const Users = () => {
           <AddUserForm 
             open={showAddUser} 
             onOpenChange={setShowAddUser}
+            onSuccess={refetch}
           />
         </main>
       </div>
