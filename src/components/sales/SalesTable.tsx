@@ -9,7 +9,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ interface SalesTableProps {
 
 export function SalesTable({ sales }: SalesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
 
   const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin'],
@@ -53,8 +51,6 @@ export function SalesTable({ sales }: SalesTableProps) {
     }
   });
 
-  const locations = Array.from(new Set(sales.map(sale => sale.location)));
-
   const handleDateUpdate = async (saleId: string, newDate: Date) => {
     try {
       const { error } = await supabase
@@ -71,9 +67,7 @@ export function SalesTable({ sales }: SalesTableProps) {
   };
 
   const filteredSales = sales.filter((sale) => {
-    const matchesSearch = sale.item_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLocation = !selectedLocation || sale.location === selectedLocation;
-    return matchesSearch && matchesLocation;
+    return sale.item_name.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const formatCurrency = (amount: number) => {
@@ -84,30 +78,14 @@ export function SalesTable({ sales }: SalesTableProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-4 items-center">
+    <div className="space-y-2">
+      <div className="flex gap-2 items-center">
         <Input
           placeholder="Search by item name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className="max-w-xs"
         />
-        <Select
-          value={selectedLocation}
-          onValueChange={setSelectedLocation}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All locations</SelectItem>
-            {locations.map((location) => (
-              <SelectItem key={location} value={location}>
-                {location}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -131,7 +109,7 @@ export function SalesTable({ sales }: SalesTableProps) {
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-[180px] justify-start text-left font-normal",
+                            "w-[140px] justify-start text-left font-normal",
                             !sale.sale_date && "text-muted-foreground"
                           )}
                         >
