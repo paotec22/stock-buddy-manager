@@ -1,7 +1,6 @@
 import {
   Box,
   BarChart3,
-  Users,
   FileText,
   Settings,
   LogOut,
@@ -21,7 +20,6 @@ import { useNavigate } from "react-router-dom";
 const menuItems = [
   { title: "Inventory", icon: Box, path: "/inventory" },
   { title: "Sales", icon: BarChart3, path: "/sales" },
-  { title: "Users", icon: Users, path: "/users" },
   { title: "Reports", icon: FileText, path: "/reports" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
