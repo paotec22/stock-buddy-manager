@@ -60,6 +60,15 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
     }
   };
 
+  const handlePriceEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    if (!e.currentTarget) return;
+    const newPrice = parseFloat(e.currentTarget.value);
+    if (!isNaN(newPrice)) {
+      await onPriceEdit(item, newPrice);
+      setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
+    }
+  };
+
   return (
     <div className="space-y-4">
       {selectedItems.length > 0 && (
@@ -113,14 +122,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                       defaultValue={item.Price}
                       className="w-24"
                       autoFocus
-                      onBlur={(e) => {
-                        onPriceEdit(item, parseFloat(e.target.value));
-                        setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
-                      }}
+                      onBlur={(e) => handlePriceEdit(item, e)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                          onPriceEdit(item, parseFloat((e.target as HTMLInputElement).value));
-                          setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
+                          handlePriceEdit(item, e);
                         }
                       }}
                     />
