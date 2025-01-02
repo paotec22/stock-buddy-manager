@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AddSaleForm } from "@/components/sales/AddSaleForm";
 import { BulkSaleUploadModal } from "@/components/sales/BulkSaleUploadModal";
 import { SalesTable } from "@/components/sales/SalesTable";
-import { SalesChart } from "@/components/sales/SalesChart";
+import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -83,13 +83,19 @@ const Sales = () => {
           </div>
 
           <div className="grid gap-6 mb-6">
-            <SalesChart sales={sales} />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Sales Summary</h2>
+              <SalesSummaryTable sales={sales} />
+            </div>
           </div>
 
           {isLoading ? (
             <div>Loading sales data...</div>
           ) : (
-            <SalesTable sales={sales} />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Sales Details</h2>
+              <SalesTable sales={sales} />
+            </div>
           )}
 
           <AddSaleForm
