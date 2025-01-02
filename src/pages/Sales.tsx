@@ -17,6 +17,7 @@ interface Sale {
   total_amount: number;
   sale_date: string;
   item_name: string;
+  location: string;
 }
 
 const Sales = () => {
@@ -37,7 +38,8 @@ const Sales = () => {
           sale_date,
           item_id,
           "inventory list" (
-            "Item Description"
+            "Item Description",
+            location
           )
         `)
         .order('sale_date', { ascending: false });
@@ -55,7 +57,8 @@ const Sales = () => {
         sale_price: sale.sale_price,
         total_amount: sale.total_amount,
         sale_date: sale.sale_date,
-        item_name: sale["inventory list"]["Item Description"]
+        item_name: sale["inventory list"]["Item Description"],
+        location: sale["inventory list"].location
       })) as Sale[];
     },
   });

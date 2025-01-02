@@ -9,6 +9,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface Sale {
   id: string;
@@ -17,6 +26,7 @@ interface Sale {
   sale_price: number;
   total_amount: number;
   sale_date: string;
+  location: string;
 }
 
 interface SalesTableProps {
@@ -25,6 +35,46 @@ interface SalesTableProps {
 
 export function SalesTable({ sales }: SalesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      return profile?.role === 'admin';
+    }
+  });
+
+  const locations = Array.from(new Set(sales.map(sale => sale.location)));
+
+  const handleDateUpdate = async (saleId: string, newDate: Date) => {
+    try {
+      const { error } = await supabase
+        .from('sales')
+        .update({ sale_date: newDate.toISOString() })
+        .eq('id', saleId);
+
+      if (error) throw error;
+      toast.success("Sale date updated successfully");
+    } catch (error) {
+      console.error('Error updating sale date:', error);
+      toast.error("Failed to update sale date");
+    }
+  };
+
+  const filteredSales = sales.filter((sale) => {
+    const matchesSearch = sale.item_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLocation = !selectedLocation || sale.location === selectedLocation;
+    return matchesSearch && matchesLocation;
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -33,24 +83,39 @@ export function SalesTable({ sales }: SalesTableProps) {
     }).format(amount);
   };
 
-  const filteredSales = sales.filter((sale) =>
-    sale.item_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="space-y-4">
-      <Input
-        placeholder="Search by item name..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="max-w-sm"
-      />
+      <div className="flex gap-4 items-center">
+        <Input
+          placeholder="Search by item name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+        <Select
+          value={selectedLocation}
+          onValueChange={setSelectedLocation}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by location" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All locations</SelectItem>
+            {locations.map((location) => (
+              <SelectItem key={location} value={location}>
+                {location}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Item</TableHead>
+              <TableHead>Location</TableHead>
               <TableHead>Quantity</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Total</TableHead>
@@ -59,8 +124,36 @@ export function SalesTable({ sales }: SalesTableProps) {
           <TableBody>
             {filteredSales.map((sale) => (
               <TableRow key={sale.id}>
-                <TableCell>{format(new Date(sale.sale_date), "PPP")}</TableCell>
+                <TableCell>
+                  {isAdmin ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-[180px] justify-start text-left font-normal",
+                            !sale.sale_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {format(new Date(sale.sale_date), "PPP")}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={new Date(sale.sale_date)}
+                          onSelect={(date) => date && handleDateUpdate(sale.id, date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    format(new Date(sale.sale_date), "PPP")
+                  )}
+                </TableCell>
                 <TableCell>{sale.item_name}</TableCell>
+                <TableCell>{sale.location}</TableCell>
                 <TableCell>{sale.quantity}</TableCell>
                 <TableCell>{formatCurrency(sale.sale_price)}</TableCell>
                 <TableCell>{formatCurrency(sale.total_amount)}</TableCell>
