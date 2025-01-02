@@ -47,7 +47,7 @@ export function SalesTable({ sales }: SalesTableProps) {
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       return profile?.role === 'admin';
     }
@@ -100,7 +100,7 @@ export function SalesTable({ sales }: SalesTableProps) {
             <SelectValue placeholder="Filter by location" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All locations</SelectItem>
+            <SelectItem value="all">All locations</SelectItem>
             {locations.map((location) => (
               <SelectItem key={location} value={location}>
                 {location}
