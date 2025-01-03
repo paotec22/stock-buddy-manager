@@ -20,16 +20,18 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
 
     setIsUploading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please login to record sales");
+        return;
+      }
+
       const text = await file.text();
       Papa.parse(text, {
         header: true,
         complete: async (results) => {
           try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-              toast.error("Please login to record sales");
-              return;
-            }
+            console.log('Parsed CSV data:', results.data);
 
             const sales = results.data.map((row: any) => ({
               item_id: row.item_id,
@@ -65,9 +67,9 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
             toast.success("Sales recorded successfully");
             onDataUpload();
             onOpenChange(false);
-          } catch (error) {
+          } catch (error: any) {
             console.error('Error recording sales:', error);
-            toast.error("Failed to record sales");
+            toast.error(error.message || "Failed to record sales");
           }
         },
         error: (error) => {
@@ -75,9 +77,9 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
           toast.error("Failed to parse CSV file");
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading file:', error);
-      toast.error("Failed to upload file");
+      toast.error(error.message || "Failed to upload file");
     } finally {
       setIsUploading(false);
     }
@@ -94,12 +96,14 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
             type="file"
             accept=".csv"
             onChange={handleFileUpload}
+            disabled={isUploading}
             className="block w-full text-sm text-gray-500
               file:mr-4 file:py-2 file:px-4
               file:rounded-md file:border-0
               file:text-sm file:font-semibold
               file:bg-primary file:text-primary-foreground
-              hover:file:bg-primary/90"
+              hover:file:bg-primary/90
+              disabled:opacity-50"
           />
           <div className="text-sm text-muted-foreground">
             <p>CSV should include columns:</p>
