@@ -27,55 +27,89 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
+    console.log('AuthProvider: Initializing...');
+    
     // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        console.log('AuthProvider: Initial session:', initialSession);
         
-        setUserRole(profileData?.role);
+        setSession(initialSession);
         
-        // Redirect non-admin users to sales page if they try to access other pages
-        if (profileData?.role !== 'admin' && 
-            location.pathname !== '/' && 
-            location.pathname !== '/sales') {
-          navigate('/sales');
+        if (initialSession?.user) {
+          console.log('AuthProvider: Fetching user profile...');
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', initialSession.user.id)
+            .single();
+          
+          if (profileError) {
+            console.error('AuthProvider: Error fetching profile:', profileError);
+          } else {
+            console.log('AuthProvider: Profile data:', profileData);
+            setUserRole(profileData?.role);
+            
+            // Redirect non-admin users to sales page if they try to access other pages
+            if (profileData?.role !== 'admin' && 
+                location.pathname !== '/' && 
+                location.pathname !== '/sales') {
+              navigate('/sales');
+            }
+          }
         }
+      } catch (error) {
+        console.error('AuthProvider: Error during initialization:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      if (session) {
-        const { data: profileData } = await supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('AuthProvider: Auth state changed:', event, currentSession);
+      
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .single();
         
-        setUserRole(profileData?.role);
-        
-        // Redirect non-admin users to sales page if they try to access other pages
-        if (profileData?.role !== 'admin' && 
-            location.pathname !== '/' && 
-            location.pathname !== '/sales') {
-          navigate('/sales');
+        if (profileError) {
+          console.error('AuthProvider: Error fetching profile on auth change:', profileError);
+        } else {
+          console.log('AuthProvider: Updated profile data:', profileData);
+          setUserRole(profileData?.role);
+          
+          // Redirect non-admin users to sales page if they try to access other pages
+          if (profileData?.role !== 'admin' && 
+              location.pathname !== '/' && 
+              location.pathname !== '/sales') {
+            navigate('/sales');
+          }
         }
       } else {
+        console.log('AuthProvider: No session, redirecting to home');
         navigate("/");
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('AuthProvider: Cleaning up subscription');
+      subscription.unsubscribe();
+    };
   }, [navigate, location.pathname]);
+
+  // Show loading state while initializing
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ session, loading, userRole }}>
