@@ -15,17 +15,12 @@ const Index = () => {
     password: "",
     confirmPassword: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
-    
-    setIsLoading(true);
     try {
-      console.log('Attempting login...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password,
@@ -41,34 +36,24 @@ const Index = () => {
         return;
       }
 
-      if (data?.session) {
-        console.log('Login successful, session:', data.session);
+      if (data.session) {
         toast.success("Login successful!");
-        navigate("/inventory");
-      } else {
-        console.error('No session after successful login');
-        toast.error("Login failed - no session created");
+        navigate("/inventory"); // Changed from /dashboard to /inventory
       }
     } catch (error) {
       console.error("Login error:", error);
       toast.error("An unexpected error occurred during login");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
-
     if (signupData.password !== signupData.confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    setIsLoading(true);
     try {
-      console.log('Attempting signup...');
       const { data, error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
@@ -80,23 +65,17 @@ const Index = () => {
         return;
       }
 
-      if (data?.user) {
-        console.log('Signup successful, user:', data.user);
+      if (data.user) {
         if (data.session) {
           toast.success("Account created successfully!");
           navigate("/dashboard");
         } else {
           toast.success("Please check your email to confirm your account");
         }
-      } else {
-        console.error('No user data after successful signup');
-        toast.error("Signup failed - no user created");
       }
     } catch (error) {
       console.error("Signup error:", error);
       toast.error("An unexpected error occurred during signup");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -126,7 +105,6 @@ const Index = () => {
                     placeholder="Enter your email"
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -138,12 +116,11 @@ const Index = () => {
                     placeholder="Enter your password"
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    disabled={isLoading}
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Sign In"}
+                <Button type="submit" className="w-full">
+                  Sign In
                 </Button>
               </form>
             </TabsContent>
@@ -158,7 +135,6 @@ const Index = () => {
                     placeholder="Enter your email"
                     value={signupData.email}
                     onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -170,7 +146,6 @@ const Index = () => {
                     placeholder="Choose a password"
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                    disabled={isLoading}
                     required
                   />
                 </div>
@@ -182,12 +157,11 @@ const Index = () => {
                     placeholder="Confirm your password"
                     value={signupData.confirmPassword}
                     onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
-                    disabled={isLoading}
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating Account..." : "Create Account"}
+                <Button type="submit" className="w-full">
+                  Create Account
                 </Button>
               </form>
             </TabsContent>

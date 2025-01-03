@@ -29,19 +29,14 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   
-  const { data: inventoryItems, isLoading: isInventoryLoading } = useQuery({
+  const { data: inventoryItems } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
-      console.log('Fetching inventory items for location:', selectedLocation);
       const { data, error } = await supabase
         .from('inventory list')
         .select('*')
         .eq('location', selectedLocation);
-      if (error) {
-        console.error('Error fetching inventory:', error);
-        throw error;
-      }
-      console.log('Inventory items fetched:', data);
+      if (error) throw error;
       return data;
     },
   });
@@ -67,11 +62,6 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        toast.error("Please login to record sales");
-        return;
-      }
-
       const selectedItem = inventoryItems?.find(
         item => item.id.toString() === data.itemId.toString()
       );
@@ -80,11 +70,11 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         itemId: data.itemId,
         quantity: data.quantity,
         selectedItem,
-        userId: user.id
+        userId: user?.id
       });
 
       await recordSale(
-        user.id,
+        user!.id,
         data.itemId,
         parsedQuantity,
         parseFloat(data.salePrice),
@@ -94,18 +84,13 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       toast.success("Sale recorded successfully");
       form.reset();
       onSuccess?.();
-      onOpenChange(false);
     } catch (error: any) {
-      console.error('Error recording sale:', error);
+      console.error('Error:', error);
       toast.error(error.message || "Failed to record sale");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  if (isInventoryLoading) {
-    return <div>Loading inventory...</div>;
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

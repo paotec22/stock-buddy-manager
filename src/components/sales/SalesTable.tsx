@@ -35,15 +35,11 @@ interface SalesTableProps {
 export function SalesTable({ sales }: SalesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: isAdmin, isLoading: isAdminLoading } = useQuery({
+  const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin'],
     queryFn: async () => {
-      console.log('Checking admin status...');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found');
-        return false;
-      }
+      if (!user) return false;
       
       const { data: profile } = await supabase
         .from('profiles')
@@ -51,7 +47,6 @@ export function SalesTable({ sales }: SalesTableProps) {
         .eq('id', user.id)
         .maybeSingle();
       
-      console.log('Profile data:', profile);
       return profile?.role === 'admin';
     }
   });
@@ -108,7 +103,7 @@ export function SalesTable({ sales }: SalesTableProps) {
             {filteredSales.map((sale) => (
               <TableRow key={sale.id}>
                 <TableCell>
-                  {!isAdminLoading && isAdmin ? (
+                  {isAdmin ? (
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
