@@ -15,12 +15,16 @@ const Index = () => {
     password: "",
     confirmPassword: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     try {
+      console.log("Attempting login with:", loginData.email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password,
@@ -28,7 +32,7 @@ const Index = () => {
 
       if (error) {
         console.error("Login error:", error);
-        if (error.message.includes('email_not_confirmed')) {
+        if (error.message.includes('Email not confirmed')) {
           toast.error("Please check your email to confirm your account");
         } else {
           toast.error(error.message || "Failed to login");
@@ -37,23 +41,49 @@ const Index = () => {
       }
 
       if (data.session) {
+        console.log("Login successful, session:", data.session);
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          toast.error("Error fetching user profile");
+          return;
+        }
+
+        console.log("User profile:", profileData);
         toast.success("Login successful!");
-        navigate("/inventory"); // Changed from /dashboard to /inventory
+        
+        // Redirect based on role
+        if (profileData?.role === 'admin') {
+          navigate("/inventory");
+        } else {
+          navigate("/sales");
+        }
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Unexpected login error:", error);
       toast.error("An unexpected error occurred during login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     if (signupData.password !== signupData.confirmPassword) {
       toast.error("Passwords do not match");
+      setIsLoading(false);
       return;
     }
 
     try {
+      console.log("Attempting signup with:", signupData.email);
       const { data, error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
@@ -67,15 +97,19 @@ const Index = () => {
 
       if (data.user) {
         if (data.session) {
+          console.log("Signup successful, session created:", data.session);
           toast.success("Account created successfully!");
-          navigate("/dashboard");
+          navigate("/sales");
         } else {
+          console.log("Signup successful, email confirmation required");
           toast.success("Please check your email to confirm your account");
         }
       }
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("Unexpected signup error:", error);
       toast.error("An unexpected error occurred during signup");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -106,6 +140,7 @@ const Index = () => {
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -117,10 +152,11 @@ const Index = () => {
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Sign In
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
             </TabsContent>
@@ -136,6 +172,7 @@ const Index = () => {
                     value={signupData.email}
                     onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -147,6 +184,7 @@ const Index = () => {
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -158,10 +196,11 @@ const Index = () => {
                     value={signupData.confirmPassword}
                     onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Create Account
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </form>
             </TabsContent>
