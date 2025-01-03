@@ -106,6 +106,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      upsert_inventory_item: {
+        Args: {
+          p_item_description: string
+          p_price: number
+          p_quantity: number
+          p_location?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
