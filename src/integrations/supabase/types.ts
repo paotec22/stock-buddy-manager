@@ -36,6 +36,42 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_assignments: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          id: number
+          profile_id: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          id?: number
+          profile_id?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          id?: number
+          profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_assignments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

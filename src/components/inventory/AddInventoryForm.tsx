@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useState } from "react";
-import { addInventoryItem, checkExistingItem, NewInventoryItem } from "@/utils/inventoryUtils";
+import { supabase } from "@/lib/supabase";
 
 interface AddInventoryFormProps {
   open: boolean;
@@ -39,23 +39,16 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
     try {
       const price = parseFloat(data.price);
       const quantity = parseInt(data.quantity);
-      const total = price * quantity;
 
-      const existingItem = await checkExistingItem(data.itemDescription, data.location);
-      if (existingItem) {
-        toast.error("This item already exists in the selected location");
-        return;
-      }
+      const { error } = await supabase.rpc('upsert_inventory_item', {
+        p_item_description: data.itemDescription,
+        p_price: price,
+        p_quantity: quantity,
+        p_location: data.location
+      });
 
-      const newItem: NewInventoryItem = {
-        "Item Description": data.itemDescription,
-        Price: price,
-        Quantity: quantity,
-        Total: total,
-        location: data.location
-      };
+      if (error) throw error;
 
-      await addInventoryItem(newItem);
       toast.success("Item added to inventory");
       form.reset();
       onOpenChange(false);
