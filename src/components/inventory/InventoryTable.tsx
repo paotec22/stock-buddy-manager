@@ -82,8 +82,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
               size="sm"
               onClick={handleBulkDelete}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              <div className="flex items-center">
+                <Trash2 className="h-4 w-4 mr-2" />
+                <span>Delete</span>
+              </div>
             </Button>
           </div>
         )}
@@ -166,8 +168,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
             size="sm"
             onClick={handleBulkDelete}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Selected
+            <div className="flex items-center">
+              <Trash2 className="h-4 w-4 mr-2" />
+              <span>Delete Selected</span>
+            </div>
           </Button>
         </div>
       )}
