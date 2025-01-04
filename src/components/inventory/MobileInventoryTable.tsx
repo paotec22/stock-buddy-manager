@@ -37,10 +37,10 @@ export function MobileInventoryTable({
             size="sm"
             onClick={handleBulkDelete}
           >
-            <div className="flex items-center">
-              <Trash2 className="h-4 w-4 mr-2" />
-              <span>Delete</span>
-            </div>
+            <span className="flex items-center gap-2">
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </span>
           </Button>
         </div>
       )}
@@ -64,6 +64,7 @@ export function MobileInventoryTable({
                 size="icon"
                 onClick={() => onDelete(item)}
               >
+                <span className="sr-only">Delete item</span>
                 <Trash className="h-4 w-4 text-red-500" />
               </Button>
             </div>
@@ -92,6 +93,7 @@ export function MobileInventoryTable({
                       size="icon"
                       onClick={() => setEditingPrice({ ...editingPrice, [item["Item Description"]]: true })}
                     >
+                      <span className="sr-only">Edit price</span>
                       <Edit2 className="h-4 w-4" />
                     </Button>
                   </div>
