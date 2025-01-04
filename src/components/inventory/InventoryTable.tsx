@@ -61,7 +61,6 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
   };
 
   const handlePriceEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-    if (!e.currentTarget) return;
     const newPrice = parseFloat(e.currentTarget.value);
     if (!isNaN(newPrice)) {
       await onPriceEdit(item, newPrice);
@@ -79,8 +78,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
             size="sm"
             onClick={handleBulkDelete}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Selected
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-4 w-4" />
+              <span>Delete Selected</span>
+            </div>
           </Button>
         </div>
       )}
@@ -137,7 +138,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                         size="icon"
                         onClick={() => setEditingPrice({ ...editingPrice, [item["Item Description"]]: true })}
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <div className="flex items-center">
+                          <Edit2 className="h-4 w-4" />
+                          <span className="sr-only">Edit price</span>
+                        </div>
                       </Button>
                     </div>
                   )}
@@ -150,7 +154,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                     size="icon"
                     onClick={() => onDelete(item)}
                   >
-                    <Trash className="h-4 w-4 text-red-500" />
+                    <div className="flex items-center">
+                      <Trash className="h-4 w-4 text-red-500" />
+                      <span className="sr-only">Delete item</span>
+                    </div>
                   </Button>
                 </TableCell>
               </TableRow>
