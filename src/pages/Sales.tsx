@@ -8,9 +8,10 @@ import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, ArrowLeft, ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Sale {
   id: string;
@@ -27,6 +28,7 @@ const Sales = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Check authentication
   if (loading) {
@@ -92,15 +94,44 @@ const Sales = () => {
             <h1 className="text-2xl font-bold">Sales Management</h1>
             <div className="flex gap-2">
               <Button onClick={() => setShowBulkUpload(true)} variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Upload
+                <div className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  <span>Bulk Upload</span>
+                </div>
               </Button>
               <Button onClick={() => setShowAddSale(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Record Sale
+                <div className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Record Sale</span>
+                </div>
               </Button>
             </div>
           </div>
+
+          {isMobile && (
+            <div className="flex justify-between mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/inventory')}
+              >
+                <div className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Inventory</span>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/reports')}
+              >
+                <div className="flex items-center gap-2">
+                  <span>Reports</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </Button>
+            </div>
+          )}
 
           <div className="grid gap-6 mb-6">
             <div className="space-y-4">

@@ -9,6 +9,10 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useInventoryRealtime } from "@/hooks/useInventoryRealtime";
 import type { InventoryItem } from "@/utils/inventoryUtils";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -16,6 +20,8 @@ const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const fetchInventoryItems = async () => {
     try {
@@ -78,7 +84,7 @@ const Inventory = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col md:flex-row w-full">
+      <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 p-4 md:p-6">
           <InventoryHeader
@@ -87,6 +93,31 @@ const Inventory = () => {
             onAddItem={() => setShowAddForm(true)}
             onBulkUpload={() => setShowBulkUpload(true)}
           />
+
+          {isMobile && (
+            <div className="flex justify-between mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+              >
+                <div className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/sales')}
+              >
+                <div className="flex items-center gap-2">
+                  <span>Sales</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </Button>
+            </div>
+          )}
 
           <AddInventoryForm 
             open={showAddForm} 
