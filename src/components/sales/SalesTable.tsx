@@ -113,8 +113,10 @@ export function SalesTable({ sales }: SalesTableProps) {
                             !sale.sale_date && "text-muted-foreground"
                           )}
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {format(new Date(sale.sale_date), "PPP")}
+                          <div className="flex items-center gap-2">
+                            <CalendarIcon className="h-4 w-4" />
+                            <span>{format(new Date(sale.sale_date), "PPP")}</span>
+                          </div>
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
