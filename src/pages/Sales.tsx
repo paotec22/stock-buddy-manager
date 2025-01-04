@@ -24,6 +24,7 @@ interface Sale {
 }
 
 const Sales = () => {
+  // All hooks are declared at the top of the component
   const [showAddSale, setShowAddSale] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const { session, loading } = useAuth();
@@ -70,7 +71,7 @@ const Sales = () => {
     enabled: !!session // Only run query if session exists
   });
 
-  // Handle loading and authentication states
+  // Handle loading and authentication states after all hooks
   if (loading) {
     return <div>Loading...</div>;
   }
