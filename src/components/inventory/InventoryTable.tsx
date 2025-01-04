@@ -16,6 +16,7 @@ interface InventoryTableProps {
 
 export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableProps) {
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
+  const [editingQuantity, setEditingQuantity] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
   const formatCurrency = (amount: number) => {
@@ -65,6 +66,29 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
     if (!isNaN(newPrice)) {
       await onPriceEdit(item, newPrice);
       setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
+    }
+  };
+
+  const handleQuantityEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    const newQuantity = parseInt(e.currentTarget.value);
+    if (!isNaN(newQuantity)) {
+      try {
+        const { error } = await supabase
+          .from('inventory list')
+          .update({ 
+            Quantity: newQuantity,
+            Total: item.Price * newQuantity 
+          })
+          .eq('id', item.id);
+
+        if (error) throw error;
+        toast.success("Quantity updated successfully");
+        setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: false });
+        window.location.reload();
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        toast.error("Failed to update quantity");
+      }
     }
   };
 
@@ -146,7 +170,36 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                     </div>
                   )}
                 </TableCell>
-                <TableCell>{item.Quantity}</TableCell>
+                <TableCell>
+                  {editingQuantity[item["Item Description"]] ? (
+                    <Input
+                      type="number"
+                      defaultValue={item.Quantity}
+                      className="w-24"
+                      autoFocus
+                      onBlur={(e) => handleQuantityEdit(item, e)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleQuantityEdit(item, e);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <span>{item.Quantity}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
+                      >
+                        <div className="flex items-center">
+                          <Edit2 className="h-4 w-4" />
+                          <span className="sr-only">Edit quantity</span>
+                        </div>
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{formatCurrency(item.Total)}</TableCell>
                 <TableCell>
                   <Button
