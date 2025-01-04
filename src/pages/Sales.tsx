@@ -9,6 +9,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Plus, Upload } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 
 interface Sale {
   id: string;
@@ -23,6 +25,19 @@ interface Sale {
 const Sales = () => {
   const [showAddSale, setShowAddSale] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Check authentication
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    console.log("No session found, redirecting to home");
+    navigate("/");
+    return null;
+  }
 
   const { data: sales = [], isLoading, refetch } = useQuery({
     queryKey: ['sales'],
@@ -57,11 +72,16 @@ const Sales = () => {
         sale_price: sale.sale_price,
         total_amount: sale.total_amount,
         sale_date: sale.sale_date,
-        item_name: sale["inventory list"]["Item Description"],
-        location: sale["inventory list"].location
+        item_name: sale["inventory list"]?.["Item Description"] || "Unknown Item",
+        location: sale["inventory list"]?.location || "Unknown Location"
       })) as Sale[];
     },
+    enabled: !!session // Only run query if session exists
   });
+
+  if (isLoading) {
+    return <div>Loading sales data...</div>;
+  }
 
   return (
     <SidebarProvider>
@@ -89,14 +109,10 @@ const Sales = () => {
             </div>
           </div>
 
-          {isLoading ? (
-            <div>Loading sales data...</div>
-          ) : (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Sales Details</h2>
-              <SalesTable sales={sales} />
-            </div>
-          )}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Sales Details</h2>
+            <SalesTable sales={sales} />
+          </div>
 
           <AddSaleForm
             open={showAddSale}
