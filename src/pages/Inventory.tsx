@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useInventoryRealtime } from "@/hooks/useInventoryRealtime";
 import type { InventoryItem } from "@/utils/inventoryUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -16,6 +17,7 @@ const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
+  const isMobile = useIsMobile();
 
   const fetchInventoryItems = async () => {
     try {
@@ -80,7 +82,7 @@ const Inventory = () => {
     <SidebarProvider>
       <div className="min-h-screen flex flex-col md:flex-row w-full">
         <AppSidebar />
-        <main className="flex-1 p-4 md:p-6">
+        <main className={`flex-1 p-4 ${isMobile ? 'pt-20' : 'md:p-6'}`}>
           <InventoryHeader
             selectedLocation={selectedLocation}
             onLocationChange={setSelectedLocation}
@@ -102,11 +104,13 @@ const Inventory = () => {
           {loading ? (
             <div className="p-6 text-center">Loading inventory...</div>
           ) : inventoryItems.length > 0 ? (
-            <InventoryTable
-              items={inventoryItems}
-              onPriceEdit={handlePriceEdit}
-              onDelete={handleDelete}
-            />
+            <div className="overflow-hidden">
+              <InventoryTable
+                items={inventoryItems}
+                onPriceEdit={handlePriceEdit}
+                onDelete={handleDelete}
+              />
+            </div>
           ) : (
             <div className="p-6">
               <p className="text-muted-foreground">No inventory items yet.</p>
