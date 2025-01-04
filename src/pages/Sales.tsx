@@ -30,17 +30,6 @@ const Sales = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Check authentication
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    console.log("No session found, redirecting to home");
-    navigate("/");
-    return null;
-  }
-
   const { data: sales = [], isLoading, refetch } = useQuery({
     queryKey: ['sales'],
     queryFn: async () => {
@@ -80,6 +69,17 @@ const Sales = () => {
     },
     enabled: !!session // Only run query if session exists
   });
+
+  // Handle loading and authentication states
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    console.log("No session found, redirecting to home");
+    navigate("/");
+    return null;
+  }
 
   if (isLoading) {
     return <div>Loading sales data...</div>;
