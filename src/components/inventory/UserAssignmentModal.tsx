@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 
 interface UserAssignmentModalProps {
   open: boolean;
@@ -16,6 +17,8 @@ interface Profile {
 }
 
 export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalProps) {
+  const { session } = useAuth();
+  
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['profiles'],
     queryFn: async () => {
@@ -51,7 +54,10 @@ export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalP
       } else {
         const { error } = await supabase
           .from('profile_assignments')
-          .insert({ profile_id: profileId });
+          .insert({ 
+            profile_id: profileId,
+            assigned_by: session?.user?.id 
+          });
         if (error) throw error;
         toast.success('User assigned successfully');
       }
