@@ -5,6 +5,7 @@ import { AddSaleForm } from "@/components/sales/AddSaleForm";
 import { BulkSaleUploadModal } from "@/components/sales/BulkSaleUploadModal";
 import { SalesTable } from "@/components/sales/SalesTable";
 import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
+import { TotalSalesSummary } from "@/components/sales/TotalSalesSummary";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -24,7 +25,6 @@ interface Sale {
 }
 
 const Sales = () => {
-  // All hooks are declared at the top of the component
   const [showAddSale, setShowAddSale] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const { session, loading } = useAuth();
@@ -68,10 +68,9 @@ const Sales = () => {
         location: sale["inventory list"]?.location || "Unknown Location"
       })) as Sale[];
     },
-    enabled: !!session // Only run query if session exists
+    enabled: !!session
   });
 
-  // Handle loading and authentication states after all hooks
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -135,6 +134,7 @@ const Sales = () => {
           )}
 
           <div className="grid gap-6 mb-6">
+            <TotalSalesSummary />
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">Sales Summary</h2>
               <SalesSummaryTable sales={sales} />
