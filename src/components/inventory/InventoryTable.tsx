@@ -17,6 +17,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
   const [editingQuantity, setEditingQuantity] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -42,21 +43,30 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
   };
 
   const handleBulkDelete = async () => {
-    if (!selectedItems.length) return;
+    if (!selectedItems.length || isDeleting) return;
 
     try {
+      setIsDeleting(true);
+      console.log("Starting bulk delete operation for items:", selectedItems);
+
       const { error } = await supabase.rpc('delete_multiple_inventory_items', {
         item_ids: selectedItems
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error in bulk delete operation:", error);
+        throw error;
+      }
 
+      console.log("Bulk delete operation completed successfully");
       toast.success(`Successfully deleted ${selectedItems.length} items`);
       setSelectedItems([]);
       window.location.reload();
     } catch (error) {
       console.error('Error deleting items:', error);
       toast.error("Failed to delete items");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -64,6 +74,8 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
     const newQuantity = parseInt(e.currentTarget.value);
     if (!isNaN(newQuantity)) {
       try {
+        console.log("Updating quantity for item:", item.id, "New quantity:", newQuantity);
+        
         const { error } = await supabase
           .from('inventory list')
           .update({ 
@@ -73,6 +85,8 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
           .eq('id', item.id);
 
         if (error) throw error;
+        
+        console.log("Quantity update successful");
         toast.success("Quantity updated successfully");
         setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: false });
         window.location.reload();
@@ -88,6 +102,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
       <InventoryTableActions 
         selectedItems={selectedItems}
         onBulkDelete={handleBulkDelete}
+        isDeleting={isDeleting}
       />
       
       <div className="overflow-x-auto rounded-lg border bg-card">

@@ -4,9 +4,10 @@ import { Trash2 } from "lucide-react";
 interface InventoryTableActionsProps {
   selectedItems: number[];
   onBulkDelete: () => Promise<void>;
+  isDeleting: boolean;
 }
 
-export function InventoryTableActions({ selectedItems, onBulkDelete }: InventoryTableActionsProps) {
+export function InventoryTableActions({ selectedItems, onBulkDelete, isDeleting }: InventoryTableActionsProps) {
   if (selectedItems.length === 0) return null;
 
   return (
@@ -17,10 +18,11 @@ export function InventoryTableActions({ selectedItems, onBulkDelete }: Inventory
         size="sm"
         className="h-8 sm:h-9 text-xs sm:text-sm px-2 sm:px-4"
         onClick={onBulkDelete}
+        disabled={isDeleting}
       >
         <div className="flex items-center gap-2">
           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-          <span>Delete Selected</span>
+          <span>{isDeleting ? "Deleting..." : "Delete Selected"}</span>
         </div>
       </Button>
     </div>
