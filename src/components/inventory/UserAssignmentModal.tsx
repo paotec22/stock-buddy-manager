@@ -17,9 +17,9 @@ interface Profile {
 }
 
 export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalProps) {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles, isLoading: profilesLoading } = useQuery({
     queryKey: ['profiles'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -29,9 +29,10 @@ export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalP
       if (error) throw error;
       return data as Profile[];
     },
+    enabled: !!session, // Only fetch when session exists
   });
 
-  const { data: assignments } = useQuery({
+  const { data: assignments, isLoading: assignmentsLoading } = useQuery({
     queryKey: ['profile_assignments'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -40,9 +41,15 @@ export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalP
       if (error) throw error;
       return new Set(data.map(a => a.profile_id));
     },
+    enabled: !!session, // Only fetch when session exists
   });
 
   const handleAssignment = async (profileId: string, isAssigned: boolean) => {
+    if (!session?.user?.id) {
+      toast.error('You must be logged in to manage assignments');
+      return;
+    }
+
     try {
       if (isAssigned) {
         const { error } = await supabase
@@ -56,7 +63,7 @@ export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalP
           .from('profile_assignments')
           .insert({ 
             profile_id: profileId,
-            assigned_by: session?.user?.id 
+            assigned_by: session.user.id 
           });
         if (error) throw error;
         toast.success('User assigned successfully');
@@ -67,6 +74,33 @@ export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalP
     }
   };
 
+  // Show loading state while auth is being checked
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Loading...</DialogTitle>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show error if not authenticated
+  if (!session) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Authentication Required</DialogTitle>
+          </DialogHeader>
+          <p>You must be logged in to manage user assignments.</p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -74,7 +108,7 @@ export function UserAssignmentModal({ open, onOpenChange }: UserAssignmentModalP
           <DialogTitle>Manage User Assignments</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          {isLoading ? (
+          {(profilesLoading || assignmentsLoading) ? (
             <p>Loading users...</p>
           ) : (
             <div className="space-y-2">
