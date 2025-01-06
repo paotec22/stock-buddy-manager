@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 export function TotalSalesSummary() {
-  const { data: totalSales } = useQuery({
+  const { data: totalSales, isLoading, error } = useQuery({
     queryKey: ['totalSales'],
     queryFn: async () => {
       console.log('Fetching total sales data...');
@@ -14,6 +14,11 @@ export function TotalSalesSummary() {
       if (error) {
         console.error('Error fetching total sales:', error);
         throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No sales data found');
+        return [];
       }
 
       // Process the sales data to get monthly totals
@@ -43,6 +48,33 @@ export function TotalSalesSummary() {
     }).format(amount);
   };
 
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
+        <div>Loading sales data...</div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
+        <div className="text-red-500">Error loading sales data. Please try again later.</div>
+      </Card>
+    );
+  }
+
+  if (!totalSales || totalSales.length === 0) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
+        <div>No sales data available.</div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6">
       <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
@@ -53,7 +85,7 @@ export function TotalSalesSummary() {
           <div>Cumulative Total</div>
         </div>
         <div className="space-y-2">
-          {totalSales?.map((sale, index) => (
+          {totalSales.map((sale, index) => (
             <div key={index} className="grid grid-cols-3">
               <div>{sale.month}</div>
               <div>{formatCurrency(sale.monthlyTotal)}</div>
