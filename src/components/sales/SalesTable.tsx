@@ -114,7 +114,7 @@ export function SalesTable({ sales }: SalesTableProps) {
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {format(new Date(sale.sale_date), "PPP")}
+                          {format(new Date(sale.sale_date), "dd/MM/yy")}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -127,7 +127,7 @@ export function SalesTable({ sales }: SalesTableProps) {
                       </PopoverContent>
                     </Popover>
                   ) : (
-                    format(new Date(sale.sale_date), "PPP")
+                    format(new Date(sale.sale_date), "dd/MM/yy")
                   )}
                 </TableCell>
                 <TableCell>{sale.item_name}</TableCell>
