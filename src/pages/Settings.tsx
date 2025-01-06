@@ -1,72 +1,51 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { useAuth } from "@/components/AuthProvider";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { UserAssignmentModal } from "@/components/inventory/UserAssignmentModal";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Users } from "lucide-react";
+import { toast } from "sonner";
 
 const Settings = () => {
-  const { session } = useAuth();
   const navigate = useNavigate();
-  const [showUserModal, setShowUserModal] = useState(false);
 
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ['isAdmin'],
     queryFn: async () => {
-      if (!session?.user?.id) return false;
+      console.log("Checking admin status...");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
       
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', session.user.id)
+        .eq('id', user.id)
         .maybeSingle();
       
+      console.log("Admin check result:", profile?.role === 'admin');
       return profile?.role === 'admin';
-    },
-    enabled: !!session
+    }
   });
 
-  // Redirect non-admin users
-  if (!isLoading && !isAdmin) {
-    navigate('/dashboard');
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      console.log("Non-admin user attempting to access settings, redirecting...");
+      toast.error("You don't have permission to access this page");
+      navigate("/dashboard");
+    }
+  }, [isAdmin, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (!isAdmin) {
     return null;
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Settings</h1>
-          
-          <div className="space-y-6">
-            <div className="border rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">User Management</h2>
-              <Button 
-                onClick={() => setShowUserModal(true)}
-                className="flex items-center gap-2"
-              >
-                <Users className="h-4 w-4" />
-                Manage Users
-              </Button>
-            </div>
-          </div>
-
-          <UserAssignmentModal 
-            open={showUserModal} 
-            onOpenChange={setShowUserModal} 
-          />
-        </main>
-      </div>
-    </SidebarProvider>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      {/* Add your settings content here */}
+    </div>
   );
 };
 

@@ -1,12 +1,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit2, Trash, Trash2 } from "lucide-react";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { InventoryTableActions } from "./table/InventoryTableActions";
+import { DeleteCell, EditableCell } from "./table/InventoryTableCell";
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -61,14 +60,6 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
     }
   };
 
-  const handlePriceEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-    const newPrice = parseFloat(e.currentTarget.value);
-    if (!isNaN(newPrice)) {
-      await onPriceEdit(item, newPrice);
-      setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
-    }
-  };
-
   const handleQuantityEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
     const newQuantity = parseInt(e.currentTarget.value);
     if (!isNaN(newQuantity)) {
@@ -94,21 +85,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
 
   return (
     <div className="space-y-4">
-      {selectedItems.length > 0 && (
-        <div className="flex items-center justify-between bg-muted p-2 rounded-md">
-          <span>{selectedItems.length} items selected</span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleBulkDelete}
-          >
-            <div className="flex items-center gap-2">
-              <Trash2 className="h-4 w-4" />
-              <span>Delete Selected</span>
-            </div>
-          </Button>
-        </div>
-      )}
+      <InventoryTableActions 
+        selectedItems={selectedItems}
+        onBulkDelete={handleBulkDelete}
+      />
       
       <div className="overflow-x-auto rounded-lg border bg-card">
         <Table>
@@ -120,11 +100,11 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
                 />
               </TableHead>
-              <TableHead>Item Description</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
+              <TableHead className="text-xs sm:text-sm">Price</TableHead>
+              <TableHead className="text-xs sm:text-sm">Quantity</TableHead>
+              <TableHead className="text-xs sm:text-sm">Total</TableHead>
+              <TableHead className="text-xs sm:text-sm">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,80 +119,25 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
                   />
                 </TableCell>
-                <TableCell className="min-w-[200px]">{item["Item Description"]}</TableCell>
+                <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>
                 <TableCell>
-                  {editingPrice[item["Item Description"]] ? (
-                    <Input
-                      type="number"
-                      defaultValue={item.Price}
-                      className="w-24"
-                      autoFocus
-                      onBlur={(e) => handlePriceEdit(item, e)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handlePriceEdit(item, e);
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <span>{formatCurrency(item.Price)}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingPrice({ ...editingPrice, [item["Item Description"]]: true })}
-                      >
-                        <div className="flex items-center">
-                          <Edit2 className="h-4 w-4" />
-                          <span className="sr-only">Edit price</span>
-                        </div>
-                      </Button>
-                    </div>
-                  )}
+                  <EditableCell
+                    isEditing={editingPrice[item["Item Description"]]}
+                    value={item.Price}
+                    onEdit={(e) => onPriceEdit(item, parseFloat(e.currentTarget.value))}
+                    onStartEdit={() => setEditingPrice({ ...editingPrice, [item["Item Description"]]: true })}
+                  />
                 </TableCell>
                 <TableCell>
-                  {editingQuantity[item["Item Description"]] ? (
-                    <Input
-                      type="number"
-                      defaultValue={item.Quantity}
-                      className="w-24"
-                      autoFocus
-                      onBlur={(e) => handleQuantityEdit(item, e)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleQuantityEdit(item, e);
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <span>{item.Quantity}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
-                      >
-                        <div className="flex items-center">
-                          <Edit2 className="h-4 w-4" />
-                          <span className="sr-only">Edit quantity</span>
-                        </div>
-                      </Button>
-                    </div>
-                  )}
+                  <EditableCell
+                    isEditing={editingQuantity[item["Item Description"]]}
+                    value={item.Quantity}
+                    onEdit={(e) => handleQuantityEdit(item, e)}
+                    onStartEdit={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
+                  />
                 </TableCell>
-                <TableCell>{formatCurrency(item.Total)}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(item)}
-                  >
-                    <div className="flex items-center">
-                      <Trash className="h-4 w-4 text-red-500" />
-                      <span className="sr-only">Delete item</span>
-                    </div>
-                  </Button>
-                </TableCell>
+                <TableCell className="text-xs sm:text-sm">{formatCurrency(item.Total)}</TableCell>
+                <DeleteCell onDelete={() => onDelete(item)} />
               </TableRow>
             ))}
           </TableBody>
