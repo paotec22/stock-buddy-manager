@@ -3,13 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 export function TotalSalesSummary() {
+  const currentYear = new Date().getFullYear();
+
   const { data: totalSales, isLoading, error } = useQuery({
-    queryKey: ['totalSales'],
+    queryKey: ['totalSales', currentYear],
     queryFn: async () => {
-      console.log('Fetching total sales data...');
+      console.log(`Fetching total sales data for year ${currentYear}...`);
+      const startDate = `${currentYear}-01-01`;
+      const endDate = `${currentYear}-12-31`;
+
       const { data, error } = await supabase
         .from('sales')
-        .select('total_amount, sale_date');
+        .select('total_amount, sale_date')
+        .gte('sale_date', startDate)
+        .lte('sale_date', endDate);
       
       if (error) {
         console.error('Error fetching total sales:', error);
@@ -17,27 +24,15 @@ export function TotalSalesSummary() {
       }
 
       if (!data || data.length === 0) {
-        console.log('No sales data found');
-        return [];
+        console.log('No sales data found for current year');
+        return { totalAmount: 0, year: currentYear };
       }
 
-      // Process the sales data to get monthly totals
-      const monthlyTotals = data.reduce((acc: { [key: string]: number }, sale) => {
-        const monthYear = new Date(sale.sale_date).toLocaleString('default', { month: 'long', year: 'numeric' });
-        acc[monthYear] = (acc[monthYear] || 0) + Number(sale.total_amount);
-        return acc;
-      }, {});
+      // Calculate total for the current year
+      const totalAmount = data.reduce((sum, sale) => sum + Number(sale.total_amount), 0);
+      console.log(`Total sales for ${currentYear}: ${totalAmount}`);
 
-      // Calculate cumulative totals
-      let runningTotal = 0;
-      const cumulativeTotals = Object.entries(monthlyTotals)
-        .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-        .map(([month, total]) => {
-          runningTotal += total;
-          return { month, monthlyTotal: total, cumulativeTotal: runningTotal };
-        });
-
-      return cumulativeTotals;
+      return { totalAmount, year: currentYear };
     }
   });
 
@@ -51,7 +46,7 @@ export function TotalSalesSummary() {
   if (isLoading) {
     return (
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
+        <h2 className="text-lg font-semibold mb-4">Current Year Sales Summary</h2>
         <div>Loading sales data...</div>
       </Card>
     );
@@ -60,38 +55,18 @@ export function TotalSalesSummary() {
   if (error) {
     return (
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
+        <h2 className="text-lg font-semibold mb-4">Current Year Sales Summary</h2>
         <div className="text-red-500">Error loading sales data. Please try again later.</div>
-      </Card>
-    );
-  }
-
-  if (!totalSales || totalSales.length === 0) {
-    return (
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
-        <div>No sales data available.</div>
       </Card>
     );
   }
 
   return (
     <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-4">Cumulative Sales Summary</h2>
+      <h2 className="text-lg font-semibold mb-4">Current Year Sales Summary</h2>
       <div className="space-y-4">
-        <div className="grid grid-cols-3 font-semibold border-b pb-2">
-          <div>Month</div>
-          <div>Monthly Total</div>
-          <div>Cumulative Total</div>
-        </div>
-        <div className="space-y-2">
-          {totalSales.map((sale, index) => (
-            <div key={index} className="grid grid-cols-3">
-              <div>{sale.month}</div>
-              <div>{formatCurrency(sale.monthlyTotal)}</div>
-              <div>{formatCurrency(sale.cumulativeTotal)}</div>
-            </div>
-          ))}
+        <div className="text-2xl font-bold">
+          Total Sales for {totalSales?.year}: {formatCurrency(totalSales?.totalAmount || 0)}
         </div>
       </div>
     </Card>

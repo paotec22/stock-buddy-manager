@@ -9,7 +9,7 @@ import { TotalSalesSummary } from "@/components/sales/TotalSalesSummary";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Plus, Upload, ArrowLeft, ArrowRight } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,6 +23,29 @@ interface Sale {
   item_name: string;
   location: string;
 }
+
+const SalesHeader = ({ onAddSale, onBulkUpload }: { 
+  onAddSale: () => void;
+  onBulkUpload: () => void;
+}) => (
+  <div className="flex justify-between items-center mb-6">
+    <h1 className="text-2xl font-bold">Sales Management</h1>
+    <div className="flex gap-2">
+      <Button onClick={onBulkUpload} variant="outline">
+        <div className="flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          <span>Bulk Upload</span>
+        </div>
+      </Button>
+      <Button onClick={onAddSale}>
+        <div className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          <span>Record Sale</span>
+        </div>
+      </Button>
+    </div>
+  </div>
+);
 
 const Sales = () => {
   const [showAddSale, setShowAddSale] = useState(false);
@@ -90,48 +113,10 @@ const Sales = () => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Sales Management</h1>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowBulkUpload(true)} variant="outline">
-                <div className="flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  <span>Bulk Upload</span>
-                </div>
-              </Button>
-              <Button onClick={() => setShowAddSale(true)}>
-                <div className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Record Sale</span>
-                </div>
-              </Button>
-            </div>
-          </div>
-
-          {isMobile && (
-            <div className="flex justify-between mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/inventory')}
-              >
-                <div className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Inventory</span>
-                </div>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/reports')}
-              >
-                <div className="flex items-center gap-2">
-                  <span>Reports</span>
-                  <ArrowRight className="h-4 w-4" />
-                </div>
-              </Button>
-            </div>
-          )}
+          <SalesHeader 
+            onAddSale={() => setShowAddSale(true)}
+            onBulkUpload={() => setShowBulkUpload(true)}
+          />
 
           <div className="grid gap-6 mb-6">
             <TotalSalesSummary />
