@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action_type: string
+          amount: number | null
+          created_at: string
+          id: number
+          item_description: string | null
+          location: string | null
+          quantity: number | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          amount?: number | null
+          created_at?: string
+          id?: number
+          item_description?: string | null
+          location?: string | null
+          quantity?: number | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          amount?: number | null
+          created_at?: string
+          id?: number
+          item_description?: string | null
+          location?: string | null
+          quantity?: number | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       "inventory list": {
         Row: {
           id: number
