@@ -50,22 +50,15 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
       console.log("Starting bulk delete operation for items:", selectedItems);
 
       // Get the location of the first selected item to ensure we're only deleting from one location
-      const { data: firstItem } = await supabase
-        .from('inventory list')
-        .select('location')
-        .eq('id', selectedItems[0])
-        .single();
-
+      const firstItem = items.find(item => item.id === selectedItems[0]);
       if (!firstItem) {
-        throw new Error('Could not determine location for deletion');
+        throw new Error('Could not find selected item');
       }
 
-      // Delete items only from the same location
       const { error } = await supabase
-        .from('inventory list')
-        .delete()
-        .in('id', selectedItems)
-        .eq('location', firstItem.location);
+        .rpc('delete_multiple_inventory_items', {
+          item_ids: selectedItems
+        });
 
       if (error) {
         console.error("Error in bulk delete operation:", error);
@@ -97,7 +90,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
             Total: item.Price * newQuantity 
           })
           .eq('id', item.id)
-          .eq('location', item.location); // Add location check
+          .eq('location', item.location);
 
         if (error) throw error;
         

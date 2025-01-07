@@ -54,11 +54,12 @@ const Inventory = () => {
           Price: newPrice,
           Total: newPrice * item.Quantity 
         })
-        .eq('Item Description', item["Item Description"])
+        .eq('id', item.id)
         .eq('location', item.location);
 
       if (error) throw error;
       await fetchInventoryItems();
+      toast.success("Price updated successfully");
     } catch (error) {
       console.error('Error updating price:', error);
       toast.error("Failed to update price");
@@ -70,7 +71,7 @@ const Inventory = () => {
       const { error } = await supabase
         .from('inventory list')
         .delete()
-        .eq('Item Description', item["Item Description"])
+        .eq('id', item.id)
         .eq('location', item.location);
 
       if (error) throw error;
