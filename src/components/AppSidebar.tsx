@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "./ThemeToggle";
 
 const menuItems = [
   { title: "Inventory", icon: Box, path: "/inventory" },
@@ -54,6 +55,9 @@ export function AppSidebar() {
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <ThemeToggle />
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
