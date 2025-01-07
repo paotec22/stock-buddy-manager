@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -83,6 +84,17 @@ const Inventory = () => {
     }
   };
 
+  const calculateGrandTotal = () => {
+    return inventoryItems.reduce((sum, item) => sum + (item.Total || 0), 0);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -130,6 +142,19 @@ const Inventory = () => {
             onOpenChange={setShowBulkUpload} 
             onDataUpload={fetchInventoryItems}
           />
+
+          {!loading && inventoryItems.length > 0 && (
+            <Card className="mb-4">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Grand Total for {selectedLocation}</h3>
+                  <p className="text-2xl font-bold text-primary">
+                    {formatCurrency(calculateGrandTotal())}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {loading ? (
             <div className="p-6 text-center">Loading inventory...</div>
