@@ -52,23 +52,37 @@ const Reports = () => {
     queryKey: ['location-sales'],
     queryFn: async () => {
       console.log('Fetching location sales...');
-      const { data, error } = await supabase
+      // First, get all sales with their associated inventory items
+      const { data: salesData, error: salesError } = await supabase
         .from('sales')
         .select(`
           total_amount,
-          inventory_list:inventory list (
-            location
-          )
+          item_id
         `);
 
-      if (error) {
-        console.error('Error fetching location sales:', error);
-        throw error;
+      if (salesError) {
+        console.error('Error fetching sales:', salesError);
+        throw salesError;
       }
 
+      // Then, get all inventory items to map locations
+      const { data: inventoryData, error: inventoryError } = await supabase
+        .from('inventory list')
+        .select('id, location');
+
+      if (inventoryError) {
+        console.error('Error fetching inventory:', inventoryError);
+        throw inventoryError;
+      }
+
+      // Create a map of inventory IDs to locations
+      const locationMap = new Map(
+        inventoryData.map((item) => [item.id, item.location])
+      );
+
       // Aggregate sales by location
-      const salesByLocation = data.reduce((acc: { [key: string]: number }, sale) => {
-        const location = sale.inventory_list?.location || 'Unknown';
+      const salesByLocation = salesData.reduce((acc: { [key: string]: number }, sale) => {
+        const location = locationMap.get(sale.item_id) || 'Unknown';
         acc[location] = (acc[location] || 0) + (sale.total_amount || 0);
         return acc;
       }, {});
