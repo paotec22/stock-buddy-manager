@@ -4,6 +4,7 @@ import {
   FileText,
   Settings,
   LogOut,
+  Receipt,
 } from "lucide-react";
 import {
   Sidebar,
@@ -21,6 +22,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const menuItems = [
   { title: "Inventory", icon: Box, path: "/inventory" },
   { title: "Sales", icon: BarChart3, path: "/sales" },
+  { title: "Expenses", icon: Receipt, path: "/expenses" },
   { title: "Reports", icon: FileText, path: "/reports" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];

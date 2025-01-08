@@ -125,7 +125,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
             {items.map((item) => (
               <TableRow 
                 key={item.id}
-                className={item.Quantity < 1 ? "bg-transparent dark:bg-transparent" : ""}
+                className={item.Quantity < 1 ? "bg-red-100/50 dark:bg-red-950/30" : ""}
               >
                 <TableCell>
                   <Checkbox
