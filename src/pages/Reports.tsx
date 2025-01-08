@@ -29,6 +29,12 @@ interface LocationSales {
   total_sales: number;
 }
 
+interface MonthlyExpense {
+  month: string;
+  category: string;
+  total_amount: number;
+}
+
 const Reports = () => {
   const { data: activityLogs, isLoading: isLoadingLogs } = useQuery({
     queryKey: ['activity-logs'],
@@ -52,7 +58,6 @@ const Reports = () => {
     queryKey: ['location-sales'],
     queryFn: async () => {
       console.log('Fetching location sales...');
-      // First, get all sales with their associated inventory items
       const { data: salesData, error: salesError } = await supabase
         .from('sales')
         .select(`
@@ -65,7 +70,6 @@ const Reports = () => {
         throw salesError;
       }
 
-      // Then, get all inventory items to map locations
       const { data: inventoryData, error: inventoryError } = await supabase
         .from('inventory list')
         .select('id, location');
@@ -75,12 +79,10 @@ const Reports = () => {
         throw inventoryError;
       }
 
-      // Create a map of inventory IDs to locations
       const locationMap = new Map(
         inventoryData.map((item) => [item.id, item.location])
       );
 
-      // Aggregate sales by location
       const salesByLocation = salesData.reduce((acc: { [key: string]: number }, sale) => {
         const location = locationMap.get(sale.item_id) || 'Unknown';
         acc[location] = (acc[location] || 0) + (sale.total_amount || 0);
@@ -91,6 +93,43 @@ const Reports = () => {
         location,
         total_sales
       })) as LocationSales[];
+    }
+  });
+
+  const { data: monthlyExpenses, isLoading: isLoadingExpenses } = useQuery({
+    queryKey: ['monthly-expenses'],
+    queryFn: async () => {
+      console.log('Fetching monthly expenses...');
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .order('expense_date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching expenses:', error);
+        throw error;
+      }
+
+      const expensesByMonth = data.reduce((acc: MonthlyExpense[], expense) => {
+        const month = format(new Date(expense.expense_date), 'MMMM yyyy');
+        const existingEntry = acc.find(
+          entry => entry.month === month && entry.category === expense.category
+        );
+
+        if (existingEntry) {
+          existingEntry.total_amount += Number(expense.amount);
+        } else {
+          acc.push({
+            month,
+            category: expense.category,
+            total_amount: Number(expense.amount)
+          });
+        }
+
+        return acc;
+      }, []);
+
+      return expensesByMonth;
     }
   });
 
@@ -107,6 +146,37 @@ const Reports = () => {
         <AppSidebar />
         <main className="flex-1 p-6 space-y-6">
           <h1 className="text-2xl font-bold">Reports</h1>
+
+          {/* Monthly Expenses */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Monthly Expenses by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingExpenses ? (
+                <p>Loading expenses data...</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Month</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Total Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {monthlyExpenses?.map((expense, index) => (
+                      <TableRow key={`${expense.month}-${expense.category}-${index}`}>
+                        <TableCell>{expense.month}</TableCell>
+                        <TableCell>{expense.category}</TableCell>
+                        <TableCell>{formatCurrency(expense.total_amount)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Location Performance */}
           <Card>

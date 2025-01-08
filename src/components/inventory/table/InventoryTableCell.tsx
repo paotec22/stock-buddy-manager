@@ -29,7 +29,9 @@ export function EditableCell({ isEditing, value, onEdit, onStartEdit }: Editable
         />
       ) : (
         <>
-          <span className="text-sm sm:text-base">{value}</span>
+          <span className={`text-sm sm:text-base ${value === 0 ? 'dark:text-red-400 text-red-600 font-semibold' : ''}`}>
+            {value}
+          </span>
           <Button
             variant="ghost"
             size="icon"
