@@ -11,6 +11,7 @@ import Inventory from "./pages/Inventory";
 import Sales from "./pages/Sales";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Expenses from "./pages/Expenses";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/sales" element={<Sales />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/expenses" element={<Expenses />} />
               {/* Redirect any unknown routes to the dashboard */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -49,21 +49,12 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
       setIsDeleting(true);
       console.log("Starting bulk delete operation for items:", selectedItems);
 
-      // Get the location of the first selected item to ensure we're only deleting from one location
-      const firstItem = items.find(item => item.id === selectedItems[0]);
-      if (!firstItem) {
-        throw new Error('Could not find selected item');
-      }
-
       const { error } = await supabase
         .rpc('delete_multiple_inventory_items', {
           item_ids: selectedItems
         });
 
-      if (error) {
-        console.error("Error in bulk delete operation:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log("Bulk delete operation completed successfully");
       toast.success(`Successfully deleted ${selectedItems.length} items`);
@@ -134,7 +125,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
             {items.map((item) => (
               <TableRow 
                 key={item.id}
-                className={item.Quantity < 1 ? "bg-red-50" : ""}
+                className={item.Quantity < 1 ? "bg-transparent dark:bg-transparent" : ""}
               >
                 <TableCell>
                   <Checkbox
