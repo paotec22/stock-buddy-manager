@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { UserAssignmentModal } from "@/components/inventory/UserAssignmentModal";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users } from "lucide-react";
+import { Users, Download, Upload, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ const Settings = () => {
     confirmPassword: "",
   });
   const [showAssignments, setShowAssignments] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ['isAdmin'],
@@ -69,6 +72,76 @@ const Settings = () => {
     }
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/database-operations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'export' }),
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const data = await response.json();
+      
+      // Create and download file
+      const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `database-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success("Database exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export database");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const fileContent = await file.text();
+      const importData = JSON.parse(fileContent);
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/database-operations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'import',
+          data: importData
+        }),
+      });
+
+      if (!response.ok) throw new Error('Import failed');
+
+      toast.success("Database imported successfully!");
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Failed to import database");
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -86,7 +159,7 @@ const Settings = () => {
         <main className="flex-1 p-6">
           <h1 className="text-2xl font-bold mb-6">Settings</h1>
           
-          <Accordion type="single" collapsible className="w-full max-w-md">
+          <Accordion type="single" collapsible className="w-full max-w-md space-y-4">
             <AccordionItem value="user-management">
               <AccordionTrigger>User Management</AccordionTrigger>
               <AccordionContent>
@@ -146,6 +219,44 @@ const Settings = () => {
                     <Users className="mr-2 h-4 w-4" />
                     Manage User Assignments
                   </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="database-management">
+              <AccordionTrigger>Database Management</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Important</AlertTitle>
+                    <AlertDescription>
+                      Importing data will replace all existing records. Make sure to backup your current data before proceeding.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="flex flex-col gap-4">
+                    <Button
+                      onClick={handleExport}
+                      disabled={isExporting}
+                      className="w-full"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      {isExporting ? "Exporting..." : "Export Database"}
+                    </Button>
+
+                    <div>
+                      <Label htmlFor="import-file">Import Database</Label>
+                      <Input
+                        id="import-file"
+                        type="file"
+                        accept=".json"
+                        onChange={handleImport}
+                        disabled={isImporting}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
