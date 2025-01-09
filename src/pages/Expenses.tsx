@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { useLocation } from "react-router-dom";
 
 const EXPENSE_CATEGORIES = [
   "Utilities",
@@ -25,10 +24,8 @@ const EXPENSE_CATEGORIES = [
 ];
 
 const LOCATIONS = [
-  "Main Store",
-  "Branch 1",
-  "Branch 2",
-  "Warehouse"
+  "Ikeja",
+  "Cement"
 ];
 
 export default function Expenses() {
