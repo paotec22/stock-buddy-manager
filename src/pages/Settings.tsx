@@ -9,6 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { UserAssignmentModal } from "@/components/inventory/UserAssignmentModal";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Users } from "lucide-react";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ const Settings = () => {
     password: "",
     confirmPassword: "",
   });
+  const [showAssignments, setShowAssignments] = useState(false);
 
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ['isAdmin'],
@@ -82,52 +86,75 @@ const Settings = () => {
         <main className="flex-1 p-6">
           <h1 className="text-2xl font-bold mb-6">Settings</h1>
           
-          <Card className="max-w-md">
-            <CardHeader>
-              <CardTitle>Add Users</CardTitle>
-              <CardDescription>Create new user accounts for your team</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="Enter email"
-                    value={signupData.email}
-                    onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                    required
-                  />
+          <Accordion type="single" collapsible className="w-full max-w-md">
+            <AccordionItem value="user-management">
+              <AccordionTrigger>User Management</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Add Users</CardTitle>
+                      <CardDescription>Create new user accounts for your team</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleSignup} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email">Email</Label>
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="Enter email"
+                            value={signupData.email}
+                            onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-password">Password</Label>
+                          <Input
+                            id="signup-password"
+                            type="password"
+                            placeholder="Choose a password"
+                            value={signupData.password}
+                            onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                          <Input
+                            id="signup-confirm-password"
+                            type="password"
+                            placeholder="Confirm password"
+                            value={signupData.confirmPassword}
+                            onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full">
+                          Create User
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowAssignments(true)}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Manage User Assignments
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Choose a password"
-                    value={signupData.password}
-                    onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirm Password</Label>
-                  <Input
-                    id="signup-confirm-password"
-                    type="password"
-                    placeholder="Confirm password"
-                    value={signupData.confirmPassword}
-                    onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Create User
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <UserAssignmentModal 
+            open={showAssignments} 
+            onOpenChange={setShowAssignments} 
+          />
         </main>
       </div>
     </SidebarProvider>

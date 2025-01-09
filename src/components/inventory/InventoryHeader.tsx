@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, Users } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useState } from "react";
 import { UserAssignmentModal } from "./UserAssignmentModal";
 
@@ -19,8 +19,6 @@ export function InventoryHeader({
   onAddItem,
   onBulkUpload,
 }: InventoryHeaderProps) {
-  const [showAssignments, setShowAssignments] = useState(false);
-
   return (
     <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6">
       <div className="flex items-center space-x-4">
@@ -46,15 +44,7 @@ export function InventoryHeader({
           <Upload className="mr-2 h-4 w-4" />
           Bulk Upload
         </Button>
-        <Button variant="outline" onClick={() => setShowAssignments(true)}>
-          <Users className="mr-2 h-4 w-4" />
-          Manage Users
-        </Button>
       </div>
-      <UserAssignmentModal 
-        open={showAssignments} 
-        onOpenChange={setShowAssignments} 
-      />
     </div>
   );
 }
