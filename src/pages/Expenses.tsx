@@ -24,20 +24,23 @@ const EXPENSE_CATEGORIES = [
   "Other"
 ];
 
+const LOCATIONS = [
+  "Main Store",
+  "Branch 1",
+  "Branch 2",
+  "Warehouse"
+];
+
 export default function Expenses() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
-  
-  // Get the current location from URL search params
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const currentLocation = searchParams.get("location") || "Main Store";
+  const [selectedLocation, setSelectedLocation] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!description || !amount || !category) {
+    if (!description || !amount || !category || !selectedLocation) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -47,7 +50,7 @@ export default function Expenses() {
         description,
         amount: parseFloat(amount),
         category,
-        location: currentLocation,
+        location: selectedLocation,
         user_id: (await supabase.auth.getUser()).data.user?.id
       });
 
@@ -57,6 +60,7 @@ export default function Expenses() {
       setDescription("");
       setAmount("");
       setCategory("");
+      setSelectedLocation("");
     } catch (error) {
       console.error("Error recording expense:", error);
       toast.error("Failed to record expense");
@@ -68,7 +72,7 @@ export default function Expenses() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Record Expense - {currentLocation}</h1>
+          <h1 className="text-2xl font-bold mb-6">Record Expense</h1>
           
           <Card>
             <CardHeader>
@@ -115,6 +119,24 @@ export default function Expenses() {
                       {EXPENSE_CATEGORIES.map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium mb-1">
+                    Location
+                  </label>
+                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map((loc) => (
+                        <SelectItem key={loc} value={loc}>
+                          {loc}
                         </SelectItem>
                       ))}
                     </SelectContent>
