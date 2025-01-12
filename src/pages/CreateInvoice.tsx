@@ -157,7 +157,7 @@ const CreateInvoice = () => {
         <main className="flex-1 p-6">
           <div className="max-w-5xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-              <img src="/puido-logo.png" alt="Puido Smart Solutions" className="h-16" />
+              <img src="/public\Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handlePrint} disabled={isSubmitting}>
                   <Printer className="w-4 h-4 mr-2" />
