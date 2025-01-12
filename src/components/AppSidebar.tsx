@@ -5,7 +5,7 @@ import {
   Settings,
   LogOut,
   Receipt,
-  FileInvoice,
+  ScrollText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -28,7 +28,7 @@ export function AppSidebar() {
   const menuItems = useMemo(() => [
     { title: "Inventory", icon: Box, path: "/inventory" },
     { title: "Sales", icon: BarChart3, path: "/sales" },
-    { title: "Create Invoice", icon: FileInvoice, path: "/create-invoice" },
+    { title: "Create Invoice", icon: ScrollText, path: "/create-invoice" },
     { title: "Expenses", icon: Receipt, path: "/expenses" },
     { title: "Reports", icon: FileText, path: "/reports" },
     { title: "Settings", icon: Settings, path: "/settings" },

@@ -39,7 +39,6 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 30, // Cache persists for 30 minutes
       refetchOnWindowFocus: false, // Prevent unnecessary refetches
       retry: 1, // Limit retry attempts
-      suspense: true, // Enable suspense mode
     },
   },
 });
