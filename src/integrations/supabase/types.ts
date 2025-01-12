@@ -105,6 +105,105 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: number
+          invoice_id: number | null
+          item_id: number | null
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: number
+          invoice_id?: number | null
+          item_id?: number | null
+          quantity: number
+          unit_price: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: number
+          invoice_id?: number | null
+          item_id?: number | null
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory list"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          customer_phone: string | null
+          due_date: string | null
+          id: number
+          invoice_date: string
+          invoice_number: string
+          notes: string | null
+          subtotal: number
+          tax_amount: number
+          tax_rate: number | null
+          total_amount: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          due_date?: string | null
+          id?: number
+          invoice_date?: string
+          invoice_number: string
+          notes?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number | null
+          total_amount?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          due_date?: string | null
+          id?: number
+          invoice_date?: string
+          invoice_number?: string
+          notes?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number | null
+          total_amount?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profile_assignments: {
         Row: {
           assigned_by: string | null
