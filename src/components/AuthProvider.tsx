@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
@@ -27,9 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log("AuthProvider: Initializing");
     
+    let mounted = true;
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       console.log("AuthProvider: Initial session check", { session, error });
+      if (!mounted) return;
+      
       if (error) {
         console.error("Error getting session:", error);
         toast.error("Authentication error. Please try again.");
@@ -44,6 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("AuthProvider: Auth state changed", { event: _event, session });
+      if (!mounted) return;
+      
       setSession(session);
       
       if (!session) {
@@ -54,14 +60,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       console.log("AuthProvider: Cleaning up subscription");
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({ session, loading }), [session, loading]);
+
   console.log("AuthProvider: Rendering", { session, loading });
 
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
