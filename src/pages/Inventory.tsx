@@ -14,41 +14,46 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
-  const fetchInventoryItems = async () => {
-    try {
+  // Optimized data fetching with React Query
+  const { data: inventoryItems = [], isLoading } = useQuery({
+    queryKey: ['inventory', selectedLocation],
+    queryFn: async () => {
+      console.log('Fetching inventory for location:', selectedLocation);
       const { data, error } = await supabase
         .from('inventory list')
         .select('*')
         .eq('location', selectedLocation);
 
-      if (error) throw error;
-      setInventoryItems(data || []);
-    } catch (error) {
-      console.error('Error fetching inventory:', error);
-      toast.error("Failed to load inventory items");
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (error) {
+        console.error('Error fetching inventory:', error);
+        throw error;
+      }
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
-  useEffect(() => {
-    fetchInventoryItems();
-  }, [selectedLocation]);
-
-  useInventoryRealtime(fetchInventoryItems);
+  // Optimized real-time updates
+  useInventoryRealtime(() => {
+    console.log('Invalidating inventory cache');
+    queryClient.invalidateQueries({ queryKey: ['inventory'] });
+  });
 
   const handlePriceEdit = async (item: InventoryItem, newPrice: number) => {
     try {
+      console.log('Updating price for item:', item.id);
       const { error } = await supabase
         .from('inventory list')
         .update({ 
@@ -59,7 +64,8 @@ const Inventory = () => {
         .eq('location', item.location);
 
       if (error) throw error;
-      await fetchInventoryItems();
+      
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast.success("Price updated successfully");
     } catch (error) {
       console.error('Error updating price:', error);
@@ -69,6 +75,7 @@ const Inventory = () => {
 
   const handleDelete = async (item: InventoryItem) => {
     try {
+      console.log('Deleting item:', item.id);
       const { error } = await supabase
         .from('inventory list')
         .delete()
@@ -76,8 +83,9 @@ const Inventory = () => {
         .eq('location', item.location);
 
       if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast.success("Item deleted successfully");
-      await fetchInventoryItems();
     } catch (error) {
       console.error('Error deleting item:', error);
       toast.error("Failed to delete item");
@@ -94,6 +102,33 @@ const Inventory = () => {
       currency: 'NGN',
     }).format(amount);
   };
+
+  // Loading skeleton for better UX
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <main className="flex-1 p-4 md:p-6 space-y-4">
+            <div className="h-16 bg-muted rounded-lg animate-pulse" />
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+              </CardContent>
+            </Card>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
+              ))}
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -140,10 +175,10 @@ const Inventory = () => {
           <BulkUploadModal 
             open={showBulkUpload} 
             onOpenChange={setShowBulkUpload} 
-            onDataUpload={fetchInventoryItems}
+            onDataUpload={() => queryClient.invalidateQueries({ queryKey: ['inventory'] })}
           />
 
-          {!loading && inventoryItems.length > 0 && (
+          {inventoryItems.length > 0 && (
             <Card className="mb-4">
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
@@ -156,9 +191,7 @@ const Inventory = () => {
             </Card>
           )}
 
-          {loading ? (
-            <div className="p-6 text-center">Loading inventory...</div>
-          ) : inventoryItems.length > 0 ? (
+          {inventoryItems.length > 0 ? (
             <InventoryTable
               items={inventoryItems}
               onPriceEdit={handlePriceEdit}
