@@ -16,6 +16,8 @@ import { CalendarIcon, Printer, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { jsPDF } from "jspdf";
+import 'jspdf-autotable';
 
 interface InvoiceItem {
   description: string;
@@ -42,6 +44,59 @@ const CreateInvoice = () => {
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
     return { subtotal, taxAmount, total };
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownload = () => {
+    const doc = new jsPDF();
+    const { subtotal, taxAmount, total } = calculateTotals();
+
+    // Add company header
+    doc.setFontSize(20);
+    doc.text("INVOICE", 105, 20, { align: "center" });
+    
+    // Add customer information
+    doc.setFontSize(12);
+    doc.text("Bill To:", 20, 40);
+    doc.text(customerName, 20, 50);
+    doc.text(customerAddress, 20, 60);
+    doc.text(`Phone: ${customerPhone}`, 20, 70);
+
+    // Add invoice details
+    doc.text(`Invoice Date: ${format(invoiceDate, "PPP")}`, 120, 40);
+    doc.text(`Due Date: ${format(dueDate, "PPP")}`, 120, 50);
+
+    // Add items table
+    const tableData = items.map(item => [
+      item.description,
+      item.quantity.toString(),
+      `$${item.unit_price.toFixed(2)}`,
+      `$${item.amount.toFixed(2)}`
+    ]);
+
+    (doc as any).autoTable({
+      startY: 80,
+      head: [["Description", "Quantity", "Unit Price", "Amount"]],
+      body: tableData,
+    });
+
+    // Add totals
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 140, finalY);
+    doc.text(`Tax (7.5%): $${taxAmount.toFixed(2)}`, 140, finalY + 10);
+    doc.text(`Total: $${total.toFixed(2)}`, 140, finalY + 20);
+
+    // Add notes if any
+    if (notes) {
+      doc.text("Notes:", 20, finalY + 40);
+      doc.text(notes, 20, finalY + 50);
+    }
+
+    // Save the PDF
+    doc.save(`invoice-${new Date().getTime()}.pdf`);
   };
 
   const handleSubmit = async () => {
@@ -118,11 +173,11 @@ const CreateInvoice = () => {
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold">Create Invoice</h1>
               <div className="flex gap-2">
-                <Button variant="outline" disabled={isSubmitting}>
+                <Button variant="outline" onClick={handlePrint} disabled={isSubmitting}>
                   <Printer className="w-4 h-4 mr-2" />
                   Print
                 </Button>
-                <Button variant="outline" disabled={isSubmitting}>
+                <Button variant="outline" onClick={handleDownload} disabled={isSubmitting}>
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </Button>

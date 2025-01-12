@@ -16,6 +16,7 @@ const Sales = lazy(() => import("./pages/Sales"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Expenses = lazy(() => import("./pages/Expenses"));
+const CreateInvoice = lazy(() => import("./pages/CreateInvoice"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -35,7 +36,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // Data stays fresh for 5 minutes
-      cacheTime: 1000 * 60 * 30, // Cache persists for 30 minutes
+      gcTime: 1000 * 60 * 30, // Cache persists for 30 minutes
       refetchOnWindowFocus: false, // Prevent unnecessary refetches
       retry: 1, // Limit retry attempts
       suspense: true, // Enable suspense mode
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/expenses" element={<Expenses />} />
+                <Route path="/create-invoice" element={<CreateInvoice />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
