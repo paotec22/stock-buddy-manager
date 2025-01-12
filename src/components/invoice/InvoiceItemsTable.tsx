@@ -16,7 +16,6 @@ interface InvoiceItemsTableProps {
   setItems: (items: InvoiceItem[]) => void;
   totals: {
     subtotal: number;
-    taxAmount: number;
     total: number;
   };
 }
@@ -124,14 +123,6 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
       </Table>
 
       <div className="flex flex-col gap-2 items-end">
-        <div className="flex justify-between w-64">
-          <span className="text-muted-foreground">Subtotal:</span>
-          <span>{formatCurrency(totals.subtotal)}</span>
-        </div>
-        <div className="flex justify-between w-64">
-          <span className="text-muted-foreground">Tax (7.5%):</span>
-          <span>{formatCurrency(totals.taxAmount)}</span>
-        </div>
         <div className="flex justify-between w-64 font-bold">
           <span>Total:</span>
           <span>{formatCurrency(totals.total)}</span>
