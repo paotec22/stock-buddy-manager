@@ -42,10 +42,10 @@ const CreateInvoice = () => {
 
   const handleDownload = () => {
     const doc = new jsPDF();
-    const { subtotal, total } = calculateTotals();
+    const { total } = calculateTotals();
 
     // Add company logo
-    doc.addImage("/puido-logo.png", "PNG", 20, 10, 80, 30);
+    doc.addImage("/Puido_Smart_Solutions.svg", "SVG", 20, 10, 80, 30);
     
     // Add INVOICE text
     doc.setFontSize(24);
@@ -53,37 +53,42 @@ const CreateInvoice = () => {
     
     // Add customer information
     doc.setFontSize(12);
-    doc.text("Bill To:", 20, 70);
-    doc.text(customerName, 20, 80);
-    doc.text(`Phone: ${customerPhone}`, 20, 90);
+    doc.text(`Invoice to: ${customerName}`, 20, 70);
+    doc.text(`Phone: ${customerPhone}`, 20, 80);
 
-    // Add invoice date
-    doc.text(`Invoice Date: ${format(invoiceDate, "PPP")}`, 120, 70);
+    // Add invoice date and number
+    doc.text(`Date: ${format(invoiceDate, "dd/MM/yyyy")}`, 150, 70);
+    doc.text(`Invoice#: ${new Date().getTime()}`, 150, 80);
 
     // Add items table
     const tableData = items.map(item => [
       item.description,
       item.quantity.toString(),
-      `₦${item.unit_price.toFixed(2)}`,
-      `₦${item.amount.toFixed(2)}`
+      `₦${item.unit_price.toLocaleString()}`,
+      `₦${item.amount.toLocaleString()}`
     ]);
 
     (doc as any).autoTable({
       startY: 100,
-      head: [["Description", "Quantity", "Unit Price", "Amount"]],
+      head: [["Description", "Quantity", "Unit Price", "Total"]],
       body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 0, 0] }
     });
 
-    // Add totals
+    // Add total
     const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.text(`Total: ₦${total.toFixed(2)}`, 140, finalY + 10);
+    doc.text(`Total: ₦${total.toLocaleString()}`, 150, finalY);
 
     // Add bank details
     doc.setFontSize(11);
-    doc.text("Bank Details:", 20, finalY + 30);
+    doc.text("PAYMENT METHOD", 20, finalY + 30);
     doc.text("Bank Name: Globus Bank", 20, finalY + 40);
     doc.text("Acc Number: 1000145362", 20, finalY + 50);
     doc.text("Acc. Name: Puido Smart Solution Ltd.", 20, finalY + 60);
+
+    // Add thank you message
+    doc.text("Thanks for your Patronage", 20, finalY + 80);
 
     // Save the PDF
     doc.save(`invoice-${new Date().getTime()}.pdf`);
@@ -155,9 +160,9 @@ const CreateInvoice = () => {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 p-6">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-              <img src="/public/Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
+              <img src="/Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handlePrint} disabled={isSubmitting}>
                   <Printer className="w-4 h-4 mr-2" />
@@ -175,11 +180,11 @@ const CreateInvoice = () => {
 
             <h1 className="text-3xl font-bold text-center mb-8">INVOICE</h1>
 
-            <Card className="mb-6">
+            <Card className="mb-6 print:shadow-none">
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="customerName">Customer Name</Label>
+                    <Label htmlFor="customerName">Invoice to:</Label>
                     <Input
                       id="customerName"
                       value={customerName}
@@ -206,13 +211,16 @@ const CreateInvoice = () => {
               totals={calculateTotals()}
             />
 
-            <Card className="mt-6">
+            <Card className="mt-6 print:shadow-none">
               <CardContent className="p-6">
                 <div className="text-sm space-y-1">
-                  <p className="font-semibold">Bank Details:</p>
+                  <p className="font-semibold">PAYMENT METHOD:</p>
                   <p>Bank Name: Globus Bank</p>
                   <p>Acc Number: 1000145362</p>
                   <p>Acc. Name: Puido Smart Solution Ltd.</p>
+                </div>
+                <div className="mt-4 text-sm">
+                  <p>Thanks for your Patronage</p>
                 </div>
               </CardContent>
             </Card>
