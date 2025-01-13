@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
+import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
+import { CustomerInfo } from "@/components/invoice/CustomerInfo";
+import { BankDetails } from "@/components/invoice/BankDetails";
 import { format } from "date-fns";
-import { Printer, Download } from "lucide-react";
+import { jsPDF } from "jspdf";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 
 interface InvoiceItem {
@@ -161,49 +159,21 @@ const CreateInvoice = () => {
         <AppSidebar />
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <img src="/Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handlePrint} disabled={isSubmitting}>
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print
-                </Button>
-                <Button variant="outline" onClick={handleDownload} disabled={isSubmitting}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
-                <Button onClick={handleSubmit} disabled={isSubmitting}>
-                  Save Invoice
-                </Button>
-              </div>
-            </div>
+            <InvoiceHeader
+              onPrint={handlePrint}
+              onDownload={handleDownload}
+              isSubmitting={isSubmitting}
+              onSave={handleSubmit}
+            />
 
             <h1 className="text-3xl font-bold text-center mb-8">INVOICE</h1>
 
-            <Card className="mb-6 print:shadow-none">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="customerName">Invoice to:</Label>
-                    <Input
-                      id="customerName"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="customerPhone">Phone Number</Label>
-                    <Input
-                      id="customerPhone"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <CustomerInfo
+              customerName={customerName}
+              customerPhone={customerPhone}
+              onNameChange={setCustomerName}
+              onPhoneChange={setCustomerPhone}
+            />
 
             <InvoiceItemsTable
               items={items}
@@ -211,19 +181,7 @@ const CreateInvoice = () => {
               totals={calculateTotals()}
             />
 
-            <Card className="mt-6 print:shadow-none">
-              <CardContent className="p-6">
-                <div className="text-sm space-y-1">
-                  <p className="font-semibold">PAYMENT METHOD:</p>
-                  <p>Bank Name: Globus Bank</p>
-                  <p>Acc Number: 1000145362</p>
-                  <p>Acc. Name: Puido Smart Solution Ltd.</p>
-                </div>
-                <div className="mt-4 text-sm">
-                  <p>Thanks for your Patronage</p>
-                </div>
-              </CardContent>
-            </Card>
+            <BankDetails />
           </div>
         </main>
       </div>
