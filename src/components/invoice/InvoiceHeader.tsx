@@ -12,7 +12,7 @@ export const InvoiceHeader = ({ onPrint, onDownload, isSubmitting, onSave }: Inv
   return (
     <div className="flex justify-between items-center mb-6">
       <img src="/Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
-      <div className="flex gap-2">
+      <div className="flex gap-2 print:hidden">
         <Button variant="outline" onClick={onPrint} disabled={isSubmitting}>
           <Printer className="w-4 h-4 mr-2" />
           Print
