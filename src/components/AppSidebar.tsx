@@ -83,11 +83,19 @@ export function AppSidebar() {
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="fixed top-4 left-4 z-50 bg-background"
+          >
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[240px]">
+        <SheetContent 
+          side="left" 
+          className="p-0 w-[240px] block"
+          onPointerDownOutside={() => setIsOpen(false)}
+        >
           <Sidebar className="border-none">
             <SidebarContents />
           </Sidebar>
