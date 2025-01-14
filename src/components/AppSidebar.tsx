@@ -30,7 +30,6 @@ export function AppSidebar() {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Memoize menu items to prevent unnecessary re-renders
   const menuItems = useMemo(() => [
     { title: "Inventory", icon: Box, path: "/inventory" },
     { title: "Sales", icon: BarChart3, path: "/sales" },
@@ -41,7 +40,6 @@ export function AppSidebar() {
   ], []);
 
   const handleLogout = () => {
-    // TODO: Implement logout functionality
     navigate("/");
   };
 
@@ -52,7 +50,7 @@ export function AppSidebar() {
     }
   };
 
-  const SidebarContent = () => (
+  const SidebarContents = () => (
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel>Stock Management</SidebarGroupLabel>
@@ -60,11 +58,9 @@ export function AppSidebar() {
           <SidebarMenu>
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild onClick={() => handleNavigation(item.path)}>
-                  <button className="w-full">
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                  </button>
+                <SidebarMenuButton onClick={() => handleNavigation(item.path)}>
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -93,7 +89,7 @@ export function AppSidebar() {
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-[240px]">
           <Sidebar className="border-none">
-            <SidebarContent />
+            <SidebarContents />
           </Sidebar>
         </SheetContent>
       </Sheet>
@@ -102,7 +98,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent />
+      <SidebarContents />
     </Sidebar>
   );
 }
