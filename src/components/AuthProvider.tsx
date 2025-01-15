@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     console.log("AuthProvider: Initializing");
@@ -39,7 +40,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.error("Authentication error. Please try again.");
         return;
       }
+
       setSession(session);
+      
+      // If we have a session and we're on the index page, redirect to inventory
+      if (session && location.pathname === '/') {
+        navigate('/inventory');
+      }
+      
       setLoading(false);
     });
 
@@ -52,9 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       setSession(session);
       
-      if (!session) {
-        console.log("AuthProvider: No session, redirecting to home");
-        navigate("/");
+      if (session && location.pathname === '/') {
+        navigate('/inventory');
+      } else if (!session && location.pathname !== '/') {
+        navigate('/');
       }
     });
 
@@ -63,12 +72,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => ({ session, loading }), [session, loading]);
 
   console.log("AuthProvider: Rendering", { session, loading });
+
+  // Show nothing while we're loading
+  if (loading) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={value}>

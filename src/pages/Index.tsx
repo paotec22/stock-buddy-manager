@@ -6,10 +6,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 
 const Index = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
+  const { session } = useAuth();
+
+  // If we're already logged in, redirect to inventory
+  if (session) {
+    navigate('/inventory');
+    return null;
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
