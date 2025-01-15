@@ -7,9 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
+import { AuthError } from "@supabase/supabase-js";
 
 const Index = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { session } = useAuth();
 
@@ -21,6 +23,8 @@ const Index = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
@@ -29,11 +33,7 @@ const Index = () => {
 
       if (error) {
         console.error("Login error:", error);
-        if (error.message.includes('email_not_confirmed')) {
-          toast.error("Please check your email to confirm your account");
-        } else {
-          toast.error(error.message || "Failed to login");
-        }
+        handleAuthError(error);
         return;
       }
 
@@ -44,11 +44,23 @@ const Index = () => {
     } catch (error) {
       console.error("Login error:", error);
       toast.error("An unexpected error occurred during login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAuthError = (error: AuthError) => {
+    if (error.message.includes('Invalid login credentials')) {
+      toast.error("Invalid email or password");
+    } else if (error.message.includes('email_not_confirmed')) {
+      toast.error("Please check your email to confirm your account");
+    } else {
+      toast.error(error.message || "Failed to login");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Stock Buddy Manager</CardTitle>
@@ -67,6 +79,7 @@ const Index = () => {
                 value={loginData.email}
                 onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -78,10 +91,11 @@ const Index = () => {
                 value={loginData.password}
                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 required
+                disabled={isLoading}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
         </CardContent>
