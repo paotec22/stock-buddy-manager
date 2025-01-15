@@ -25,23 +25,31 @@ const Inventory = () => {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
-  // Optimized data fetching with React Query
+  // Optimized data fetching with React Query and better error handling
   const { data: inventoryItems = [], isLoading } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       console.log('Fetching inventory for location:', selectedLocation);
-      const { data, error } = await supabase
-        .from('inventory list')
-        .select('*')
-        .eq('location', selectedLocation);
+      try {
+        const { data, error } = await supabase
+          .from('inventory list')
+          .select('*')
+          .eq('location', selectedLocation);
 
-      if (error) {
-        console.error('Error fetching inventory:', error);
+        if (error) {
+          console.error('Supabase error:', error);
+          toast.error("Failed to fetch inventory data");
+          throw error;
+        }
+
+        console.log('Fetched inventory data:', data);
+        return data || [];
+      } catch (error) {
+        console.error('Error in queryFn:', error);
         throw error;
       }
-      return data || [];
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
 

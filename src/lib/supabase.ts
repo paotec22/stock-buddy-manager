@@ -1,27 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = 'https://itycbazttpidqlgmmrot.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNiYXp0dHBpZHFsZ21tcm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDU5MjcxMjAsImV4cCI6MjAyMTUwMzEyMH0.0sTsAx7Iw_RJ8TU7ZXVWj2B_EnQF8oXwR3Ykm_UXKUs';
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables');
-  throw new Error(
-    'Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables'
-  );
-}
-
-// Validate URL format
-try {
-  // Remove any trailing slashes and ensure proper URL format
-  const cleanUrl = supabaseUrl.replace(/\/+$/, '');
-  new URL(cleanUrl);
-} catch (error) {
-  console.error('Invalid Supabase URL format');
-  throw new Error(
-    'VITE_SUPABASE_URL must be a valid URL (e.g., https://your-project.supabase.co)'
-  );
-}
-
-// Create Supabase client with cleaned URL
-export const supabase = createClient(supabaseUrl.replace(/\/+$/, ''), supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
