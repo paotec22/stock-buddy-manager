@@ -81,26 +81,24 @@ export function AppSidebar() {
       </Sidebar>
 
       {/* Mobile Sidebar */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="fixed top-4 left-4 z-50 bg-background md:hidden"
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent 
-          side="left" 
-          className="p-0 w-[240px] block"
-          onPointerDownOutside={() => setIsOpen(false)}
-        >
-          <Sidebar className="border-none">
-            <SidebarContents />
-          </Sidebar>
-        </SheetContent>
-      </Sheet>
+      <div className="md:hidden">
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="fixed top-4 left-4 z-40 bg-background"
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[240px]">
+            <Sidebar>
+              <SidebarContents />
+            </Sidebar>
+          </SheetContent>
+        </Sheet>
+      </div>
     </>
   );
 }
