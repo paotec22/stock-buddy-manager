@@ -30,26 +30,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     let mounted = true;
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log("AuthProvider: Initial session check", { session, error });
-      if (!mounted) return;
-      
-      if (error) {
-        console.error("Error getting session:", error);
-        toast.error("Authentication error. Please try again.");
-        return;
-      }
+    async function initializeAuth() {
+      try {
+        // Get initial session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          toast.error("Authentication error. Please try again.");
+          return;
+        }
 
-      setSession(session);
-      
-      // If we have a session and we're on the index page, redirect to inventory
-      if (session && location.pathname === '/') {
-        navigate('/inventory');
+        console.log("AuthProvider: Initial session check", { session });
+        setSession(session);
+        
+        // Handle navigation based on auth state
+        if (session && location.pathname === '/') {
+          navigate('/inventory');
+        } else if (!session && location.pathname !== '/') {
+          navigate('/');
+        }
+        
+      } catch (error) {
+        console.error("Error in auth initialization:", error);
+        toast.error("Failed to initialize authentication");
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      
-      setLoading(false);
-    });
+    }
+
+    // Initialize auth
+    initializeAuth();
 
     // Listen for auth changes
     const {
@@ -79,14 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   console.log("AuthProvider: Rendering", { session, loading });
 
-  // Show nothing while we're loading
-  if (loading) {
-    return null;
-  }
-
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading ? children : null}
     </AuthContext.Provider>
   );
 }
