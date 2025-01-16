@@ -16,6 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/components/AuthProvider";
 
 const Inventory = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -24,9 +25,17 @@ const Inventory = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!session) {
+      navigate('/');
+    }
+  }, [session, navigate]);
 
   // Optimized data fetching with React Query and better error handling
-  const { data: inventoryItems = [], isLoading } = useQuery({
+  const { data: inventoryItems = [], isLoading, error } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       console.log('Fetching inventory for location:', selectedLocation);
@@ -51,6 +60,7 @@ const Inventory = () => {
     },
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
+    enabled: !!session, // Only fetch when authenticated
   });
 
   // Optimized real-time updates
@@ -100,18 +110,7 @@ const Inventory = () => {
     }
   };
 
-  const calculateGrandTotal = () => {
-    return inventoryItems.reduce((sum, item) => sum + (item.Total || 0), 0);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-    }).format(amount);
-  };
-
-  // Loading skeleton for better UX
+  // Show loading skeleton
   if (isLoading) {
     return (
       <SidebarProvider>
@@ -137,6 +136,34 @@ const Inventory = () => {
       </SidebarProvider>
     );
   }
+
+  // Show error state
+  if (error) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <main className="flex-1 p-4 md:p-6">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-red-600">Error loading inventory</h2>
+              <p className="text-gray-600">Please try refreshing the page</p>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  const calculateGrandTotal = () => {
+    return inventoryItems.reduce((sum, item) => sum + (item.Total || 0), 0);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
 
   return (
     <SidebarProvider>
