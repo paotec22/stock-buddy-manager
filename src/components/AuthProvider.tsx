@@ -30,29 +30,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     let mounted = true;
 
-    async function initializeAuth() {
+    // Initialize auth state
+    const initializeAuth = async () => {
       try {
-        // Get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("AuthProvider: Getting initial session");
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
-        
+
         if (error) {
-          console.error("Error getting session:", error);
-          toast.error("Authentication error. Please try again.");
+          console.error("Error getting initial session:", error);
+          toast.error("Authentication error occurred");
           return;
         }
 
-        console.log("AuthProvider: Initial session check", { session });
-        setSession(session);
+        console.log("AuthProvider: Initial session retrieved", { initialSession });
         
-        // Handle navigation based on auth state
-        if (session && location.pathname === '/') {
-          navigate('/inventory');
-        } else if (!session && location.pathname !== '/') {
-          navigate('/');
+        if (mounted) {
+          setSession(initialSession);
+          
+          // Handle navigation after session is set
+          if (initialSession && location.pathname === '/') {
+            console.log("AuthProvider: Redirecting authenticated user to inventory");
+            navigate('/inventory');
+          } else if (!initialSession && location.pathname !== '/') {
+            console.log("AuthProvider: Redirecting unauthenticated user to login");
+            navigate('/');
+          }
         }
-        
       } catch (error) {
         console.error("Error in auth initialization:", error);
         toast.error("Failed to initialize authentication");
@@ -61,39 +66,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
         }
       }
-    }
+    };
 
-    // Initialize auth
+    // Start initialization
     initializeAuth();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("AuthProvider: Auth state changed", { event: _event, session });
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log("AuthProvider: Auth state changed", { event, currentSession });
+      
       if (!mounted) return;
-      
-      setSession(session);
-      
-      if (session && location.pathname === '/') {
+
+      setSession(currentSession);
+
+      if (currentSession && location.pathname === '/') {
         navigate('/inventory');
-      } else if (!session && location.pathname !== '/') {
+      } else if (!currentSession && location.pathname !== '/') {
         navigate('/');
       }
     });
 
+    // Cleanup
     return () => {
-      console.log("AuthProvider: Cleaning up subscription");
+      console.log("AuthProvider: Cleaning up");
       mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate, location.pathname]);
 
-  // Memoize the context value to prevent unnecessary re-renders
-  const value = useMemo(() => ({ session, loading }), [session, loading]);
+  // Memoize context value
+  const value = useMemo(() => ({
+    session,
+    loading
+  }), [session, loading]);
 
   console.log("AuthProvider: Rendering", { session, loading });
 
+  // Only render children when auth is initialized
   return (
     <AuthContext.Provider value={value}>
       {!loading ? children : null}
