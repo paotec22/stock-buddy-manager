@@ -9,6 +9,7 @@ import { Menu } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
+import { ThemeToggle } from "./ThemeToggle"; // Added import
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -61,9 +62,9 @@ function SidebarContents() {
         <SidebarItem to="/reports">Reports</SidebarItem>
         <SidebarItem to="/create-invoice">Create Invoice</SidebarItem>
         <SidebarItem to="/settings">Settings</SidebarItem>
-        </div>
+      </div>
       <div className="px-3 py-2">
-        <ThemeToggle /> {/* Added Theme Toggle */}
+        <ThemeToggle />
       </div>
     </div>
   );
