@@ -7,6 +7,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -17,7 +18,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { action } = await req.json()
+    // Parse the request body once and store it
+    const requestData = await req.json()
+    const { action, data } = requestData
+
+    console.log('Processing database operation:', action)
 
     if (action === 'export') {
       // Fetch data from all tables
@@ -34,12 +39,17 @@ serve(async (req) => {
         exportDate: new Date().toISOString(),
       }
 
+      console.log('Export completed successfully')
       return new Response(
         JSON.stringify({ data: exportData }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     } else if (action === 'import') {
-      const { data } = await req.json()
+      if (!data) {
+        throw new Error('No data provided for import')
+      }
+
+      console.log('Starting database import')
       
       // Clear existing data
       await Promise.all([
@@ -49,15 +59,19 @@ serve(async (req) => {
       ])
 
       // Import new data
+      const importPromises = []
       if (data.inventory) {
-        await supabase.from('inventory list').insert(data.inventory)
+        importPromises.push(supabase.from('inventory list').insert(data.inventory))
       }
       if (data.sales) {
-        await supabase.from('sales').insert(data.sales)
+        importPromises.push(supabase.from('sales').insert(data.sales))
       }
       if (data.expenses) {
-        await supabase.from('expenses').insert(data.expenses)
+        importPromises.push(supabase.from('expenses').insert(data.expenses))
       }
+
+      await Promise.all(importPromises)
+      console.log('Import completed successfully')
 
       return new Response(
         JSON.stringify({ message: 'Data imported successfully' }),
@@ -70,6 +84,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     )
   } catch (error) {
+    console.error('Error in database operation:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
