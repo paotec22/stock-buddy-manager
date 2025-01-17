@@ -2,12 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
-import { AuthError } from "@supabase/supabase-js";
 
 const Index = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -15,15 +14,18 @@ const Index = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
 
-  // If we're already logged in, redirect to inventory
-  if (session) {
-    navigate('/inventory');
-    return null;
-  }
+  useEffect(() => {
+    console.log("Index: Checking session state:", { hasSession: !!session });
+    if (session?.user) {
+      console.log("Index: User is authenticated, redirecting to inventory");
+      navigate('/inventory');
+    }
+  }, [session, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Index: Attempting login");
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -33,11 +35,18 @@ const Index = () => {
 
       if (error) {
         console.error("Login error:", error);
-        handleAuthError(error);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Invalid email or password");
+        } else if (error.message.includes('email_not_confirmed')) {
+          toast.error("Please check your email to confirm your account");
+        } else {
+          toast.error(error.message || "Failed to login");
+        }
         return;
       }
 
-      if (data.session) {
+      if (data?.session) {
+        console.log("Index: Login successful");
         toast.success("Login successful!");
         navigate("/inventory");
       }
@@ -49,15 +58,10 @@ const Index = () => {
     }
   };
 
-  const handleAuthError = (error: AuthError) => {
-    if (error.message.includes('Invalid login credentials')) {
-      toast.error("Invalid email or password");
-    } else if (error.message.includes('email_not_confirmed')) {
-      toast.error("Please check your email to confirm your account");
-    } else {
-      toast.error(error.message || "Failed to login");
-    }
-  };
+  // If we're already logged in, don't render the login form
+  if (session?.user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
