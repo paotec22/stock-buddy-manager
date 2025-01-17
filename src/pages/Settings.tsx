@@ -15,18 +15,28 @@ const Settings = () => {
   const [password, setPassword] = useState("");
   const [isResetting, setIsResetting] = useState(false);
 
-  const { data: isAdmin, isLoading } = useQuery({
+  const { data: isAdmin, isLoading, error } = useQuery({
     queryKey: ['isAdmin'],
     queryFn: async () => {
       console.log("Checking admin status...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
       
-      const { data: profile } = await supabase
+      if (!user) {
+        console.log("No user found, redirecting to login");
+        navigate("/");
+        return false;
+      }
+      
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .maybeSingle();
+      
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        return false;
+      }
       
       console.log("Admin check result:", profile?.role === 'admin');
       return profile?.role === 'admin';
@@ -36,8 +46,15 @@ const Settings = () => {
   const handleReset = async () => {
     setIsResetting(true);
     try {
-      const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
-        email: supabase.auth.user().email,
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user?.email) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
         password,
       });
 
@@ -57,11 +74,18 @@ const Settings = () => {
       toast.error("Failed to reset data");
     } finally {
       setIsResetting(false);
+      setPassword("");
     }
   };
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    toast.error("Error checking permissions");
+    navigate("/inventory");
+    return null;
   }
 
   if (!isAdmin) {
@@ -120,8 +144,8 @@ const Settings = () => {
                   </div>
                   <button
                     onClick={handleReset}
-                    disabled={isResetting}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    disabled={isResetting || !resetType || !password}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isResetting ? "Resetting..." : "Reset Data"}
                   </button>
