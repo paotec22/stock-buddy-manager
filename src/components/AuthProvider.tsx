@@ -27,10 +27,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log("AuthProvider: Initializing");
-    
     let mounted = true;
 
-    // Initialize auth state
     const initializeAuth = async () => {
       try {
         console.log("AuthProvider: Getting initial session");
@@ -41,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) {
           console.error("Error getting initial session:", error);
           toast.error("Authentication error occurred");
+          setLoading(false);
           return;
         }
 
@@ -48,8 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (mounted) {
           setSession(initialSession);
-          
-          // Handle navigation after session is set
+          setLoading(false);
+
+          // Handle navigation after session is confirmed
           if (initialSession && location.pathname === '/') {
             console.log("AuthProvider: Redirecting authenticated user to inventory");
             navigate('/inventory');
@@ -60,9 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error("Error in auth initialization:", error);
-        toast.error("Failed to initialize authentication");
-      } finally {
         if (mounted) {
+          toast.error("Failed to initialize authentication");
           setLoading(false);
         }
       }
@@ -72,13 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
 
     // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("AuthProvider: Auth state changed", { event, currentSession });
       
       if (!mounted) return;
 
       setSession(currentSession);
 
+      // Handle navigation based on auth state
       if (currentSession && location.pathname === '/') {
         navigate('/inventory');
       } else if (!currentSession && location.pathname !== '/') {
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [navigate, location.pathname]);
 
-  // Memoize context value
+  // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     session,
     loading
