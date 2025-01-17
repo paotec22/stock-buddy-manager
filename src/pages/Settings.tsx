@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -10,6 +11,9 @@ import { DatabaseManagementSection } from "@/components/settings/DatabaseManagem
 
 const Settings = () => {
   const navigate = useNavigate();
+  const [resetType, setResetType] = useState("");
+  const [password, setPassword] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
 
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ['isAdmin'],
@@ -28,6 +32,33 @@ const Settings = () => {
       return profile?.role === 'admin';
     }
   });
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({
+        email: supabase.auth.user().email,
+        password,
+      });
+
+      if (authError) throw authError;
+
+      if (resetType === "sales") {
+        await supabase.from('sales').delete().neq('id', 0);
+      } else if (resetType === "reports") {
+        await supabase.from('reports').delete().neq('id', 0);
+      } else if (resetType === "invoices") {
+        await supabase.from('invoices').delete().neq('id', 0);
+      }
+
+      toast.success(`${resetType.charAt(0).toUpperCase() + resetType.slice(1)} reset successfully`);
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      toast.error("Failed to reset data");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -53,11 +84,48 @@ const Settings = () => {
                 <UserManagementSection />
               </AccordionContent>
             </AccordionItem>
-
             <AccordionItem value="database-management">
               <AccordionTrigger>Database Management</AccordionTrigger>
               <AccordionContent>
                 <DatabaseManagementSection />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="reset-data">
+              <AccordionTrigger>Reset Data</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="resetType" className="block text-sm font-medium text-gray-700">Select Reset Type</label>
+                    <select
+                      id="resetType"
+                      value={resetType}
+                      onChange={(e) => setResetType(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                      <option value="">Select an option</option>
+                      <option value="sales">Reset Sales</option>
+                      <option value="reports">Reset Reports</option>
+                      <option value="invoices">Reset Invoices</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    />
+                  </div>
+                  <button
+                    onClick={handleReset}
+                    disabled={isResetting}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    {isResetting ? "Resetting..." : "Reset Data"}
+                  </button>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
