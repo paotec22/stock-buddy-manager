@@ -59,7 +59,11 @@ function SidebarContents() {
         <SidebarItem to="/sales">Sales</SidebarItem>
         <SidebarItem to="/expenses">Expenses</SidebarItem>
         <SidebarItem to="/reports">Reports</SidebarItem>
+        <SidebarItem to="/create-invoice">Create Invoice</SidebarItem>
         <SidebarItem to="/settings">Settings</SidebarItem>
+        </div>
+      <div className="px-3 py-2">
+        <ThemeToggle /> {/* Added Theme Toggle */}
       </div>
     </div>
   );
