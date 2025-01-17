@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    console.log("AuthProvider: Initializing");
+    console.log("AuthProvider: Initializing with current location:", location.pathname);
     let mounted = true;
 
     const initializeAuth = async () => {
@@ -34,7 +34,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("AuthProvider: Getting initial session");
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!mounted) {
+          console.log("AuthProvider: Component unmounted during initialization");
+          return;
+        }
 
         if (error) {
           console.error("Error getting initial session:", error);
@@ -43,20 +46,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        console.log("AuthProvider: Initial session retrieved", { initialSession });
+        console.log("AuthProvider: Initial session retrieved", { 
+          hasSession: !!initialSession,
+          currentPath: location.pathname 
+        });
         
-        if (mounted) {
-          setSession(initialSession);
-          setLoading(false);
+        setSession(initialSession);
+        setLoading(false);
 
-          // Handle navigation after session is confirmed
-          if (initialSession && location.pathname === '/') {
-            console.log("AuthProvider: Redirecting authenticated user to inventory");
-            navigate('/inventory');
-          } else if (!initialSession && location.pathname !== '/') {
-            console.log("AuthProvider: Redirecting unauthenticated user to login");
-            navigate('/');
-          }
+        // Only handle navigation after we've confirmed the session state
+        if (initialSession && location.pathname === '/') {
+          console.log("AuthProvider: Redirecting authenticated user to inventory");
+          navigate('/inventory');
+        } else if (!initialSession && location.pathname !== '/') {
+          console.log("AuthProvider: Redirecting unauthenticated user to login");
+          navigate('/');
         }
       } catch (error) {
         console.error("Error in auth initialization:", error);
@@ -72,13 +76,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("AuthProvider: Auth state changed", { event, currentSession });
-      
-      if (!mounted) return;
+      if (!mounted) {
+        console.log("AuthProvider: Ignoring auth state change on unmounted component");
+        return;
+      }
+
+      console.log("AuthProvider: Auth state changed", { 
+        event, 
+        hasSession: !!currentSession,
+        currentPath: location.pathname 
+      });
 
       setSession(currentSession);
 
-      // Handle navigation based on auth state
+      // Handle navigation based on new auth state
       if (currentSession && location.pathname === '/') {
         navigate('/inventory');
       } else if (!currentSession && location.pathname !== '/') {
@@ -86,7 +97,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Cleanup
     return () => {
       console.log("AuthProvider: Cleaning up");
       mounted = false;
@@ -100,9 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading
   }), [session, loading]);
 
-  console.log("AuthProvider: Rendering", { session, loading });
+  console.log("AuthProvider: Rendering", { 
+    hasSession: !!session, 
+    loading,
+    currentPath: location.pathname 
+  });
 
-  // Only render children when auth is initialized
   return (
     <AuthContext.Provider value={value}>
       {!loading ? children : null}
