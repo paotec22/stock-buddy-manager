@@ -8,9 +8,11 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { UserManagementSection } from "@/components/settings/UserManagementSection";
 import { DatabaseManagementSection } from "@/components/settings/DatabaseManagementSection";
+import { useAuth } from "@/components/AuthProvider";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [resetType, setResetType] = useState("");
   const [password, setPassword] = useState("");
   const [isResetting, setIsResetting] = useState(false);
@@ -19,10 +21,9 @@ const Settings = () => {
     queryKey: ['isAdmin'],
     queryFn: async () => {
       console.log("Checking admin status...");
-      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        console.log("No user found, redirecting to login");
+      if (!session?.user?.id) {
+        console.log("No authenticated session found, redirecting to login");
         navigate("/");
         return false;
       }
@@ -30,7 +31,7 @@ const Settings = () => {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .maybeSingle();
       
       if (profileError) {
@@ -40,19 +41,18 @@ const Settings = () => {
       
       console.log("Admin check result:", profile?.role === 'admin');
       return profile?.role === 'admin';
-    }
+    },
+    enabled: !!session // Only run query when session exists
   });
 
   const handleReset = async () => {
+    if (!session?.user?.email) {
+      toast.error("Authentication required");
+      return;
+    }
+
     setIsResetting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user?.email) {
-        toast.error("Authentication required");
-        return;
-      }
-
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: session.user.email,
         password,
@@ -77,6 +77,12 @@ const Settings = () => {
       setPassword("");
     }
   };
+
+  if (!session) {
+    console.log("No session found, redirecting to login");
+    navigate("/");
+    return null;
+  }
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
