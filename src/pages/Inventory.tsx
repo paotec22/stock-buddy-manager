@@ -29,7 +29,9 @@ const Inventory = () => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!session) {
+    console.log("Inventory: Checking authentication", { hasSession: !!session });
+    if (!session?.user) {
+      console.log("Inventory: No session found, redirecting to login");
       navigate('/');
     }
   }, [session, navigate]);
@@ -60,7 +62,7 @@ const Inventory = () => {
     },
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    enabled: !!session, // Only fetch when authenticated
+    enabled: !!session?.user, // Only fetch when authenticated
   });
 
   // Optimized real-time updates
@@ -70,6 +72,12 @@ const Inventory = () => {
   });
 
   const handlePriceEdit = async (item: InventoryItem, newPrice: number) => {
+    if (!session?.user) {
+      console.log("Cannot edit price: No authenticated user");
+      toast.error("Please login to edit items");
+      return;
+    }
+
     try {
       console.log('Updating price for item:', item.id);
       const { error } = await supabase
@@ -92,6 +100,12 @@ const Inventory = () => {
   };
 
   const handleDelete = async (item: InventoryItem) => {
+    if (!session?.user) {
+      console.log("Cannot delete item: No authenticated user");
+      toast.error("Please login to delete items");
+      return;
+    }
+
     try {
       console.log('Deleting item:', item.id);
       const { error } = await supabase
@@ -152,6 +166,11 @@ const Inventory = () => {
         </div>
       </SidebarProvider>
     );
+  }
+
+  // If no session, show loading or redirect
+  if (!session?.user) {
+    return null;
   }
 
   const calculateGrandTotal = () => {
