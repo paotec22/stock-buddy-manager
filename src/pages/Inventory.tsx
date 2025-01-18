@@ -29,7 +29,7 @@ const Inventory = () => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    console.log("Inventory: Checking authentication", { hasSession: !!session });
+    console.log("Inventory: Checking authentication", { hasSession: !!session?.user });
     if (!session?.user) {
       console.log("Inventory: No session found, redirecting to login");
       navigate('/');
@@ -41,6 +41,11 @@ const Inventory = () => {
   const { data: inventoryItems = [], isLoading, error } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
+      if (!session?.user) {
+        console.log("Query aborted: No authenticated user");
+        return [];
+      }
+
       console.log('Fetching inventory for location:', selectedLocation);
       try {
         const { data, error } = await supabase
@@ -61,9 +66,9 @@ const Inventory = () => {
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
     enabled: !!session?.user, // Only fetch when authenticated
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false
   });
 
   // Optimized real-time updates
