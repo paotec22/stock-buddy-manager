@@ -33,6 +33,7 @@ const Inventory = () => {
     if (!session?.user) {
       console.log("Inventory: No session found, redirecting to login");
       navigate('/');
+      return;
     }
   }, [session, navigate]);
 
