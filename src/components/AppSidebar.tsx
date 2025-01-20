@@ -66,6 +66,11 @@ function SidebarContents() {
       <div className="px-3 py-2">
         <ThemeToggle />
       </div>
+      <div className="px-3 py-2">
+        <Button variant="ghost" size="icon" onClick={signOut}>
+          Logout
+        </Button>
+      </div>
     </div>
   );
 }
