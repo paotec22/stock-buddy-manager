@@ -16,12 +16,30 @@ const CreateInvoice = () => {
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
 
+  const calculateTotals = () => {
+    const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const taxRate = 0.075; // 7.5%
+    const taxAmount = subtotal * taxRate;
+    const total = subtotal + taxAmount;
+
+    return {
+      subtotal,
+      taxAmount,
+      total,
+      taxRate: taxRate * 100
+    };
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
-        .insert({ customer_name: customerName, customer_phone: customerPhone })
+        .insert({ 
+          customer_name: customerName, 
+          customer_phone: customerPhone,
+          ...calculateTotals()
+        })
         .single();
 
       if (invoiceError) throw invoiceError;
@@ -48,6 +66,17 @@ const CreateInvoice = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePrint = () => {
+    console.log("Printing invoice...");
+    window.print();
+  };
+
+  const handleDownload = () => {
+    console.log("Downloading invoice...");
+    // For now, we'll just show a toast since PDF generation will be implemented later
+    toast.info("PDF download feature coming soon!");
   };
 
   return (
