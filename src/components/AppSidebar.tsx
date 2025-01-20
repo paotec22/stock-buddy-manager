@@ -7,9 +7,11 @@ import {
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
-import { ThemeToggle } from "./ThemeToggle"; // Added import
+import { ThemeToggle } from "./ThemeToggle";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -43,10 +45,29 @@ function SidebarItem({ className, to, children, ...props }: SidebarItemProps) {
 
 function SidebarContents() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   
   if (!session) {
     return null;
   }
+
+  const handleSignOut = async () => {
+    try {
+      console.log("Attempting to sign out...");
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        toast.error("Failed to sign out");
+        return;
+      }
+      console.log("Successfully signed out");
+      toast.success("Successfully signed out");
+      navigate('/');
+    } catch (error) {
+      console.error("Unexpected error during sign out:", error);
+      toast.error("An unexpected error occurred");
+    }
+  };
 
   return (
     <div className="space-y-4 py-4">
@@ -67,7 +88,7 @@ function SidebarContents() {
         <ThemeToggle />
       </div>
       <div className="px-3 py-2">
-        <Button variant="ghost" size="icon" onClick={signOut}>
+        <Button variant="ghost" size="icon" onClick={handleSignOut}>
           Logout
         </Button>
       </div>
