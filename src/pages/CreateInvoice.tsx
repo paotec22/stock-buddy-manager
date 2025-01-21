@@ -8,12 +8,16 @@ import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
 import { BankDetails } from "@/components/invoice/BankDetails";
+import type { Database } from "@/integrations/supabase/types";
+
+type Invoice = Database['public']['Tables']['invoices']['Row'];
+type InvoiceItem = Database['public']['Tables']['invoice_items']['Row'];
 
 const CreateInvoice = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
   const navigate = useNavigate();
 
   const calculateTotals = () => {
@@ -40,12 +44,13 @@ const CreateInvoice = () => {
           customer_phone: customerPhone,
           ...calculateTotals()
         })
+        .select()
         .single();
 
       if (invoiceError) throw invoiceError;
 
       const invoiceItems = items.map(item => ({
-        invoice_id: invoice.id,
+        invoice_id: (invoice as Invoice).id,
         description: item.description,
         quantity: item.quantity,
         unit_price: item.unit_price,
