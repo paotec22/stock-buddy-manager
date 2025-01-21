@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -8,17 +8,26 @@ import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
 import { BankDetails } from "@/components/invoice/BankDetails";
+import { useAuth } from "@/components/AuthProvider";
 import type { Database } from "@/integrations/supabase/types";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
-type InvoiceItem = Database['public']['Tables']['invoice_items']['Row'];
+type NewInvoiceItem = Omit<Database['public']['Tables']['invoice_items']['Row'], 'id' | 'created_at' | 'invoice_id' | 'item_id'>;
 
 const CreateInvoice = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [items, setItems] = useState<NewInvoiceItem[]>([]);
   const navigate = useNavigate();
+  const { session } = useAuth();
+
+  useEffect(() => {
+    if (!session) {
+      toast.error("Please log in to create invoices");
+      navigate("/");
+    }
+  }, [session, navigate]);
 
   const calculateTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
@@ -35,6 +44,11 @@ const CreateInvoice = () => {
   };
 
   const handleSubmit = async () => {
+    if (!session?.user.id) {
+      toast.error("You must be logged in to create invoices");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { data: invoice, error: invoiceError } = await supabase
@@ -42,6 +56,7 @@ const CreateInvoice = () => {
         .insert({ 
           customer_name: customerName, 
           customer_phone: customerPhone,
+          user_id: session.user.id,
           ...calculateTotals()
         })
         .select()
@@ -80,9 +95,12 @@ const CreateInvoice = () => {
 
   const handleDownload = () => {
     console.log("Downloading invoice...");
-    // For now, we'll just show a toast since PDF generation will be implemented later
     toast.info("PDF download feature coming soon!");
   };
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
