@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar/SidebarContext";
 import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
@@ -20,26 +19,28 @@ const CreateInvoice = () => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
 
   useEffect(() => {
-    if (!session) {
+    if (!loading && !session) {
+      console.log("No session found, redirecting to login");
       toast.error("Please log in to create invoices");
       navigate("/");
     }
-  }, [session, navigate]);
+  }, [session, loading, navigate]);
 
   const calculateTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
-    const taxRate = 0.075; // 7.5%
-    const taxAmount = subtotal * taxRate;
-    const total = subtotal + taxAmount;
+    const taxRate = 7.5; // 7.5% tax rate
+    const taxAmount = (subtotal * taxRate) / 100;
+    const totalAmount = subtotal + taxAmount;
 
     return {
       subtotal,
-      taxAmount,
-      total,
-      taxRate: taxRate * 100
+      tax_rate: taxRate,
+      tax_amount: taxAmount,
+      total_amount: totalAmount,
+      invoice_number: `INV-${Date.now()}`, // Simple invoice number generation
     };
   };
 
@@ -65,11 +66,8 @@ const CreateInvoice = () => {
       if (invoiceError) throw invoiceError;
 
       const invoiceItems = items.map(item => ({
-        invoice_id: (invoice as Invoice).id,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        amount: item.amount
+        ...item,
+        invoice_id: invoice.id
       }));
 
       const { error: itemsError } = await supabase
@@ -78,8 +76,8 @@ const CreateInvoice = () => {
 
       if (itemsError) throw itemsError;
 
-      toast.success("Invoice created successfully");
-      navigate("/invoices");
+      toast.success("Invoice created successfully!");
+      navigate("/sales");
     } catch (error) {
       console.error('Error creating invoice:', error);
       toast.error("Failed to create invoice");
@@ -89,7 +87,6 @@ const CreateInvoice = () => {
   };
 
   const handlePrint = () => {
-    console.log("Printing invoice...");
     window.print();
   };
 
@@ -98,41 +95,44 @@ const CreateInvoice = () => {
     toast.info("PDF download feature coming soon!");
   };
 
+  // Show nothing while checking authentication
+  if (loading) {
+    return null;
+  }
+
+  // Show nothing if not authenticated
   if (!session) {
     return null;
   }
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col md:flex-row w-full">
-        <AppSidebar />
-        <main className="flex-1 p-4 md:p-6">
-          <div className="max-w-full md:max-w-4xl mx-auto">
-            <InvoiceHeader
-              onPrint={handlePrint}
-              onDownload={handleDownload}
-              isSubmitting={isSubmitting}
-              onSave={handleSubmit}
-            />
-
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-4 md:mb-8">INVOICE</h1>
-
-            <CustomerInfo
-              customerName={customerName}
-              customerPhone={customerPhone}
-              onNameChange={setCustomerName}
-              onPhoneChange={setCustomerPhone}
-            />
-
-            <InvoiceItemsTable
-              items={items}
-              setItems={setItems}
-              totals={calculateTotals()}
-            />
-
-            <BankDetails />
-          </div>
-        </main>
+      <div className="container mx-auto p-6 space-y-8">
+        <InvoiceHeader onPrint={handlePrint} onDownload={handleDownload} />
+        
+        <CustomerInfo
+          customerName={customerName}
+          setCustomerName={setCustomerName}
+          customerPhone={customerPhone}
+          setCustomerPhone={setCustomerPhone}
+        />
+        
+        <InvoiceItemsTable
+          items={items}
+          setItems={setItems}
+        />
+        
+        <BankDetails />
+        
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 disabled:opacity-50"
+          >
+            {isSubmitting ? "Creating..." : "Create Invoice"}
+          </button>
+        </div>
       </div>
     </SidebarProvider>
   );
