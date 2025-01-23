@@ -108,18 +108,24 @@ const CreateInvoice = () => {
   return (
     <SidebarProvider>
       <div className="container mx-auto p-6 space-y-8">
-        <InvoiceHeader onPrint={handlePrint} onDownload={handleDownload} />
+        <InvoiceHeader 
+          onPrint={handlePrint} 
+          onDownload={handleDownload} 
+          isSubmitting={isSubmitting}
+          onSave={handleSubmit}
+        />
         
         <CustomerInfo
           customerName={customerName}
-          setCustomerName={setCustomerName}
+          onNameChange={setCustomerName}
           customerPhone={customerPhone}
-          setCustomerPhone={setCustomerPhone}
+          onPhoneChange={setCustomerPhone}
         />
         
         <InvoiceItemsTable
           items={items}
           setItems={setItems}
+          totals={calculateTotals()}
         />
         
         <BankDetails />
