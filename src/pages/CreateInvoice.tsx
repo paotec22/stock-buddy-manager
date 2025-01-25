@@ -33,13 +33,14 @@ const CreateInvoice = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
     const taxRate = 7.5; // 7.5% tax rate
     const taxAmount = (subtotal * taxRate) / 100;
-    const totalAmount = subtotal + taxAmount;
+    const total = subtotal + taxAmount; // Calculate total for InvoiceItemsTable
 
     return {
       subtotal,
       tax_rate: taxRate,
       tax_amount: taxAmount,
-      total_amount: totalAmount,
+      total_amount: total,
+      total, // Add this for InvoiceItemsTable component
       invoice_number: `INV-${Date.now()}`, // Simple invoice number generation
     };
   };
@@ -97,11 +98,13 @@ const CreateInvoice = () => {
 
   // Show nothing while checking authentication
   if (loading) {
+    console.log("Loading authentication state...");
     return null;
   }
 
   // Show nothing if not authenticated
   if (!session) {
+    console.log("No active session found");
     return null;
   }
 
@@ -129,16 +132,6 @@ const CreateInvoice = () => {
         />
         
         <BankDetails />
-        
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 disabled:opacity-50"
-          >
-            {isSubmitting ? "Creating..." : "Create Invoice"}
-          </button>
-        </div>
       </div>
     </SidebarProvider>
   );
