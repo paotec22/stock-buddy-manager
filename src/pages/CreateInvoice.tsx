@@ -33,15 +33,15 @@ const CreateInvoice = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
     const taxRate = 7.5; // 7.5% tax rate
     const taxAmount = (subtotal * taxRate) / 100;
-    const total = subtotal + taxAmount; // Calculate total for InvoiceItemsTable
+    const total = subtotal + taxAmount;
 
     return {
       subtotal,
       tax_rate: taxRate,
       tax_amount: taxAmount,
       total_amount: total,
-      total, // Add this for InvoiceItemsTable component
-      invoice_number: `INV-${Date.now()}`, // Simple invoice number generation
+      total, // This matches the InvoiceItemsTable prop requirement
+      invoice_number: `INV-${Date.now()}`
     };
   };
 
@@ -96,13 +96,13 @@ const CreateInvoice = () => {
     toast.info("PDF download feature coming soon!");
   };
 
-  // Show nothing while checking authentication
+  // Show loading state
   if (loading) {
     console.log("Loading authentication state...");
     return null;
   }
 
-  // Show nothing if not authenticated
+  // Redirect if not authenticated
   if (!session) {
     console.log("No active session found");
     return null;
