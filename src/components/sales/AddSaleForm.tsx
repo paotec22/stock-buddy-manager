@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface AddSaleFormProps {
   open: boolean;
@@ -16,17 +17,18 @@ interface AddSaleFormProps {
   onSuccess?: () => void;
 }
 
-interface FormData {
-  itemId: string;
-  quantity: string;
-  salePrice: string;
-  location: string;
-}
+const formSchema = z.object({
+  itemId: z.string().min(1, "Item is required"),
+  quantity: z.string().min(1, "Quantity is required"),
+  salePrice: z.string().min(1, "Sale price is required"),
+  location: z.string().min(1, "Location is required"),
+});
 
 const LOCATIONS = ["Ikeja", "Cement"];
 
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+<<<<<<< HEAD
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   
   const { data: inventoryItems } = useQuery({
@@ -54,10 +56,43 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
     if (selectedItem) {
       form.setValue("salePrice", selectedItem.Price.toString());
+=======
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      itemId: "",
+      quantity: "",
+      salePrice: "",
+      location: "Ikeja",
+    },
+  });
+
+  const handleSearch = async (term: string) => {
+    setSearchTerm(term);
+    if (term.length > 2) {
+      const { data, error } = await supabase
+        .from('inventory list')
+        .select('*')
+        .ilike('Item Description', `%${term}%`);
+      
+      if (error) {
+        console.error('Error searching items:', error);
+        toast.error("Error fetching items");
+      } else {
+        console.log('Search results:', data);
+        setSearchResults(data || []);
+      }
+    } else {
+      setSearchResults([]);
+>>>>>>> 8451e19b720dc6bc8184ec18029f890aa0e3b3a1
     }
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    console.log('Form submitted with data:', data);
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -83,10 +118,18 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
 
       toast.success("Sale recorded successfully");
       form.reset();
+<<<<<<< HEAD
       onSuccess?.();
     } catch (error: any) {
       console.error('Error:', error);
       toast.error(error.message || "Failed to record sale");
+=======
+      if (onSuccess) onSuccess();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error recording sale:', error);
+      toast.error("Error recording sale");
+>>>>>>> 8451e19b720dc6bc8184ec18029f890aa0e3b3a1
     } finally {
       setIsSubmitting(false);
     }
@@ -102,6 +145,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+<<<<<<< HEAD
               name="location"
               render={({ field }) => (
                 <FormItem>
@@ -156,6 +200,35 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
                       ))}
                     </SelectContent>
                   </Select>
+=======
+              name="itemId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Search Item</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Search for items..."
+                      onChange={(e) => handleSearch(e.target.value)}
+                    />
+                  </FormControl>
+                  {searchResults.length > 0 && (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an item" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {searchResults.map((item: any) => (
+                          <SelectItem key={item.id} value={item.id.toString()}>
+                            {item["Item Description"]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+>>>>>>> 8451e19b720dc6bc8184ec18029f890aa0e3b3a1
                   <FormMessage />
                 </FormItem>
               )}
@@ -178,7 +251,11 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
               name="salePrice"
               render={({ field }) => (
                 <FormItem>
+<<<<<<< HEAD
                   <FormLabel>Sale Price (₦)</FormLabel>
+=======
+                  <FormLabel>Sale Price</FormLabel>
+>>>>>>> 8451e19b720dc6bc8184ec18029f890aa0e3b3a1
                   <FormControl>
                     <Input type="number" step="0.01" placeholder="Enter sale price" {...field} />
                   </FormControl>
@@ -186,8 +263,37 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
                 </FormItem>
               )}
             />
+<<<<<<< HEAD
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Recording..." : "Record Sale"}
+=======
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Recording Sale..." : "Record Sale"}
+>>>>>>> 8451e19b720dc6bc8184ec18029f890aa0e3b3a1
             </Button>
           </form>
         </Form>
