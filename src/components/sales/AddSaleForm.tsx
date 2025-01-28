@@ -29,7 +29,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   
-  const { data: inventoryItems } = useQuery({
+  const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       console.log('Fetching inventory items for location:', selectedLocation);
@@ -38,7 +38,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         .select('*')
         .eq('location', selectedLocation);
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -60,17 +60,18 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     }
   };
 
-  const onSubmit = async (data: FormData) => {
-    console.log('Form submission started with data:', data);
+  const onSubmit = async (formData: FormData) => {
+    console.log('Form submission started with data:', formData);
     setIsSubmitting(true);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not authenticated");
       }
 
-      const selectedItem = inventoryItems?.find(
-        item => item.id.toString() === data.itemId.toString()
+      const selectedItem = inventoryItems.find(
+        item => item.id.toString() === formData.itemId.toString()
       );
 
       if (!selectedItem) {
@@ -78,17 +79,17 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       }
 
       const validationResult = await validateSaleSubmission({
-        itemId: data.itemId,
-        quantity: data.quantity,
+        itemId: formData.itemId,
+        quantity: formData.quantity,
         selectedItem,
         userId: user.id
       });
 
       await recordSale(
         user.id,
-        data.itemId,
+        formData.itemId,
         validationResult.parsedQuantity,
-        parseFloat(data.salePrice),
+        parseFloat(formData.salePrice),
         selectedItem
       );
 
@@ -153,7 +154,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
                       field.onChange(value);
                       handleItemSelect(value);
                     }}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
