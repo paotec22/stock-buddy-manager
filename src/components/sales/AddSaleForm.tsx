@@ -32,6 +32,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const { data: inventoryItems } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
+      console.log('Fetching inventory items for location:', selectedLocation);
       const { data, error } = await supabase
         .from('inventory list')
         .select('*')
@@ -51,41 +52,52 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   });
 
   const handleItemSelect = (itemId: string) => {
+    console.log('Selected item ID:', itemId);
     const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
     if (selectedItem) {
+      console.log('Setting sale price from selected item:', selectedItem.Price);
       form.setValue("salePrice", selectedItem.Price.toString());
     }
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log('Form submission started with data:', data);
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       const selectedItem = inventoryItems?.find(
         item => item.id.toString() === data.itemId.toString()
       );
 
-      const { parsedQuantity } = await validateSaleSubmission({
+      if (!selectedItem) {
+        throw new Error("Selected item not found");
+      }
+
+      const validationResult = await validateSaleSubmission({
         itemId: data.itemId,
         quantity: data.quantity,
         selectedItem,
-        userId: user?.id
+        userId: user.id
       });
 
       await recordSale(
-        user!.id,
+        user.id,
         data.itemId,
-        parsedQuantity,
+        validationResult.parsedQuantity,
         parseFloat(data.salePrice),
         selectedItem
       );
 
+      console.log('Sale recorded successfully');
       toast.success("Sale recorded successfully");
       form.reset();
       onSuccess?.();
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('Error recording sale:', error);
       toast.error(error.message || "Failed to record sale");
     } finally {
       setIsSubmitting(false);
