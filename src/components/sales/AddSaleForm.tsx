@@ -21,7 +21,6 @@ interface AddSaleFormProps {
   onSuccess?: () => void;
 }
 
-<<<<<<< HEAD
 interface FormData {
   itemId: string;
   quantity: string;
@@ -32,10 +31,6 @@ interface FormData {
 const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
 
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
-=======
-export const AddSaleForm = ({ open, onOpenChange, onSuccess }: AddSaleFormProps) => {
-  const { session } = useAuth();
->>>>>>> fde7a10f0350db39071db52369c99bf5cf999a45
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
 
