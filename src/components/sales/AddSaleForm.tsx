@@ -29,6 +29,15 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
   
+  const form = useForm<FormData>({
+    defaultValues: {
+      itemId: "",
+      quantity: "",
+      salePrice: "",
+      location: LOCATIONS[0],
+    },
+  });
+
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
@@ -39,15 +48,6 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         .eq('location', selectedLocation);
       if (error) throw error;
       return data || [];
-    },
-  });
-
-  const form = useForm<FormData>({
-    defaultValues: {
-      itemId: "",
-      quantity: "",
-      salePrice: "",
-      location: LOCATIONS[0],
     },
   });
 
@@ -97,6 +97,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       toast.success("Sale recorded successfully");
       form.reset();
       onSuccess?.();
+      onOpenChange(false);
     } catch (error: any) {
       console.error('Error recording sale:', error);
       toast.error(error.message || "Failed to record sale");
