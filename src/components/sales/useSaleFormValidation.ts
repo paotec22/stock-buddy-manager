@@ -1,11 +1,10 @@
 import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
 
 interface ValidationParams {
   itemId: string;
   quantity: string;
   selectedItem: any;
-  userId: string | undefined;
+  userId: string;
 }
 
 export const validateSaleSubmission = async ({ 
@@ -14,6 +13,8 @@ export const validateSaleSubmission = async ({
   selectedItem, 
   userId 
 }: ValidationParams) => {
+  console.log('Validating sale submission:', { itemId, quantity, selectedItem, userId });
+  
   if (!userId) {
     throw new Error("Please login to record sales");
   }
@@ -23,6 +24,10 @@ export const validateSaleSubmission = async ({
   }
 
   const parsedQuantity = parseInt(quantity);
+  if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+    throw new Error("Please enter a valid quantity");
+  }
+
   if (parsedQuantity > selectedItem.Quantity) {
     throw new Error("Not enough items in inventory");
   }
@@ -40,6 +45,8 @@ export const recordSale = async (
   salePrice: number,
   selectedItem: any
 ) => {
+  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem });
+  
   const sale = {
     item_id: itemId,
     quantity: quantity,

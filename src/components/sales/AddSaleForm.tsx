@@ -1,14 +1,19 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
+import { useAuth } from "@/components/AuthProvider";
+import { LocationSelect } from "./form/LocationSelect";
+import { ItemSelect } from "./form/ItemSelect";
+import { FormData, InventoryItem } from "./types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+const LOCATIONS = ["Cement", "Ikeja"];
 
 interface AddSaleFormProps {
   open: boolean;
@@ -16,6 +21,7 @@ interface AddSaleFormProps {
   onSuccess?: () => void;
 }
 
+<<<<<<< HEAD
 interface FormData {
   itemId: string;
   quantity: string;
@@ -26,20 +32,12 @@ interface FormData {
 const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
 
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
+=======
+export const AddSaleForm = ({ open, onOpenChange, onSuccess }: AddSaleFormProps) => {
+  const { session } = useAuth();
+>>>>>>> fde7a10f0350db39071db52369c99bf5cf999a45
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
-  
-  const { data: inventoryItems } = useQuery({
-    queryKey: ['inventory', selectedLocation],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('inventory list')
-        .select('*')
-        .eq('location', selectedLocation);
-      if (error) throw error;
-      return data;
-    },
-  });
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -50,31 +48,49 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     },
   });
 
+  const { data: inventoryItems = [] } = useQuery({
+    queryKey: ['inventory', selectedLocation],
+    queryFn: async () => {
+      console.log('Fetching inventory for location:', selectedLocation);
+      const { data, error } = await supabase
+        .from('inventory list')
+        .select('*')
+        .eq('location', selectedLocation);
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const handleItemSelect = (itemId: string) => {
+    console.log('Selected item ID:', itemId);
     const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
     if (selectedItem) {
-      form.setValue("salePrice", selectedItem.Price.toString());
+      form.setValue('salePrice', selectedItem.Price.toString());
     }
   };
 
   const onSubmit = async (data: FormData) => {
+    if (!session?.user?.id) {
+      toast.error("Please login to record sales");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const selectedItem = inventoryItems?.find(
-        item => item.id.toString() === data.itemId.toString()
+      const selectedItem = inventoryItems.find(
+        (item) => item.id.toString() === data.itemId
       );
 
       const { parsedQuantity } = await validateSaleSubmission({
         itemId: data.itemId,
         quantity: data.quantity,
         selectedItem,
-        userId: user?.id
+        userId: session.user.id,
       });
 
       await recordSale(
-        user!.id,
+        session.user.id,
         data.itemId,
         parsedQuantity,
         parseFloat(data.salePrice),
@@ -84,8 +100,9 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       toast.success("Sale recorded successfully");
       form.reset();
       onSuccess?.();
+      onOpenChange(false);
     } catch (error: any) {
-      console.error('Error:', error);
+      console.error('Error recording sale:', error);
       toast.error(error.message || "Failed to record sale");
     } finally {
       setIsSubmitting(false);
@@ -94,104 +111,60 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Record New Sale</DialogTitle>
+          <DialogTitle>Record Sale</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <Select
-                    value={selectedLocation}
-                    onValueChange={(value) => {
-                      setSelectedLocation(value);
-                      field.onChange(value);
-                    }}
-                  >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <LocationSelect
+                form={form}
+                locations={LOCATIONS}
+                onLocationChange={setSelectedLocation}
+              />
+              
+              <ItemSelect
+                form={form}
+                items={inventoryItems}
+                onItemSelect={handleItemSelect}
+              />
+
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select location" />
-                      </SelectTrigger>
+                      <Input type="number" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {LOCATIONS.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="itemId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Item</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      handleItemSelect(value);
-                    }}
-                    defaultValue={field.value}
-                  >
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="salePrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sale Price</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an item" />
-                      </SelectTrigger>
+                      <Input type="number" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {inventoryItems?.map((item) => (
-                        <SelectItem key={item.id} value={item.id.toString()}>
-                          {item["Item Description"]} (₦{item.Price?.toLocaleString()})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter quantity" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="salePrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sale Price (₦)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" placeholder="Enter sale price" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Recording..." : "Record Sale"}
-            </Button>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Recording..." : "Record Sale"}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
   );
-}
+};
