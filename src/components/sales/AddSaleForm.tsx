@@ -23,7 +23,7 @@ interface FormData {
   location: string;
 }
 
-const LOCATIONS = ["Ikeja", "Cement"];
+const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
 
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
