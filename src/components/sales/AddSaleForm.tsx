@@ -11,15 +11,17 @@ import { useAuth } from "@/components/AuthProvider";
 import { LocationSelect } from "./form/LocationSelect";
 import { ItemSelect } from "./form/ItemSelect";
 import { FormData, InventoryItem } from "./types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const LOCATIONS = ["Main Store", "Cement", "Ikeja"];
 
 interface AddSaleFormProps {
-  onSuccess?: () => void;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export const AddSaleForm = ({ onSuccess, onOpenChange }: AddSaleFormProps) => {
+export const AddSaleForm = ({ open, onOpenChange, onSuccess }: AddSaleFormProps) => {
   const { session } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
@@ -95,54 +97,61 @@ export const AddSaleForm = ({ onSuccess, onOpenChange }: AddSaleFormProps) => {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <LocationSelect
-            form={form}
-            locations={LOCATIONS}
-            onLocationChange={setSelectedLocation}
-          />
-          
-          <ItemSelect
-            form={form}
-            items={inventoryItems}
-            onItemSelect={handleItemSelect}
-          />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Record Sale</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <LocationSelect
+                form={form}
+                locations={LOCATIONS}
+                onLocationChange={setSelectedLocation}
+              />
+              
+              <ItemSelect
+                form={form}
+                items={inventoryItems}
+                onItemSelect={handleItemSelect}
+              />
 
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantity</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="salePrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sale Price</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+              <FormField
+                control={form.control}
+                name="salePrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sale Price</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Recording..." : "Record Sale"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Recording..." : "Record Sale"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -131,14 +131,14 @@ const Sales = () => {
             <SalesTable sales={sales} />
           </div>
 
-          {showAddSale && (
-            <AddSaleForm
-              onOpenChange={setShowAddSale}
-              onSuccess={() => {
-                refetch();
-              }}
-            />
-          )}
+          <AddSaleForm
+            open={showAddSale}
+            onOpenChange={setShowAddSale}
+            onSuccess={() => {
+              refetch();
+              setShowAddSale(false);
+            }}
+          />
 
           <BulkSaleUploadModal
             open={showBulkUpload}
