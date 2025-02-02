@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -32,7 +33,7 @@ export const AddSaleForm = ({ onSuccess, onOpenChange }: AddSaleFormProps) => {
     },
   });
 
-  const { data: inventoryItems = [] } = useQuery<InventoryItem[]>({
+  const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       console.log('Fetching inventory for location:', selectedLocation);
@@ -42,7 +43,7 @@ export const AddSaleForm = ({ onSuccess, onOpenChange }: AddSaleFormProps) => {
         .eq('location', selectedLocation);
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -55,7 +56,7 @@ export const AddSaleForm = ({ onSuccess, onOpenChange }: AddSaleFormProps) => {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!session?.user.id) {
+    if (!session?.user?.id) {
       toast.error("Please login to record sales");
       return;
     }
