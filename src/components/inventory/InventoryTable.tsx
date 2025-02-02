@@ -69,6 +69,8 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
   };
 
   const handleQuantityEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    if (!e.currentTarget) return;
+    
     const newQuantity = parseInt(e.currentTarget.value);
     if (!isNaN(newQuantity)) {
       try {
@@ -95,6 +97,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
       }
     }
   };
+
+  if (!items) {
+    return <div>Loading inventory...</div>;
+  }
 
   return (
     <div className="space-y-4">
