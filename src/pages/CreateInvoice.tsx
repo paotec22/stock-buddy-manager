@@ -40,7 +40,7 @@ const CreateInvoice = () => {
       tax_rate: taxRate,
       tax_amount: taxAmount,
       total_amount: total,
-      total,
+      total, // This matches the InvoiceItemsTable prop requirement
       invoice_number: `INV-${Date.now()}`
     };
   };
@@ -48,16 +48,6 @@ const CreateInvoice = () => {
   const handleSubmit = async () => {
     if (!session?.user.id) {
       toast.error("You must be logged in to create invoices");
-      return;
-    }
-
-    if (!customerName.trim()) {
-      toast.error("Please enter customer name");
-      return;
-    }
-
-    if (items.length === 0) {
-      toast.error("Please add at least one item");
       return;
     }
 
@@ -106,11 +96,13 @@ const CreateInvoice = () => {
     toast.info("PDF download feature coming soon!");
   };
 
+  // Show loading state
   if (loading) {
     console.log("Loading authentication state...");
     return null;
   }
 
+  // Redirect if not authenticated
   if (!session) {
     console.log("No active session found");
     return null;
@@ -118,7 +110,7 @@ const CreateInvoice = () => {
 
   return (
     <SidebarProvider>
-      <div className="container mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
+      <div className="container mx-auto p-6 space-y-8">
         <InvoiceHeader 
           onPrint={handlePrint} 
           onDownload={handleDownload} 

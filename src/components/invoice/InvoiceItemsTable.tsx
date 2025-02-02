@@ -20,7 +20,7 @@ interface InvoiceItemsTableProps {
   };
 }
 
-export const InvoiceItemsTable = ({ items = [], setItems, totals }: InvoiceItemsTableProps) => {
+export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTableProps) => {
   const [newItem, setNewItem] = useState<InvoiceItem>({
     description: "",
     quantity: 0,
@@ -28,20 +28,18 @@ export const InvoiceItemsTable = ({ items = [], setItems, totals }: InvoiceItems
     amount: 0
   });
 
-  // Automatically calculate amount when quantity or unit_price changes
   useEffect(() => {
-    if (newItem.quantity && newItem.unit_price) {
-      const amount = newItem.quantity * newItem.unit_price;
-      setNewItem(prev => ({ ...prev, amount }));
-    }
+    // Automatically calculate amount when quantity or unit_price changes
+    const amount = newItem.quantity * newItem.unit_price;
+    setNewItem(prev => ({ ...prev, amount }));
   }, [newItem.quantity, newItem.unit_price]);
 
   const handleAddItem = () => {
-    if (!newItem.description || !newItem.quantity || !newItem.unit_price) {
+    if (!newItem.description || newItem.quantity <= 0 || newItem.unit_price <= 0) {
       return;
     }
 
-    setItems([...items, { ...newItem, amount: newItem.quantity * newItem.unit_price }]);
+    setItems([...items, newItem]);
     setNewItem({
       description: "",
       quantity: 0,
@@ -52,18 +50,6 @@ export const InvoiceItemsTable = ({ items = [], setItems, totals }: InvoiceItems
 
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
-  };
-
-  const handleQuantityChange = (value: string) => {
-    const quantity = Number(value);
-    const amount = quantity * newItem.unit_price;
-    setNewItem({ ...newItem, quantity, amount });
-  };
-
-  const handleUnitPriceChange = (value: string) => {
-    const unit_price = Number(value);
-    const amount = newItem.quantity * unit_price;
-    setNewItem({ ...newItem, unit_price, amount });
   };
 
   const formatCurrency = (amount: number) => {
@@ -117,7 +103,7 @@ export const InvoiceItemsTable = ({ items = [], setItems, totals }: InvoiceItems
                 type="number"
                 min="0"
                 value={newItem.quantity || ""}
-                onChange={(e) => handleQuantityChange(e.target.value)}
+                onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
                 className="w-full"
               />
             </TableCell>
@@ -126,7 +112,7 @@ export const InvoiceItemsTable = ({ items = [], setItems, totals }: InvoiceItems
                 type="number"
                 min="0"
                 value={newItem.unit_price || ""}
-                onChange={(e) => handleUnitPriceChange(e.target.value)}
+                onChange={(e) => setNewItem({ ...newItem, unit_price: Number(e.target.value) })}
                 className="w-full"
               />
             </TableCell>
