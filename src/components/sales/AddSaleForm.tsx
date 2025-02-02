@@ -21,18 +21,10 @@ interface AddSaleFormProps {
   onSuccess?: () => void;
 }
 
-interface FormData {
-  itemId: string;
-  quantity: string;
-  salePrice: string;
-  location: string;
-}
-
-const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
-
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+  const { session } = useAuth();
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -162,4 +154,4 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       </DialogContent>
     </Dialog>
   );
-};
+}
