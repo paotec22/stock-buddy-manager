@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+<<<<<<< HEAD
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,21 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+=======
+
+const LOCATIONS = ["Cement", "Ikeja"];
+
+interface AddSaleFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+}
+
+export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+  const { session } = useAuth();
+>>>>>>> 82126e5e0565aede2cb910387bfcc89d09810a8d
 
   const form = useForm<FormData>({
     defaultValues: {
