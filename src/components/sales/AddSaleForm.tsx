@@ -1,36 +1,38 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 import { useAuth } from "@/components/AuthProvider";
-import { FormData } from "./types";
+import { LocationSelect } from "./form/LocationSelect";
+import { ItemSelect } from "./form/ItemSelect";
+import { FormData, InventoryItem } from "./types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
+const LOCATIONS = ["Cement", "Ikeja"];
 
-<<<<<<< HEAD
-=======
 interface AddSaleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
->>>>>>> e021a785bc527b8a8544144da4bb4b596b5d7a93
+interface FormData {
+  itemId: string;
+  quantity: string;
+  salePrice: string;
+  location: string;
+}
+
+const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
+
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-<<<<<<< HEAD
-=======
-  const { session } = useAuth();
->>>>>>> e021a785bc527b8a8544144da4bb4b596b5d7a93
+  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -42,32 +44,24 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   });
 
   const { data: inventoryItems = [] } = useQuery({
-    queryKey: ['inventory', form.watch('location')],
+    queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
+      console.log('Fetching inventory for location:', selectedLocation);
       const { data, error } = await supabase
         .from('inventory list')
         .select('*')
-        .eq('location', form.watch('location'));
+        .eq('location', selectedLocation);
+      
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  const handleSearch = async (term: string) => {
-    setSearchTerm(term);
-    if (term.length > 2) {
-      const { data, error } = await supabase
-        .from('inventory list')
-        .select('*')
-        .ilike('"Item Description"', `%${term}%`);
-      if (error) {
-        console.error('Error fetching items:', error);
-        toast.error("Error fetching items");
-      } else {
-        setSearchResults(data);
-      }
-    } else {
-      setSearchResults([]);
+  const handleItemSelect = (itemId: string) => {
+    console.log('Selected item ID:', itemId);
+    const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
+    if (selectedItem) {
+      form.setValue('salePrice', selectedItem.Price.toString());
     }
   };
 
@@ -79,28 +73,32 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
 
     setIsSubmitting(true);
     try {
-      const selectedItem = searchResults.find(item => item.id === data.itemId);
-      await validateSaleSubmission({
+      const selectedItem = inventoryItems.find(
+        (item) => item.id.toString() === data.itemId
+      );
+
+      const { parsedQuantity } = await validateSaleSubmission({
         itemId: data.itemId,
         quantity: data.quantity,
         selectedItem,
-        userId: session.user.id
+        userId: session.user.id,
       });
-      
+
       await recordSale(
         session.user.id,
         data.itemId,
-        parseInt(data.quantity),
+        parsedQuantity,
         parseFloat(data.salePrice),
         selectedItem
       );
-      
+
       toast.success("Sale recorded successfully");
-      if (onSuccess) onSuccess();
       form.reset();
-    } catch (error) {
+      onSuccess?.();
+      onOpenChange(false);
+    } catch (error: any) {
       console.error('Error recording sale:', error);
-      toast.error(error instanceof Error ? error.message : "Error recording sale");
+      toast.error(error.message || "Failed to record sale");
     } finally {
       setIsSubmitting(false);
     }
@@ -110,103 +108,58 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Sale</DialogTitle>
+          <DialogTitle>Record Sale</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormItem>
-              <FormLabel>Search Item</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search for items..."
-                />
-              </FormControl>
-            </FormItem>
-            {searchResults.length > 0 && (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <LocationSelect
+                form={form}
+                locations={LOCATIONS}
+                onLocationChange={setSelectedLocation}
+              />
+              
+              <ItemSelect
+                form={form}
+                items={inventoryItems}
+                onItemSelect={handleItemSelect}
+              />
+
               <FormField
                 control={form.control}
-                name="itemId"
+                name="quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Select Item</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an item" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {searchResults.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item["Item Description"]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
                   </FormItem>
                 )}
               />
-            )}
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantity</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="salePrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sale Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+
+              <FormField
+                control={form.control}
+                name="salePrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sale Price</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a location" />
-                      </SelectTrigger>
+                      <Input type="number" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {LOCATIONS.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? "Recording Sale..." : "Record Sale"}
-            </Button>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Recording..." : "Record Sale"}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
   );
-}
+};
