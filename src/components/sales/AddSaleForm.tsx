@@ -1,38 +1,21 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
-import { useAuth } from "@/components/AuthProvider";
-import { LocationSelect } from "./form/LocationSelect";
-import { ItemSelect } from "./form/ItemSelect";
-import { FormData, InventoryItem } from "./types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-const LOCATIONS = ["Cement", "Ikeja"];
-
-interface AddSaleFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
-}
-
-interface FormData {
-  itemId: string;
-  quantity: string;
-  salePrice: string;
-  location: string;
-}
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 
 const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
 
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -46,59 +29,41 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
-      console.log('Fetching inventory for location:', selectedLocation);
       const { data, error } = await supabase
-        .from('inventory list')
+        .from('items')
         .select('*')
         .eq('location', selectedLocation);
-      
       if (error) throw error;
-      return data || [];
+      return data;
     },
   });
 
-  const handleItemSelect = (itemId: string) => {
-    console.log('Selected item ID:', itemId);
-    const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
-    if (selectedItem) {
-      form.setValue('salePrice', selectedItem.Price.toString());
+  const handleSearch = async (term: string) => {
+    setSearchTerm(term);
+    if (term.length > 2) {
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .ilike('name', `%${term}%`);
+      if (error) {
+        toast.error("Error fetching items");
+      } else {
+        setSearchResults(data);
+      }
+    } else {
+      setSearchResults([]);
     }
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!session?.user?.id) {
-      toast.error("Please login to record sales");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const selectedItem = inventoryItems.find(
-        (item) => item.id.toString() === data.itemId
-      );
-
-      const { parsedQuantity } = await validateSaleSubmission({
-        itemId: data.itemId,
-        quantity: data.quantity,
-        selectedItem,
-        userId: session.user.id,
-      });
-
-      await recordSale(
-        session.user.id,
-        data.itemId,
-        parsedQuantity,
-        parseFloat(data.salePrice),
-        selectedItem
-      );
-
+      await validateSaleSubmission(data);
+      await recordSale(data);
       toast.success("Sale recorded successfully");
-      form.reset();
-      onSuccess?.();
-      onOpenChange(false);
-    } catch (error: any) {
-      console.error('Error recording sale:', error);
-      toast.error(error.message || "Failed to record sale");
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      toast.error("Error recording sale");
     } finally {
       setIsSubmitting(false);
     }
@@ -108,58 +73,91 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Record Sale</DialogTitle>
+          <DialogTitle>Add Sale</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <LocationSelect
-                form={form}
-                locations={LOCATIONS}
-                onLocationChange={setSelectedLocation}
+        <Form onSubmit={form.handleSubmit(onSubmit)}>
+          <FormItem>
+            <FormLabel>Search Item</FormLabel>
+            <FormControl>
+              <Input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search for items..."
               />
-              
-              <ItemSelect
-                form={form}
-                items={inventoryItems}
-                onItemSelect={handleItemSelect}
-              />
-
-              <FormField
-                control={form.control}
-                name="quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantity</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="salePrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sale Price</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Recording..." : "Record Sale"}
-              </Button>
-            </div>
-          </form>
+            </FormControl>
+          </FormItem>
+          {searchResults.length > 0 && (
+            <FormItem>
+              <FormLabel>Select Item</FormLabel>
+              <FormControl>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an item" />
+                  </SelectTrigger>
+                  <SelectContent style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {searchResults.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+            </FormItem>
+          )}
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="salePrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sale Price</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Select {...field}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </Button>
         </Form>
       </DialogContent>
     </Dialog>
   );
-};
+}
