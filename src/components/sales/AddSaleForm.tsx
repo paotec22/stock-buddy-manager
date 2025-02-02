@@ -12,25 +12,19 @@ import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 import { useAuth } from "@/components/AuthProvider";
 import { FormData } from "./types";
 
-const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
-
-<<<<<<< HEAD
-=======
 interface AddSaleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
->>>>>>> e021a785bc527b8a8544144da4bb4b596b5d7a93
+const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
+
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-<<<<<<< HEAD
-=======
   const { session } = useAuth();
->>>>>>> e021a785bc527b8a8544144da4bb4b596b5d7a93
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -44,6 +38,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory', form.watch('location')],
     queryFn: async () => {
+      console.log('Fetching inventory for location:', form.watch('location'));
       const { data, error } = await supabase
         .from('inventory list')
         .select('*')
@@ -51,6 +46,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       if (error) throw error;
       return data;
     },
+    enabled: !!session, // Only fetch when session exists
   });
 
   const handleSearch = async (term: string) => {
@@ -64,7 +60,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         console.error('Error fetching items:', error);
         toast.error("Error fetching items");
       } else {
-        setSearchResults(data);
+        setSearchResults(data || []);
       }
     } else {
       setSearchResults([]);
@@ -80,6 +76,10 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     setIsSubmitting(true);
     try {
       const selectedItem = searchResults.find(item => item.id === data.itemId);
+      if (!selectedItem) {
+        throw new Error("Please select a valid item");
+      }
+
       await validateSaleSubmission({
         itemId: data.itemId,
         quantity: data.quantity,
@@ -96,8 +96,8 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       );
       
       toast.success("Sale recorded successfully");
-      if (onSuccess) onSuccess();
       form.reset();
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error recording sale:', error);
       toast.error(error instanceof Error ? error.message : "Error recording sale");
@@ -106,32 +106,43 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     }
   };
 
+  // Show loading state if session is not yet determined
+  if (!session) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Authentication Required</DialogTitle>
+          </DialogHeader>
+          <p>Please login to record sales.</p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Sale</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormItem>
-              <FormLabel>Search Item</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search for items..."
-                />
-              </FormControl>
-            </FormItem>
-            {searchResults.length > 0 && (
-              <FormField
-                control={form.control}
-                name="itemId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Item</FormLabel>
+            <FormField
+              control={form.control}
+              name="itemId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Search Item</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      placeholder="Search for items..."
+                    />
+                  </FormControl>
+                  {searchResults.length > 0 && (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -146,11 +157,11 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="quantity"
