@@ -33,14 +33,14 @@ const CreateInvoice = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
     const taxRate = 7.5; // 7.5% tax rate
     const taxAmount = (subtotal * taxRate) / 100;
-    const total = subtotal + taxAmount;
+    const totalAmount = subtotal + taxAmount;
 
     return {
       subtotal,
       tax_rate: taxRate,
       tax_amount: taxAmount,
-      total_amount: total,
-      total, // This matches the InvoiceItemsTable prop requirement
+      total_amount: totalAmount,
+      total: totalAmount, // This matches the InvoiceItemsTable prop requirement
       invoice_number: `INV-${Date.now()}`
     };
   };
@@ -53,13 +53,18 @@ const CreateInvoice = () => {
 
     setIsSubmitting(true);
     try {
+      const totals = calculateTotals();
       const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
         .insert({ 
           customer_name: customerName, 
           customer_phone: customerPhone,
           user_id: session.user.id,
-          ...calculateTotals()
+          invoice_number: totals.invoice_number,
+          subtotal: totals.subtotal,
+          tax_rate: totals.tax_rate,
+          tax_amount: totals.tax_amount,
+          total_amount: totals.total_amount
         })
         .select()
         .single();
