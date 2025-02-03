@@ -110,28 +110,39 @@ const CreateInvoice = () => {
 
   return (
     <SidebarProvider>
-      <div className="container mx-auto p-6 space-y-8">
-        <InvoiceHeader 
-          onPrint={handlePrint} 
-          onDownload={handleDownload} 
-          isSubmitting={isSubmitting}
-          onSave={handleSubmit}
-        />
-        
-        <CustomerInfo
-          customerName={customerName}
-          onNameChange={setCustomerName}
-          customerPhone={customerPhone}
-          onPhoneChange={setCustomerPhone}
-        />
-        
-        <InvoiceItemsTable
-          items={items}
-          setItems={setItems}
-          totals={calculateTotals()}
-        />
-        
-        <BankDetails />
+      <div className="container mx-auto p-6 space-y-8 min-h-screen flex flex-col">
+        <div className="flex-grow">
+          <InvoiceHeader 
+            onPrint={handlePrint} 
+            onDownload={handleDownload} 
+            isSubmitting={isSubmitting}
+            onSave={handleSubmit}
+          />
+          
+          <CustomerInfo
+            customerName={customerName}
+            onNameChange={setCustomerName}
+            customerPhone={customerPhone}
+            onPhoneChange={setCustomerPhone}
+          />
+          
+          <InvoiceItemsTable
+            items={items}
+            setItems={setItems}
+            totals={calculateTotals()}
+          />
+          
+          <BankDetails />
+        </div>
+
+        <footer className="bg-[#081def] text-white h-[2cm] mt-8 -mx-6 -mb-6 flex flex-col justify-center items-center text-sm md:text-base">
+          <div className="space-y-1">
+            <p>Phone: 07035339641, 08131927116</p>
+            <p className="max-w-2xl text-center">
+              Address: 26, Folashade Tinubu Ojo, KLM19 Agege Motor Road Air Market, Ikeja-Along, Lagos
+            </p>
+          </div>
+        </footer>
       </div>
     </SidebarProvider>
   );
