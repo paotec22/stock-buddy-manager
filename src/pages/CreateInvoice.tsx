@@ -115,8 +115,8 @@ const CreateInvoice = () => {
 
   return (
     <SidebarProvider>
-      <div className="container mx-auto p-6 space-y-8 min-h-screen flex flex-col relative">
-        <div className="flex-grow pb-[2cm]">
+      <div className="container mx-auto p-6 space-y-8 min-h-screen">
+        <div className="pb-20">
           <InvoiceHeader 
             onPrint={handlePrint} 
             onDownload={handleDownload} 
@@ -140,7 +140,7 @@ const CreateInvoice = () => {
           <BankDetails />
         </div>
 
-        <footer className="fixed bottom-0 left-0 right-0 bg-[#081def] text-white h-[2cm] flex items-center justify-between px-8 text-sm md:text-base print:bg-[#081def] print:text-white">
+        <footer className="bg-[#081def] text-white h-[2cm] flex items-center justify-between px-8 text-sm md:text-base print:fixed print:bottom-0 print:left-0 print:right-0 print:bg-[#081def] print:text-white">
           <div>
             <p>Phone: 07035339641, 08131927116</p>
           </div>
