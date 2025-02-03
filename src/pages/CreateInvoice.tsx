@@ -135,12 +135,12 @@ const CreateInvoice = () => {
           <BankDetails />
         </div>
 
-        <footer className="bg-[#081def] text-white h-[2cm] mt-8 -mx-6 -mb-6 flex flex-col justify-center items-center text-sm md:text-base">
-          <div className="space-y-1">
+        <footer className="bg-[#081def] text-white h-[2cm] mt-8 -mx-6 -mb-6 flex items-center justify-between px-8 text-sm md:text-base">
+          <div>
             <p>Phone: 07035339641, 08131927116</p>
-            <p className="max-w-2xl text-center">
-              Address: 26, Folashade Tinubu Ojo, KLM19 Agege Motor Road Air Market, Ikeja-Along, Lagos
-            </p>
+          </div>
+          <div className="max-w-2xl text-right">
+            <p>Address: 26, Folashade Tinubu Ojo, KLM19 Agege Motor Road Air Market, Ikeja-Along, Lagos</p>
           </div>
         </footer>
       </div>
