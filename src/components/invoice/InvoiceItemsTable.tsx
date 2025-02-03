@@ -29,7 +29,6 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
   });
 
   useEffect(() => {
-    // Automatically calculate amount when quantity or unit_price changes
     const amount = newItem.quantity * newItem.unit_price;
     setNewItem(prev => ({ ...prev, amount }));
   }, [newItem.quantity, newItem.unit_price]);
@@ -68,7 +67,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
             <TableHead>Quantity</TableHead>
             <TableHead>Unit Price</TableHead>
             <TableHead>Amount</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="w-[100px] print:hidden">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,7 +77,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               <TableCell>{item.quantity}</TableCell>
               <TableCell>{formatCurrency(item.unit_price)}</TableCell>
               <TableCell>{formatCurrency(item.amount)}</TableCell>
-              <TableCell>
+              <TableCell className="print:hidden">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -89,7 +88,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               </TableCell>
             </TableRow>
           ))}
-          <TableRow>
+          <TableRow className="print:hidden">
             <TableCell>
               <Input
                 placeholder="Item description"
