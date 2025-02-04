@@ -28,9 +28,13 @@ export const ItemSelect = ({ form, items, onItemSelect }: ItemSelectProps) => {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select item" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
                 {items.map((item) => (
-                  <SelectItem key={item.id} value={item.id.toString()}>
+                  <SelectItem 
+                    key={item.id} 
+                    value={item.id.toString()}
+                    className="py-2.5 px-4"
+                  >
                     {item["Item Description"]}
                   </SelectItem>
                 ))}
