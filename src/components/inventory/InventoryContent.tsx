@@ -19,7 +19,7 @@ export function InventoryContent() {
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const isMobile = useIsMobile();
 
-  const { data: inventoryItems = [], isLoading, error } = useQuery({
+  const { data: inventoryItems = [], isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       console.log('Fetching inventory for location:', selectedLocation);
@@ -133,7 +133,11 @@ export function InventoryContent() {
       
       <BulkUploadModal 
         open={showBulkUpload} 
-        onOpenChange={setShowBulkUpload} 
+        onOpenChange={setShowBulkUpload}
+        onDataUpload={() => {
+          refetch();
+          setShowBulkUpload(false);
+        }}
       />
 
       <InventoryGrandTotal 
