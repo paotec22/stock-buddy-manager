@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -17,6 +18,7 @@ export function InventoryContent() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
+  const [sortBy, setSortBy] = useState("none");
   const isMobile = useIsMobile();
 
   const { data: inventoryItems = [], isLoading, error, refetch } = useQuery({
@@ -85,6 +87,28 @@ export function InventoryContent() {
     }
   };
 
+  const getSortedItems = () => {
+    if (!inventoryItems) return [];
+    
+    const items = [...inventoryItems];
+    switch (sortBy) {
+      case "name_asc":
+        return items.sort((a, b) => a["Item Description"].localeCompare(b["Item Description"]));
+      case "name_desc":
+        return items.sort((a, b) => b["Item Description"].localeCompare(a["Item Description"]));
+      case "price_asc":
+        return items.sort((a, b) => a.Price - b.Price);
+      case "price_desc":
+        return items.sort((a, b) => b.Price - a.Price);
+      case "quantity_asc":
+        return items.sort((a, b) => a.Quantity - b.Quantity);
+      case "quantity_desc":
+        return items.sort((a, b) => b.Quantity - a.Quantity);
+      default:
+        return items;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -115,6 +139,8 @@ export function InventoryContent() {
     );
   }
 
+  const sortedItems = getSortedItems();
+
   return (
     <>
       <InventoryHeader
@@ -122,6 +148,7 @@ export function InventoryContent() {
         onLocationChange={setSelectedLocation}
         onAddItem={() => setShowAddForm(true)}
         onBulkUpload={() => setShowBulkUpload(true)}
+        onSortChange={setSortBy}
       />
 
       {isMobile && <InventoryMobileNav />}
@@ -141,13 +168,13 @@ export function InventoryContent() {
       />
 
       <InventoryGrandTotal 
-        items={inventoryItems}
+        items={sortedItems}
         selectedLocation={selectedLocation}
       />
 
-      {inventoryItems.length > 0 ? (
+      {sortedItems.length > 0 ? (
         <InventoryTable
-          items={inventoryItems}
+          items={sortedItems}
           onPriceEdit={handlePriceEdit}
           onDelete={handleDelete}
         />

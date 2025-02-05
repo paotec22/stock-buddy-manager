@@ -1,14 +1,14 @@
+
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Upload } from "lucide-react";
-import { useState } from "react";
-import { UserAssignmentModal } from "./UserAssignmentModal";
 
 interface InventoryHeaderProps {
   selectedLocation: string;
   onLocationChange: (location: string) => void;
   onAddItem: () => void;
   onBulkUpload: () => void;
+  onSortChange: (value: string) => void;
 }
 
 const LOCATIONS = ["Ikeja", "Cement"];
@@ -18,6 +18,7 @@ export function InventoryHeader({
   onLocationChange,
   onAddItem,
   onBulkUpload,
+  onSortChange,
 }: InventoryHeaderProps) {
   return (
     <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6">
@@ -32,6 +33,21 @@ export function InventoryHeader({
                 {location}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select onValueChange={onSortChange} defaultValue="none">
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Sort by..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No sorting</SelectItem>
+            <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+            <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+            <SelectItem value="price_asc">Price (Low to High)</SelectItem>
+            <SelectItem value="price_desc">Price (High to Low)</SelectItem>
+            <SelectItem value="quantity_asc">Quantity (Low to High)</SelectItem>
+            <SelectItem value="quantity_desc">Quantity (High to Low)</SelectItem>
           </SelectContent>
         </Select>
       </div>
