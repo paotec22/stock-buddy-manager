@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Filter } from "lucide-react";
 
 interface InventoryHeaderProps {
   selectedLocation: string;
@@ -36,20 +36,23 @@ export function InventoryHeader({
           </SelectContent>
         </Select>
 
-        <Select onValueChange={onSortChange} defaultValue="none">
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Sort by..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No sorting</SelectItem>
-            <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-            <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-            <SelectItem value="price_asc">Price (Low to High)</SelectItem>
-            <SelectItem value="price_desc">Price (High to Low)</SelectItem>
-            <SelectItem value="quantity_asc">Quantity (Low to High)</SelectItem>
-            <SelectItem value="quantity_desc">Quantity (High to Low)</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select onValueChange={onSortChange} defaultValue="none">
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No sorting</SelectItem>
+              <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+              <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+              <SelectItem value="price_asc">Price (Low to High)</SelectItem>
+              <SelectItem value="price_desc">Price (High to Low)</SelectItem>
+              <SelectItem value="quantity_asc">Quantity (Low to High)</SelectItem>
+              <SelectItem value="quantity_desc">Quantity (High to Low)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button onClick={onAddItem}>
