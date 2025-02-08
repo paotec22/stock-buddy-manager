@@ -11,7 +11,7 @@ interface InventoryHeaderProps {
   onSortChange: (value: string) => void;
 }
 
-const LOCATIONS = ["Ikeja", "Cement"];
+const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
 
 export function InventoryHeader({
   selectedLocation,

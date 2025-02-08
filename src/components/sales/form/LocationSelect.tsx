@@ -1,3 +1,4 @@
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
@@ -5,11 +6,12 @@ import { FormData } from "../types";
 
 interface LocationSelectProps {
   form: UseFormReturn<FormData>;
-  locations: string[];
   onLocationChange: (value: string) => void;
 }
 
-export const LocationSelect = ({ form, locations, onLocationChange }: LocationSelectProps) => {
+const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
+
+export const LocationSelect = ({ form, onLocationChange }: LocationSelectProps) => {
   return (
     <FormField
       control={form.control}
@@ -29,7 +31,7 @@ export const LocationSelect = ({ form, locations, onLocationChange }: LocationSe
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
-                {locations.map((location) => (
+                {LOCATIONS.map((location) => (
                   <SelectItem key={location} value={location}>
                     {location}
                   </SelectItem>
