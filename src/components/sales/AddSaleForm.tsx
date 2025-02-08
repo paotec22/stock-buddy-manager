@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -10,10 +11,8 @@ import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 import { useAuth } from "@/components/AuthProvider";
 import { LocationSelect } from "./form/LocationSelect";
 import { ItemSelect } from "./form/ItemSelect";
-import { FormData, InventoryItem } from "./types";
+import { FormData } from "./types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-const LOCATIONS = ["Ikeja", "Cement"].filter(location => location !== "Main Store");
 
 interface AddSaleFormProps {
   open: boolean;
@@ -23,7 +22,7 @@ interface AddSaleFormProps {
 
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+  const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const { session } = useAuth();
 
   const form = useForm<FormData>({
@@ -31,7 +30,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       itemId: "",
       quantity: "",
       salePrice: "",
-      location: LOCATIONS[0],
+      location: "Ikeja",
     },
   });
 
@@ -128,7 +127,6 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <LocationSelect
                 form={form}
-                locations={LOCATIONS}
                 onLocationChange={setSelectedLocation}
               />
               
