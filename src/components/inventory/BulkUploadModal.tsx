@@ -15,7 +15,7 @@ interface BulkUploadModalProps {
   onDataUpload: (data: any) => void;
 }
 
-const LOCATIONS = ["Ikeja", "Cement"];
+const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
 
 export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
