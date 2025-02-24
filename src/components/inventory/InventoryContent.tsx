@@ -111,8 +111,8 @@ export function InventoryContent() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="h-16 bg-muted rounded-lg animate-pulse" />
+      <div className="space-y-4 animate-pulse p-4">
+        <div className="h-16 bg-muted rounded-lg" />
         <Card>
           <CardContent className="p-4">
             <div className="flex justify-between items-center">
@@ -121,9 +121,9 @@ export function InventoryContent() {
             </div>
           </CardContent>
         </Card>
-        <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
+        <div className="grid gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-muted rounded-lg" />
           ))}
         </div>
       </div>
@@ -132,9 +132,13 @@ export function InventoryContent() {
 
   if (error) {
     return (
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-red-600">Error loading inventory</h2>
-        <p className="text-gray-600">Please try refreshing the page</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-lg font-semibold text-destructive mb-2">Error loading inventory</h2>
+            <p className="text-muted-foreground">Please try refreshing the page</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -142,7 +146,7 @@ export function InventoryContent() {
   const sortedItems = getSortedItems();
 
   return (
-    <>
+    <div className="space-y-6 fade-in">
       <InventoryHeader
         selectedLocation={selectedLocation}
         onLocationChange={setSelectedLocation}
@@ -167,22 +171,30 @@ export function InventoryContent() {
         }}
       />
 
-      <InventoryGrandTotal 
-        items={sortedItems}
-        selectedLocation={selectedLocation}
-      />
-
-      {sortedItems.length > 0 ? (
-        <InventoryTable
+      <div className="grid gap-6">
+        <InventoryGrandTotal 
           items={sortedItems}
-          onPriceEdit={handlePriceEdit}
-          onDelete={handleDelete}
+          selectedLocation={selectedLocation}
         />
-      ) : (
-        <div className="p-6">
-          <p className="text-muted-foreground">No inventory items yet.</p>
-        </div>
-      )}
-    </>
+
+        {sortedItems.length > 0 ? (
+          <Card className="overflow-hidden border rounded-lg shadow-sm">
+            <CardContent className="p-0">
+              <InventoryTable
+                items={sortedItems}
+                onPriceEdit={handlePriceEdit}
+                onDelete={handleDelete}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">No inventory items yet.</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

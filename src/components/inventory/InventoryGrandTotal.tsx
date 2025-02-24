@@ -21,11 +21,13 @@ export function InventoryGrandTotal({ items, selectedLocation }: InventoryGrandT
   if (items.length === 0) return null;
 
   return (
-    <Card className="mb-4">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Grand Total for {selectedLocation}</h3>
-          <p className="text-2xl font-bold text-primary">
+    <Card className="bg-primary/5 border-primary/10">
+      <CardContent className="p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h3 className="text-lg font-semibold text-primary">
+            Total Inventory Value ({selectedLocation})
+          </h3>
+          <p className="text-2xl sm:text-3xl font-bold text-primary">
             {formatCurrency(calculateGrandTotal())}
           </p>
         </div>
