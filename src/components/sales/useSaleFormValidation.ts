@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase";
 
 interface ValidationParams {
@@ -28,6 +29,7 @@ export const validateSaleSubmission = async ({
     throw new Error("Please enter a valid quantity");
   }
 
+  // Only check if there's enough quantity in stock
   if (parsedQuantity > selectedItem.Quantity) {
     throw new Error("Not enough items in inventory");
   }
@@ -56,6 +58,7 @@ export const recordSale = async (
     sale_date: new Date().toISOString(),
   };
 
+  // Record the sale first
   const { error: saleError } = await supabase
     .from('sales')
     .insert([sale]);
@@ -65,10 +68,13 @@ export const recordSale = async (
     throw new Error("Failed to record sale");
   }
 
-  // Update inventory quantity
+  // Update inventory quantity regardless of sale price
   const { error: updateError } = await supabase
     .from('inventory list')
-    .update({ Quantity: selectedItem.Quantity - quantity })
+    .update({ 
+      Quantity: selectedItem.Quantity - quantity,
+      Total: (selectedItem.Quantity - quantity) * selectedItem.Price // Update total based on original price
+    })
     .eq('id', selectedItem.id);
 
   if (updateError) {
