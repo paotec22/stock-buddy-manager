@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,36 +28,16 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
     amount: 0
   });
 
-  // Update the amount whenever quantity or unit_price changes
   useEffect(() => {
+    // Automatically calculate amount when quantity or unit_price changes
     const amount = newItem.quantity * newItem.unit_price;
     setNewItem(prev => ({ ...prev, amount }));
   }, [newItem.quantity, newItem.unit_price]);
 
   const handleAddItem = () => {
-    // Only add the item if it has values
-    if (newItem.description && newItem.quantity > 0 && newItem.unit_price > 0) {
-      // Calculate the exact amount before adding
-      const exactAmount = newItem.quantity * newItem.unit_price;
-      
-      // Add the new item to the list with the precise amount
-      setItems([...items, { 
-        ...newItem,
-        amount: exactAmount 
-      }]);
-      
-      // Clear the inputs to prepare for a new item
-      setNewItem({
-        description: "",
-        quantity: 0,
-        unit_price: 0,
-        amount: 0
-      });
-    } else {
-      // If fields are incomplete, don't add a new item
-      console.log("Please fill out all fields before adding an item");
+    if (!newItem.description || newItem.quantity <= 0 || newItem.unit_price <= 0) {
+      return;
     }
-<<<<<<< HEAD
 
     // Calculate previous total before adding new item
     const previousTotal = items.reduce((sum, item) => sum + item.amount, 0);
@@ -73,8 +52,6 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
       unit_price: 0,
       amount: 0
     });
-=======
->>>>>>> 83ad0530329fabd099cc82d8180d18a1d8f82fbc
   };
 
   const handleRemoveItem = (index: number) => {
@@ -88,20 +65,6 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
     }).format(amount);
   };
 
-  const handleInputChange = (field: keyof InvoiceItem, value: string | number) => {
-    let processedValue = value;
-    
-    // Convert string numbers to actual numbers
-    if (field === 'quantity' || field === 'unit_price') {
-      processedValue = value === '' ? 0 : Number(value);
-    }
-    
-    setNewItem(prev => ({ 
-      ...prev, 
-      [field]: processedValue 
-    }));
-  };
-
   return (
     <div className="space-y-4 overflow-x-auto">
       <Table>
@@ -111,7 +74,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
             <TableHead>Quantity</TableHead>
             <TableHead>Unit Price</TableHead>
             <TableHead>Amount</TableHead>
-            <TableHead className="w-[100px] print:hidden">Actions</TableHead>
+            <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -121,7 +84,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               <TableCell>{item.quantity}</TableCell>
               <TableCell>{formatCurrency(item.unit_price)}</TableCell>
               <TableCell>{formatCurrency(item.amount)}</TableCell>
-              <TableCell className="print:hidden">
+              <TableCell>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -132,12 +95,12 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               </TableCell>
             </TableRow>
           ))}
-          <TableRow className="print:hidden">
+          <TableRow>
             <TableCell>
               <Input
                 placeholder="Item description"
                 value={newItem.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
                 className="w-full"
               />
             </TableCell>
@@ -146,7 +109,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
                 type="number"
                 min="0"
                 value={newItem.quantity || ""}
-                onChange={(e) => handleInputChange('quantity', e.target.value)}
+                onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
                 className="w-full"
               />
             </TableCell>
@@ -155,7 +118,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
                 type="number"
                 min="0"
                 value={newItem.unit_price || ""}
-                onChange={(e) => handleInputChange('unit_price', e.target.value)}
+                onChange={(e) => setNewItem({ ...newItem, unit_price: Number(e.target.value) })}
                 className="w-full"
               />
             </TableCell>
