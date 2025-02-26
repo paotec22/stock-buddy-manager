@@ -36,7 +36,8 @@ const CreateInvoice = () => {
   );
 
   const calculateTotals = () => {
-    const subtotal = validItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+    // Calculate total based on item.amount which is already set as quantity * unit_price
+    const subtotal = validItems.reduce((sum, item) => sum + item.amount, 0);
     const taxRate = 7.5; // 7.5% tax rate
     const taxAmount = (subtotal * taxRate) / 100;
     const totalAmount = subtotal + taxAmount;
