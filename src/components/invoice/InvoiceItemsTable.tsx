@@ -35,39 +35,23 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
     setNewItem(prev => ({ ...prev, amount }));
   }, [newItem.quantity, newItem.unit_price]);
 
-  // Add new item to the list when fields are filled
-  useEffect(() => {
-    // Only automatically add when all required fields have values
-    if (newItem.description && newItem.quantity > 0 && newItem.unit_price > 0) {
-      const tempItem = { ...newItem };
-      
-      // Update the list of items with the current values
-      setItems(prevItems => {
-        // Check if we already have a temporary item (the last one without full values)
-        const hasTemp = prevItems.length > 0 && 
-                       !prevItems[prevItems.length - 1].description;
-        
-        if (hasTemp) {
-          // Replace the temporary item
-          const newItems = [...prevItems];
-          newItems[newItems.length - 1] = tempItem;
-          return newItems;
-        } else {
-          // Add as a new item
-          return [...prevItems, tempItem];
-        }
-      });
-    }
-  }, [newItem.description, newItem.quantity, newItem.unit_price, setItems]);
-
   const handleAddItem = () => {
-    // Clear the inputs to add a new item
-    setNewItem({
-      description: "",
-      quantity: 0,
-      unit_price: 0,
-      amount: 0
-    });
+    // Only add the item if it has values
+    if (newItem.description && newItem.quantity > 0 && newItem.unit_price > 0) {
+      // Add the new item to the list
+      setItems([...items, { ...newItem }]);
+      
+      // Clear the inputs to prepare for a new item
+      setNewItem({
+        description: "",
+        quantity: 0,
+        unit_price: 0,
+        amount: 0
+      });
+    } else {
+      // If fields are incomplete, don't add a new item
+      console.log("Please fill out all fields before adding an item");
+    }
   };
 
   const handleRemoveItem = (index: number) => {
