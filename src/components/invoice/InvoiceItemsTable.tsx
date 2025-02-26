@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,17 +29,39 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
     amount: 0
   });
 
+  // Update the amount whenever quantity or unit_price changes
   useEffect(() => {
     const amount = newItem.quantity * newItem.unit_price;
     setNewItem(prev => ({ ...prev, amount }));
   }, [newItem.quantity, newItem.unit_price]);
 
-  const handleAddItem = () => {
-    if (!newItem.description || newItem.quantity <= 0 || newItem.unit_price <= 0) {
-      return;
+  // Add new item to the list when fields are filled
+  useEffect(() => {
+    // Only automatically add when all required fields have values
+    if (newItem.description && newItem.quantity > 0 && newItem.unit_price > 0) {
+      const tempItem = { ...newItem };
+      
+      // Update the list of items with the current values
+      setItems(prevItems => {
+        // Check if we already have a temporary item (the last one without full values)
+        const hasTemp = prevItems.length > 0 && 
+                       !prevItems[prevItems.length - 1].description;
+        
+        if (hasTemp) {
+          // Replace the temporary item
+          const newItems = [...prevItems];
+          newItems[newItems.length - 1] = tempItem;
+          return newItems;
+        } else {
+          // Add as a new item
+          return [...prevItems, tempItem];
+        }
+      });
     }
+  }, [newItem.description, newItem.quantity, newItem.unit_price, setItems]);
 
-    setItems([...items, newItem]);
+  const handleAddItem = () => {
+    // Clear the inputs to add a new item
     setNewItem({
       description: "",
       quantity: 0,
@@ -56,6 +79,20 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
       style: 'currency',
       currency: 'NGN'
     }).format(amount);
+  };
+
+  const handleInputChange = (field: keyof InvoiceItem, value: string | number) => {
+    let processedValue = value;
+    
+    // Convert string numbers to actual numbers
+    if (field === 'quantity' || field === 'unit_price') {
+      processedValue = value === '' ? 0 : Number(value);
+    }
+    
+    setNewItem(prev => ({ 
+      ...prev, 
+      [field]: processedValue 
+    }));
   };
 
   return (
@@ -93,7 +130,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               <Input
                 placeholder="Item description"
                 value={newItem.description}
-                onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                onChange={(e) => handleInputChange('description', e.target.value)}
                 className="w-full"
               />
             </TableCell>
@@ -102,7 +139,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
                 type="number"
                 min="0"
                 value={newItem.quantity || ""}
-                onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
+                onChange={(e) => handleInputChange('quantity', e.target.value)}
                 className="w-full"
               />
             </TableCell>
@@ -111,7 +148,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
                 type="number"
                 min="0"
                 value={newItem.unit_price || ""}
-                onChange={(e) => setNewItem({ ...newItem, unit_price: Number(e.target.value) })}
+                onChange={(e) => handleInputChange('unit_price', e.target.value)}
                 className="w-full"
               />
             </TableCell>

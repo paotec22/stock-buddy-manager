@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -29,8 +30,13 @@ const CreateInvoice = () => {
     }
   }, [session, loading, navigate]);
 
+  // Filter out incomplete items before calculation
+  const validItems = items.filter(item => 
+    item.description && item.quantity > 0 && item.unit_price > 0
+  );
+
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const subtotal = validItems.reduce((sum, item) => sum + (item.amount || 0), 0);
     const taxRate = 7.5; // 7.5% tax rate
     const taxAmount = (subtotal * taxRate) / 100;
     const totalAmount = subtotal + taxAmount;
@@ -48,6 +54,12 @@ const CreateInvoice = () => {
   const handleSubmit = async () => {
     if (!session?.user.id) {
       toast.error("You must be logged in to create invoices");
+      return;
+    }
+
+    // Validate we have at least one valid item before submission
+    if (validItems.length === 0) {
+      toast.error("Please add at least one complete item to the invoice");
       return;
     }
 
@@ -71,7 +83,7 @@ const CreateInvoice = () => {
 
       if (invoiceError) throw invoiceError;
 
-      const invoiceItems = items.map(item => ({
+      const invoiceItems = validItems.map(item => ({
         ...item,
         invoice_id: invoice.id
       }));
@@ -132,7 +144,7 @@ const CreateInvoice = () => {
           />
           
           <InvoiceItemsTable
-            items={items}
+            items={validItems}
             setItems={setItems}
             totals={calculateTotals()}
           />
