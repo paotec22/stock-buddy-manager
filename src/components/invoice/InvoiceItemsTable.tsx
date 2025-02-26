@@ -39,7 +39,13 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
       return;
     }
 
-    setItems([...items, newItem]);
+    // Calculate previous total before adding new item
+    const previousTotal = items.reduce((sum, item) => sum + item.amount, 0);
+    
+    setItems([...items, {
+      ...newItem,
+      unit_price: previousTotal > 0 ? previousTotal : newItem.unit_price
+    }]);
     setNewItem({
       description: "",
       quantity: 0,
