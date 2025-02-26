@@ -36,25 +36,21 @@ const CreateInvoice = () => {
   );
 
   const calculateTotals = () => {
-    // Sum up the exact amount from each item 
+    // Sum up the exact amount from each item (no tax)
     const subtotal = validItems.reduce((sum, item) => sum + Number(item.amount), 0);
-    const taxRate = 7.5; // 7.5% tax rate
-    const taxAmount = (subtotal * taxRate) / 100;
-    const totalAmount = subtotal + taxAmount;
-
+    
     console.log("Calculating totals:", {
       items: validItems,
       subtotal: subtotal,
-      taxAmount: taxAmount,
-      totalAmount: totalAmount
+      totalAmount: subtotal
     });
 
     return {
       subtotal,
-      tax_rate: taxRate,
-      tax_amount: taxAmount,
-      total_amount: totalAmount,
-      total: totalAmount, // This matches the InvoiceItemsTable prop requirement
+      tax_rate: 0, // Set tax rate to 0
+      tax_amount: 0, // No tax amount
+      total_amount: subtotal, // Total is just the subtotal with no tax
+      total: subtotal, // This matches the InvoiceItemsTable prop requirement
       invoice_number: `INV-${Date.now()}`
     };
   };
