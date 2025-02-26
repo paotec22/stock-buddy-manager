@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -29,18 +30,27 @@ const CreateInvoice = () => {
     }
   }, [session, loading, navigate]);
 
+  // Filter out incomplete items before calculation
+  const validItems = items.filter(item => 
+    item.description && item.quantity > 0 && item.unit_price > 0
+  );
+
   const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
-    const taxRate = 7.5; // 7.5% tax rate
-    const taxAmount = (subtotal * taxRate) / 100;
-    const total = subtotal + taxAmount;
+    // Sum up the exact amount from each item (no tax)
+    const subtotal = validItems.reduce((sum, item) => sum + Number(item.amount), 0);
+    
+    console.log("Calculating totals:", {
+      items: validItems,
+      subtotal: subtotal,
+      totalAmount: subtotal
+    });
 
     return {
       subtotal,
-      tax_rate: taxRate,
-      tax_amount: taxAmount,
-      total_amount: total,
-      total, // This matches the InvoiceItemsTable prop requirement
+      tax_rate: 0, // Set tax rate to 0
+      tax_amount: 0, // No tax amount
+      total_amount: subtotal, // Total is just the subtotal with no tax
+      total: subtotal, // This matches the InvoiceItemsTable prop requirement
       invoice_number: `INV-${Date.now()}`
     };
   };
@@ -51,22 +61,33 @@ const CreateInvoice = () => {
       return;
     }
 
+    // Validate we have at least one valid item before submission
+    if (validItems.length === 0) {
+      toast.error("Please add at least one complete item to the invoice");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const totals = calculateTotals();
       const { data: invoice, error: invoiceError } = await supabase
         .from('invoices')
         .insert({ 
           customer_name: customerName, 
           customer_phone: customerPhone,
           user_id: session.user.id,
-          ...calculateTotals()
+          invoice_number: totals.invoice_number,
+          subtotal: totals.subtotal,
+          tax_rate: totals.tax_rate,
+          tax_amount: totals.tax_amount,
+          total_amount: totals.total_amount
         })
         .select()
         .single();
 
       if (invoiceError) throw invoiceError;
 
-      const invoiceItems = items.map(item => ({
+      const invoiceItems = validItems.map(item => ({
         ...item,
         invoice_id: invoice.id
       }));
@@ -110,28 +131,39 @@ const CreateInvoice = () => {
 
   return (
     <SidebarProvider>
-      <div className="container mx-auto p-6 space-y-8">
-        <InvoiceHeader 
-          onPrint={handlePrint} 
-          onDownload={handleDownload} 
-          isSubmitting={isSubmitting}
-          onSave={handleSubmit}
-        />
-        
-        <CustomerInfo
-          customerName={customerName}
-          onNameChange={setCustomerName}
-          customerPhone={customerPhone}
-          onPhoneChange={setCustomerPhone}
-        />
-        
-        <InvoiceItemsTable
-          items={items}
-          setItems={setItems}
-          totals={calculateTotals()}
-        />
-        
-        <BankDetails />
+      <div className="container mx-auto p-6 space-y-8 min-h-screen">
+        <div className="pb-20">
+          <InvoiceHeader 
+            onPrint={handlePrint} 
+            onDownload={handleDownload} 
+            isSubmitting={isSubmitting}
+            onSave={handleSubmit}
+          />
+          
+          <CustomerInfo
+            customerName={customerName}
+            onNameChange={setCustomerName}
+            customerPhone={customerPhone}
+            onPhoneChange={setCustomerPhone}
+          />
+          
+          <InvoiceItemsTable
+            items={validItems}
+            setItems={setItems}
+            totals={calculateTotals()}
+          />
+          
+          <BankDetails />
+        </div>
+
+        <footer className="bg-[#081def] text-white h-[2cm] flex items-center justify-between px-8 text-sm md:text-base print:fixed print:bottom-0 print:left-0 print:right-0 print:bg-[#081def] print:text-white">
+          <div>
+            <p>Phone: 07035339641, 08131927116</p>
+          </div>
+          <div className="max-w-2xl text-right">
+            <p>Address: 26, Folashade Tinubu Ojo, KLM19 Agege Motor Road Air Market, Ikeja-Along, Lagos</p>
+          </div>
+        </footer>
       </div>
     </SidebarProvider>
   );

@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ interface FormData {
   location: string;
 }
 
-const LOCATIONS = ["Ikeja", "Cement"];
+const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
 
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);

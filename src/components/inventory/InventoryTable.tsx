@@ -69,6 +69,8 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
   };
 
   const handleQuantityEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
+    if (!e.currentTarget) return;
+    
     const newQuantity = parseInt(e.currentTarget.value);
     if (!isNaN(newQuantity)) {
       try {
@@ -96,6 +98,10 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
     }
   };
 
+  if (!items) {
+    return <div>Loading inventory...</div>;
+  }
+
   return (
     <div className="space-y-4">
       <InventoryTableActions 
@@ -112,6 +118,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
+                  className="h-3 w-3"
                 />
               </TableHead>
               <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
@@ -131,6 +138,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
+                    className="h-3 w-3"
                   />
                 </TableCell>
                 <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>

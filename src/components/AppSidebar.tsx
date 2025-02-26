@@ -88,9 +88,12 @@ function SidebarContents() {
         <ThemeToggle />
       </div>
       <div className="px-3 py-2">
-        <Button variant="ghost" size="icon" onClick={handleSignOut}>
+        <button
+          onClick={handleSignOut}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-600 font-bold transition-all hover:bg-red-100 dark:hover:bg-red-900/50"
+        >
           Logout
-        </Button>
+        </button>
       </div>
     </div>
   );

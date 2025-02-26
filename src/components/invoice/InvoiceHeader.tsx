@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 interface InvoiceHeaderProps {
   onPrint: () => void;
@@ -21,7 +22,9 @@ export const InvoiceHeader = ({ onPrint, onDownload, isSubmitting, onSave }: Inv
         <p className="text-sm font-medium">Invoice #: {generateInvoiceNumber()}</p>
       </div>
       <div className="flex justify-between items-center">
-        <img src="/Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
+        <Link to="/inventory">
+          <img src="/Puido_Smart_Solutions.svg" alt="Puido Smart Solutions" className="h-16" />
+        </Link>
         <div className="flex gap-2 print:hidden">
           <Button variant="outline" onClick={onPrint} disabled={isSubmitting}>
             <Printer className="w-4 h-4 mr-2" />
