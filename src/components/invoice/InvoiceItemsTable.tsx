@@ -38,8 +38,14 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
   const handleAddItem = () => {
     // Only add the item if it has values
     if (newItem.description && newItem.quantity > 0 && newItem.unit_price > 0) {
-      // Add the new item to the list
-      setItems([...items, { ...newItem }]);
+      // Calculate the exact amount before adding
+      const exactAmount = newItem.quantity * newItem.unit_price;
+      
+      // Add the new item to the list with the precise amount
+      setItems([...items, { 
+        ...newItem,
+        amount: exactAmount 
+      }]);
       
       // Clear the inputs to prepare for a new item
       setNewItem({
