@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +40,11 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
       return;
     }
 
-    // Calculate previous total before adding new item
-    const previousTotal = items.reduce((sum, item) => sum + item.amount, 0);
-    
     setItems([...items, {
       ...newItem,
-      unit_price: previousTotal > 0 ? previousTotal : newItem.unit_price
+      amount: newItem.quantity * newItem.unit_price
     }]);
+    
     setNewItem({
       description: "",
       quantity: 0,
@@ -74,7 +73,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
             <TableHead>Quantity</TableHead>
             <TableHead>Unit Price</TableHead>
             <TableHead>Amount</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="w-[100px] print:hidden">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -84,7 +83,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               <TableCell>{item.quantity}</TableCell>
               <TableCell>{formatCurrency(item.unit_price)}</TableCell>
               <TableCell>{formatCurrency(item.amount)}</TableCell>
-              <TableCell>
+              <TableCell className="print:hidden">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -95,7 +94,8 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               </TableCell>
             </TableRow>
           ))}
-          <TableRow>
+          {/* New item row - hidden when printing */}
+          <TableRow className="print:hidden">
             <TableCell>
               <Input
                 placeholder="Item description"
