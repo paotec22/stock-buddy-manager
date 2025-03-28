@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -8,6 +7,8 @@ import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
 import { BankDetails } from "@/components/invoice/BankDetails";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -19,6 +20,8 @@ const CreateInvoice = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
+  const [savedInvoices, setSavedInvoices] = useState<Invoice[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
@@ -30,27 +33,18 @@ const CreateInvoice = () => {
     }
   }, [session, loading, navigate]);
 
-  // Filter out incomplete items before calculation
   const validItems = items.filter(item => 
     item.description && item.quantity > 0 && item.unit_price > 0
   );
 
   const calculateTotals = () => {
-    // Sum up the exact amount from each item (no tax)
     const subtotal = validItems.reduce((sum, item) => sum + Number(item.amount), 0);
-    
-    console.log("Calculating totals:", {
-      items: validItems,
-      subtotal: subtotal,
-      totalAmount: subtotal
-    });
-
     return {
       subtotal,
-      tax_rate: 0, // Set tax rate to 0
-      tax_amount: 0, // No tax amount
-      total_amount: subtotal, // Total is just the subtotal with no tax
-      total: subtotal, // This matches the InvoiceItemsTable prop requirement
+      tax_rate: 0,
+      tax_amount: 0,
+      total_amount: subtotal,
+      total: subtotal,
       invoice_number: `INV-${Date.now()}`
     };
   };
@@ -61,7 +55,6 @@ const CreateInvoice = () => {
       return;
     }
 
-    // Validate we have at least one valid item before submission
     if (validItems.length === 0) {
       toast.error("Please add at least one complete item to the invoice");
       return;
@@ -117,15 +110,51 @@ const CreateInvoice = () => {
     toast.info("PDF download feature coming soon!");
   };
 
-  // Show loading state
+  const fetchSavedInvoices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedInvoices(data || []);
+    } catch (error) {
+      console.error("Error fetching saved invoices:", error);
+      toast.error("Failed to fetch saved invoices");
+    }
+  };
+
+  const handleShowSavedInvoices = async () => {
+    await fetchSavedInvoices();
+    setIsModalOpen(true);
+  };
+
+  const handlePrintSavedInvoice = (invoice: Invoice) => {
+    setIsModalOpen(false);
+
+    const printContents = `
+      <div>
+        <h1>Invoice #: ${invoice.invoice_number}</h1>
+        <p>Customer Name: ${invoice.customer_name}</p>
+        <p>Customer Phone: ${invoice.customer_phone}</p>
+        <p>Total Amount: ${invoice.total_amount}</p>
+        <p>Date: ${new Date(invoice.created_at).toLocaleDateString()}</p>
+      </div>
+    `;
+    const newWindow = window.open("", "_blank");
+    if (newWindow) {
+      newWindow.document.write(printContents);
+      newWindow.document.close();
+      newWindow.print();
+    }
+  };
+
   if (loading) {
-    console.log("Loading authentication state...");
     return null;
   }
 
-  // Redirect if not authenticated
   if (!session) {
-    console.log("No active session found");
     return null;
   }
 
@@ -138,6 +167,7 @@ const CreateInvoice = () => {
             onDownload={handleDownload} 
             isSubmitting={isSubmitting}
             onSave={handleSubmit}
+            onShowSavedInvoices={handleShowSavedInvoices}
           />
           
           <CustomerInfo
@@ -155,6 +185,28 @@ const CreateInvoice = () => {
           
           <BankDetails />
         </div>
+
+        {/* Modal for displaying saved invoices */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Select a Saved Invoice to Print</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {savedInvoices.map((invoice) => (
+                <div
+                  key={invoice.id}
+                  className="flex justify-between items-center border p-2 rounded"
+                >
+                  <span>
+                    {new Date(invoice.created_at).toLocaleDateString()} - {invoice.invoice_number}
+                  </span>
+                  <Button onClick={() => handlePrintSavedInvoice(invoice)}>Print</Button>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <footer className="bg-[#081def] text-white h-[2cm] flex items-center justify-between px-8 text-sm md:text-base print:fixed print:bottom-0 print:left-0 print:right-0 print:bg-[#081def] print:text-white">
           <div>

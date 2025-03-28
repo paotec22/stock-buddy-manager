@@ -8,12 +8,19 @@ interface InvoiceHeaderProps {
   onDownload: () => void;
   isSubmitting: boolean;
   onSave: () => void;
+  onShowSavedInvoices: () => void; // New prop for showing saved invoices
 }
 
-export const InvoiceHeader = ({ onPrint, onDownload, isSubmitting, onSave }: InvoiceHeaderProps) => {
+export const InvoiceHeader = ({
+  onPrint,
+  onDownload,
+  isSubmitting,
+  onSave,
+  onShowSavedInvoices,
+}: InvoiceHeaderProps) => {
   const generateInvoiceNumber = () => {
     const now = new Date();
-    return format(now, 'ddMMHHmmss');
+    return format(now, "ddMMHHmmss");
   };
 
   return (
@@ -36,6 +43,9 @@ export const InvoiceHeader = ({ onPrint, onDownload, isSubmitting, onSave }: Inv
           </Button>
           <Button onClick={onSave} disabled={isSubmitting}>
             Save Invoice
+          </Button>
+          <Button variant="outline" onClick={onShowSavedInvoices}>
+            Print Saved Invoices
           </Button>
         </div>
       </div>
