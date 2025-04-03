@@ -46,7 +46,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                  className="h-3 w-3" // Reduced size
+                  className="h-2 w-2" // Further reduced size to h-2 w-2
                 />
               </TableHead>
               <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
@@ -66,7 +66,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
-                    className="h-3 w-3" // Reduced size
+                    className="h-2 w-2" // Further reduced size to h-2 w-2
                   />
                 </TableCell>
                 <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>
