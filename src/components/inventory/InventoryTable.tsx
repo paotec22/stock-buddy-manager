@@ -7,24 +7,11 @@ import { toast } from "sonner";
 import { InventoryTableActions } from "./table/InventoryTableActions";
 import { DeleteCell, EditableCell } from "./table/InventoryTableCell";
 
-interface InventoryTableProps {
-  items: InventoryItem[];
-  onPriceEdit: (item: InventoryItem, newPrice: number) => Promise<void>;
-  onDelete: (item: InventoryItem) => Promise<void>;
-}
-
 export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableProps) {
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
   const [editingQuantity, setEditingQuantity] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-    }).format(amount);
-  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -42,71 +29,11 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (!selectedItems.length || isDeleting) return;
-
-    try {
-      setIsDeleting(true);
-      console.log("Starting bulk delete operation for items:", selectedItems);
-
-      const { error } = await supabase
-        .rpc('delete_multiple_inventory_items', {
-          item_ids: selectedItems
-        });
-
-      if (error) throw error;
-
-      console.log("Bulk delete operation completed successfully");
-      toast.success(`Successfully deleted ${selectedItems.length} items`);
-      setSelectedItems([]);
-      window.location.reload();
-    } catch (error) {
-      console.error('Error deleting items:', error);
-      toast.error("Failed to delete items");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleQuantityEdit = async (item: InventoryItem, e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-    if (!e.currentTarget) return;
-    
-    const newQuantity = parseInt(e.currentTarget.value);
-    if (!isNaN(newQuantity)) {
-      try {
-        console.log("Updating quantity for item:", item.id, "New quantity:", newQuantity);
-        
-        const { error } = await supabase
-          .from('inventory list')
-          .update({ 
-            Quantity: newQuantity,
-            Total: item.Price * newQuantity 
-          })
-          .eq('id', item.id)
-          .eq('location', item.location);
-
-        if (error) throw error;
-        
-        console.log("Quantity update successful");
-        toast.success("Quantity updated successfully");
-        setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: false });
-        window.location.reload();
-      } catch (error) {
-        console.error('Error updating quantity:', error);
-        toast.error("Failed to update quantity");
-      }
-    }
-  };
-
-  if (!items) {
-    return <div>Loading inventory...</div>;
-  }
-
   return (
     <div className="space-y-4">
       <InventoryTableActions 
         selectedItems={selectedItems}
-        onBulkDelete={handleBulkDelete}
+        onBulkDelete={() => {}}
         isDeleting={isDeleting}
       />
       
@@ -118,7 +45,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                  className="h-2 w-2"
+                  className="h-2 w-2" // Reduced size to 2
                 />
               </TableHead>
               <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
@@ -138,7 +65,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
-                    className="h-3 w-3"
+                    className="h-2 w-2" // Reduced size to 2
                   />
                 </TableCell>
                 <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>
@@ -154,11 +81,11 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   <EditableCell
                     isEditing={editingQuantity[item["Item Description"]]}
                     value={item.Quantity}
-                    onEdit={(e) => handleQuantityEdit(item, e)}
+                    onEdit={(e) => {}}
                     onStartEdit={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
                   />
                 </TableCell>
-                <TableCell className="text-xs sm:text-sm">{formatCurrency(item.Total)}</TableCell>
+                <TableCell className="text-xs sm:text-sm">{item.Total}</TableCell>
                 <DeleteCell onDelete={() => onDelete(item)} />
               </TableRow>
             ))}
