@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryItem } from "@/utils/inventoryUtils";
@@ -45,7 +46,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                  className="h-2 w-2" // Reduced size to 2
+                  className="h-3 w-3" // Reduced size
                 />
               </TableHead>
               <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
@@ -65,7 +66,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
-                    className="h-2 w-2" // Reduced size to 2
+                    className="h-3 w-3" // Reduced size
                   />
                 </TableCell>
                 <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>
