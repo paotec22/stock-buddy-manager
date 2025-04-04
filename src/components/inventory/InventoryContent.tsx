@@ -51,11 +51,15 @@ export function InventoryContent() {
   const handlePriceEdit = async (item: InventoryItem, newPrice: number) => {
     try {
       console.log('Updating price for item:', item.id);
+      
+      // Calculate the new total based on the new price and current quantity
+      const newTotal = newPrice * item.Quantity;
+      
       const { error } = await supabase
         .from('inventory list')
         .update({ 
           Price: newPrice,
-          Total: newPrice * item.Quantity 
+          Total: newTotal 
         })
         .eq('id', item.id)
         .eq('location', item.location);
@@ -63,9 +67,39 @@ export function InventoryContent() {
       if (error) throw error;
       
       toast.success("Price updated successfully");
+      refetch();
     } catch (error) {
       console.error('Error updating price:', error);
       toast.error("Failed to update price");
+    }
+  };
+
+  const handleQuantityEdit = async (item: InventoryItem, newQuantity: number) => {
+    try {
+      console.log('Updating quantity for item:', item.id);
+      
+      // Ensure newQuantity is not negative
+      const validQuantity = Math.max(0, newQuantity);
+      
+      // Calculate the new total based on the current price and new quantity
+      const newTotal = item.Price * validQuantity;
+      
+      const { error } = await supabase
+        .from('inventory list')
+        .update({ 
+          Quantity: validQuantity,
+          Total: newTotal 
+        })
+        .eq('id', item.id)
+        .eq('location', item.location);
+
+      if (error) throw error;
+      
+      toast.success("Quantity updated successfully");
+      refetch();
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      toast.error("Failed to update quantity");
     }
   };
 
@@ -81,6 +115,7 @@ export function InventoryContent() {
       if (error) throw error;
       
       toast.success("Item deleted successfully");
+      refetch();
     } catch (error) {
       console.error('Error deleting item:', error);
       toast.error("Failed to delete item");
@@ -90,7 +125,20 @@ export function InventoryContent() {
   const getSortedItems = () => {
     if (!inventoryItems) return [];
     
-    const items = [...inventoryItems];
+    // Ensure all items have correct Total values
+    const validatedItems = inventoryItems.map(item => ({
+      ...item,
+      // Ensure Quantity is a number
+      Quantity: typeof item.Quantity === 'number' ? item.Quantity : 0,
+      // Ensure Price is a number
+      Price: typeof item.Price === 'number' ? item.Price : 0,
+      // Recalculate Total to ensure consistency
+      Total: (typeof item.Price === 'number' && typeof item.Quantity === 'number') 
+        ? item.Price * item.Quantity 
+        : 0
+    }));
+    
+    const items = [...validatedItems];
     switch (sortBy) {
       case "name_asc":
         return items.sort((a, b) => a["Item Description"].localeCompare(b["Item Description"]));
@@ -183,6 +231,7 @@ export function InventoryContent() {
               <InventoryTable
                 items={sortedItems}
                 onPriceEdit={handlePriceEdit}
+                onQuantityEdit={handleQuantityEdit}
                 onDelete={handleDelete}
               />
             </CardContent>

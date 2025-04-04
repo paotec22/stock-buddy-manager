@@ -8,7 +8,14 @@ import { toast } from "sonner";
 import { InventoryTableActions } from "./table/InventoryTableActions";
 import { DeleteCell, EditableCell } from "./table/InventoryTableCell";
 
-export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableProps) {
+export interface InventoryTableProps {
+  items: InventoryItem[];
+  onPriceEdit: (item: InventoryItem, newPrice: number) => Promise<void>;
+  onQuantityEdit: (item: InventoryItem, newQuantity: number) => Promise<void>;
+  onDelete: (item: InventoryItem) => Promise<void>;
+}
+
+export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }: InventoryTableProps) {
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
   const [editingQuantity, setEditingQuantity] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -82,7 +89,7 @@ export function InventoryTable({ items, onPriceEdit, onDelete }: InventoryTableP
                   <EditableCell
                     isEditing={editingQuantity[item["Item Description"]]}
                     value={item.Quantity}
-                    onEdit={(e) => {}}
+                    onEdit={(e) => onQuantityEdit(item, parseFloat(e.currentTarget.value))}
                     onStartEdit={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
                   />
                 </TableCell>

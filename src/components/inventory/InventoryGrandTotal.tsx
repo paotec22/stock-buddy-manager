@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { InventoryItem } from "@/utils/inventoryUtils";
 
@@ -8,7 +9,11 @@ interface InventoryGrandTotalProps {
 
 export function InventoryGrandTotal({ items, selectedLocation }: InventoryGrandTotalProps) {
   const calculateGrandTotal = () => {
-    return items.reduce((sum, item) => sum + (item.Total || 0), 0);
+    return items.reduce((sum, item) => {
+      // Ensure Total is calculated correctly for each item
+      const itemTotal = item.Price * item.Quantity;
+      return sum + itemTotal;
+    }, 0);
   };
 
   const formatCurrency = (amount: number) => {

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
@@ -31,9 +32,15 @@ export const checkExistingItem = async (itemDescription: string, location: strin
 };
 
 export const addInventoryItem = async (item: NewInventoryItem) => {
+  // Ensure Total is calculated correctly
+  const validatedItem = {
+    ...item,
+    Total: item.Price * item.Quantity
+  };
+
   const { error } = await supabase
     .from('inventory list')
-    .insert([item]);
+    .insert([validatedItem]);
 
   if (error) {
     console.error('Error adding inventory item:', error);
@@ -57,7 +64,7 @@ export const parseCSVData = (text: string, selectedLocation: string): NewInvento
         "Item Description": values[0]?.trim() || '',
         Price: price,
         Quantity: quantity,
-        Total: price * quantity,
+        Total: price * quantity, // Calculate Total correctly
         location: selectedLocation
       };
     });
