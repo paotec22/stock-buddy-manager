@@ -37,12 +37,40 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
     }
   };
 
-  // Create a promise-returning function for bulk delete
   const handleBulkDelete = async (): Promise<void> => {
-    // This is a placeholder implementation
-    // In a real implementation, this would call an API to delete the selected items
-    console.log('Bulk delete:', selectedItems);
-    return Promise.resolve();
+    if (selectedItems.length === 0) return Promise.resolve();
+    
+    setIsDeleting(true);
+    try {
+      // Get the location of the first item (all selected items should be from the same location)
+      const location = items.find(item => item.id === selectedItems[0])?.location;
+      
+      if (!location) {
+        throw new Error("Could not determine location for bulk delete");
+      }
+      
+      const { error } = await supabase
+        .from('inventory list')
+        .delete()
+        .in('id', selectedItems)
+        .eq('location', location);
+        
+      if (error) throw error;
+      
+      toast.success(`Successfully deleted ${selectedItems.length} items`);
+      setSelectedItems([]);
+      
+      // Force a page refresh to show updated inventory
+      window.location.reload();
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error performing bulk delete:', error);
+      toast.error("Failed to delete selected items");
+      return Promise.resolve();
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -61,7 +89,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                  className="h-2 w-2" // Further reduced size to h-2 w-2
+                  className="h-2 w-2" 
                 />
               </TableHead>
               <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
@@ -81,7 +109,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
-                    className="h-2 w-2" // Further reduced size to h-2 w-2
+                    className="h-2 w-2"
                   />
                 </TableCell>
                 <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>

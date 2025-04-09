@@ -1,6 +1,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface InventoryTableActionsProps {
   selectedItems: number[];
