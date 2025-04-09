@@ -37,11 +37,19 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
     }
   };
 
+  // Create a promise-returning function for bulk delete
+  const handleBulkDelete = async (): Promise<void> => {
+    // This is a placeholder implementation
+    // In a real implementation, this would call an API to delete the selected items
+    console.log('Bulk delete:', selectedItems);
+    return Promise.resolve();
+  };
+
   return (
     <div className="space-y-4">
       <InventoryTableActions 
         selectedItems={selectedItems}
-        onBulkDelete={() => {}}
+        onBulkDelete={handleBulkDelete}
         isDeleting={isDeleting}
       />
       
