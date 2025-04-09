@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { InventoryItem } from "@/utils/inventoryUtils";
+import { formatCurrency } from "@/utils/formatters";
 
 interface InventoryGrandTotalProps {
   items: InventoryItem[];
@@ -14,13 +15,6 @@ export function InventoryGrandTotal({ items, selectedLocation }: InventoryGrandT
       const itemTotal = item.Price * item.Quantity;
       return sum + itemTotal;
     }, 0);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-    }).format(amount);
   };
 
   if (items.length === 0) return null;

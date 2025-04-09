@@ -8,25 +8,38 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface AddInventoryFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface FormData {
-  itemDescription: string;
-  price: string;
-  quantity: string;
-  location: string;
-}
-
 const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
+
+// Form validation schema using Zod
+const formSchema = z.object({
+  itemDescription: z.string()
+    .min(2, "Item description must be at least 2 characters")
+    .max(100, "Item description must be less than 100 characters"),
+  price: z.string()
+    .refine(val => !isNaN(parseFloat(val)), "Price must be a number")
+    .refine(val => parseFloat(val) >= 0, "Price cannot be negative"),
+  quantity: z.string()
+    .refine(val => !isNaN(parseInt(val)), "Quantity must be a number")
+    .refine(val => parseInt(val) >= 0, "Quantity cannot be negative")
+    .refine(val => Number.isInteger(parseFloat(val)), "Quantity must be a whole number"),
+  location: z.string().refine(val => LOCATIONS.includes(val), "Please select a valid location"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       itemDescription: "",
       price: "",
@@ -90,9 +103,15 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Price (₦)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" placeholder="Enter price" {...field} />
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      step="0.01" 
+                      placeholder="Enter price" 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -105,7 +124,13 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
                 <FormItem>
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="Enter quantity" {...field} />
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      step="1" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,8 +30,30 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
       const reader = new FileReader();
       reader.onload = (event) => {
         const text = event.target?.result as string;
-        const items = parseCSVData(text, selectedLocation);
-        setPreviewData(items);
+        try {
+          const items = parseCSVData(text, selectedLocation);
+          
+          // Validate items
+          const invalidItems = items.filter(
+            item => item["Item Description"] === '' || 
+                   item.Price < 0 || 
+                   item.Quantity < 0 ||
+                   !Number.isInteger(item.Quantity)
+          );
+          
+          if (invalidItems.length > 0) {
+            toast.error("CSV contains invalid data. Please check that all items have descriptions, positive prices, and positive whole number quantities.");
+            setPreviewData([]);
+            event.target.value = "";
+            return;
+          }
+          
+          setPreviewData(items);
+        } catch (error) {
+          toast.error("Failed to parse CSV file. Please ensure it's in the correct format.");
+          console.error("CSV parse error:", error);
+          setPreviewData([]);
+        }
       };
       reader.readAsText(selectedFile);
     } else {
@@ -98,7 +121,17 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <Select value={selectedLocation} onValueChange={(value) => {
+              setSelectedLocation(value);
+              if (file) {
+                // If there's already a file loaded, update the preview with the new location
+                const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                  const event = { target: { files: fileInput.files } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                  handleFileChange(event);
+                }
+              }
+            }}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>

@@ -32,6 +32,19 @@ export const checkExistingItem = async (itemDescription: string, location: strin
 };
 
 export const addInventoryItem = async (item: NewInventoryItem) => {
+  // Validate inputs
+  if (!item["Item Description"] || item["Item Description"].trim() === "") {
+    throw new Error("Item description is required");
+  }
+  
+  if (isNaN(item.Price) || item.Price < 0) {
+    throw new Error("Price must be a positive number");
+  }
+  
+  if (isNaN(item.Quantity) || item.Quantity < 0 || !Number.isInteger(item.Quantity)) {
+    throw new Error("Quantity must be a positive whole number");
+  }
+
   // Ensure Total is calculated correctly
   const validatedItem = {
     ...item,
@@ -53,20 +66,57 @@ export const addInventoryItem = async (item: NewInventoryItem) => {
 
 export const parseCSVData = (text: string, selectedLocation: string): NewInventoryItem[] => {
   const lines = text.split('\n');
+  
+  // Validate that we have at least a header row and one data row
+  if (lines.length < 2) {
+    throw new Error("CSV file must contain a header row and at least one data row");
+  }
+  
   const items: NewInventoryItem[] = lines
     .slice(1)
     .filter(line => line.trim() !== '')
     .map(line => {
       const values = line.split(',');
-      const price = parseFloat(values[1]?.trim() || '0');
-      const quantity = parseInt(values[2]?.trim() || '0');
+      
+      if (values.length < 3) {
+        throw new Error("Each line must contain at least item description, price, and quantity");
+      }
+      
+      const itemDescription = values[0]?.trim() || '';
+      const priceStr = values[1]?.trim() || '0';
+      const quantityStr = values[2]?.trim() || '0';
+      
+      if (itemDescription === '') {
+        throw new Error("Item description cannot be empty");
+      }
+      
+      const price = parseFloat(priceStr);
+      const quantity = parseInt(quantityStr);
+      
+      if (isNaN(price)) {
+        throw new Error(`Invalid price for item: ${itemDescription}`);
+      }
+      
+      if (isNaN(quantity) || !Number.isInteger(quantity)) {
+        throw new Error(`Invalid quantity for item: ${itemDescription}`);
+      }
+      
+      if (price < 0) {
+        throw new Error(`Price cannot be negative for item: ${itemDescription}`);
+      }
+      
+      if (quantity < 0) {
+        throw new Error(`Quantity cannot be negative for item: ${itemDescription}`);
+      }
+      
       return {
-        "Item Description": values[0]?.trim() || '',
+        "Item Description": itemDescription,
         Price: price,
         Quantity: quantity,
         Total: price * quantity, // Calculate Total correctly
         location: selectedLocation
       };
     });
+  
   return items;
 };

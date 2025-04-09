@@ -6,6 +6,11 @@ import { InventoryItem } from "@/utils/inventoryUtils";
 export function useInventoryOperations(refetch: () => void) {
   const handlePriceEdit = async (item: InventoryItem, newPrice: number) => {
     try {
+      // Validate the new price
+      if (isNaN(newPrice) || newPrice < 0) {
+        throw new Error("Price must be a positive number");
+      }
+      
       console.log('Updating price for item:', item.id);
       
       // Calculate the new total based on the new price and current quantity
@@ -26,24 +31,30 @@ export function useInventoryOperations(refetch: () => void) {
       refetch();
     } catch (error) {
       console.error('Error updating price:', error);
-      toast.error("Failed to update price");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update price");
+      }
     }
   };
 
   const handleQuantityEdit = async (item: InventoryItem, newQuantity: number) => {
     try {
+      // Validate the new quantity
+      if (isNaN(newQuantity) || newQuantity < 0 || !Number.isInteger(newQuantity)) {
+        throw new Error("Quantity must be a positive whole number");
+      }
+      
       console.log('Updating quantity for item:', item.id);
       
-      // Ensure newQuantity is not negative
-      const validQuantity = Math.max(0, newQuantity);
-      
       // Calculate the new total based on the current price and new quantity
-      const newTotal = item.Price * validQuantity;
+      const newTotal = item.Price * newQuantity;
       
       const { error } = await supabase
         .from('inventory list')
         .update({ 
-          Quantity: validQuantity,
+          Quantity: newQuantity,
           Total: newTotal 
         })
         .eq('id', item.id)
@@ -55,7 +66,11 @@ export function useInventoryOperations(refetch: () => void) {
       refetch();
     } catch (error) {
       console.error('Error updating quantity:', error);
-      toast.error("Failed to update quantity");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update quantity");
+      }
     }
   };
 

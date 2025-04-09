@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { InventoryTableActions } from "./table/InventoryTableActions";
 import { DeleteCell, EditableCell } from "./table/InventoryTableCell";
+import { formatCurrency } from "@/utils/formatters";
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -117,19 +118,36 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   <EditableCell
                     isEditing={editingPrice[item["Item Description"]]}
                     value={item.Price}
-                    onEdit={(e) => onPriceEdit(item, parseFloat(e.currentTarget.value))}
+                    onEdit={(e) => {
+                      const value = parseFloat(e.currentTarget.value);
+                      if (isNaN(value) || value < 0) {
+                        toast.error("Price must be a positive number");
+                        return;
+                      }
+                      onPriceEdit(item, value);
+                      setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
+                    }}
                     onStartEdit={() => setEditingPrice({ ...editingPrice, [item["Item Description"]]: true })}
+                    isCurrency={true}
                   />
                 </TableCell>
                 <TableCell>
                   <EditableCell
                     isEditing={editingQuantity[item["Item Description"]]}
                     value={item.Quantity}
-                    onEdit={(e) => onQuantityEdit(item, parseFloat(e.currentTarget.value))}
+                    onEdit={(e) => {
+                      const value = parseInt(e.currentTarget.value);
+                      if (isNaN(value) || value < 0 || !Number.isInteger(parseFloat(e.currentTarget.value))) {
+                        toast.error("Quantity must be a positive whole number");
+                        return;
+                      }
+                      onQuantityEdit(item, value);
+                      setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: false });
+                    }}
                     onStartEdit={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
                   />
                 </TableCell>
-                <TableCell className="text-xs sm:text-sm">{item.Total}</TableCell>
+                <TableCell className="text-xs sm:text-sm">{formatCurrency(Number(item.Total))}</TableCell>
                 <DeleteCell onDelete={() => onDelete(item)} />
               </TableRow>
             ))}

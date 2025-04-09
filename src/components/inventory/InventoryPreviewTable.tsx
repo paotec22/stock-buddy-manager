@@ -1,18 +1,13 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { NewInventoryItem } from "@/utils/inventoryUtils";
+import { formatCurrency } from "@/utils/formatters";
 
 interface InventoryPreviewTableProps {
   items: NewInventoryItem[];
 }
 
 export function InventoryPreviewTable({ items }: InventoryPreviewTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-    }).format(amount);
-  };
-
   return (
     <div className="max-h-[400px] overflow-auto border rounded-md">
       <Table>

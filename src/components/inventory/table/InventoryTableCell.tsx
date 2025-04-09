@@ -1,17 +1,20 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell } from "@/components/ui/table";
 import { Edit2, Trash } from "lucide-react";
 import { InventoryItem } from "@/utils/inventoryUtils";
+import { formatCurrency } from "@/utils/formatters";
 
 interface EditableCellProps {
   isEditing: boolean;
   value: number;
   onEdit: (e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => void;
   onStartEdit: () => void;
+  isCurrency?: boolean;
 }
 
-export function EditableCell({ isEditing, value, onEdit, onStartEdit }: EditableCellProps) {
+export function EditableCell({ isEditing, value, onEdit, onStartEdit, isCurrency = false }: EditableCellProps) {
   return (
     <div className="flex items-center space-x-2">
       {isEditing ? (
@@ -20,6 +23,8 @@ export function EditableCell({ isEditing, value, onEdit, onStartEdit }: Editable
           defaultValue={value}
           className="w-20 sm:w-24 text-sm sm:text-base"
           autoFocus
+          min="0"
+          step={isCurrency ? "0.01" : "1"}
           onBlur={onEdit}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
@@ -30,7 +35,7 @@ export function EditableCell({ isEditing, value, onEdit, onStartEdit }: Editable
       ) : (
         <>
           <span className={`text-sm sm:text-base ${value === 0 ? 'dark:text-red-400 text-red-600 font-semibold' : ''}`}>
-            {value}
+            {isCurrency ? formatCurrency(value) : value}
           </span>
           <Button
             variant="ghost"
