@@ -213,7 +213,7 @@ const CreateInvoice = () => {
             <p>Phone: 07035339641, 08131927116</p>
           </div>
           <div className="max-w-2xl text-right">
-            <p>Address: 26, Folashade Tinubu Ojo, KLM19 Agege Motor Road Air Market, Ikeja-Along, Lagos</p>
+            <p>Address: 41, Olowu Street, Ikeja, Lagos</p>
           </div>
         </footer>
       </div>
