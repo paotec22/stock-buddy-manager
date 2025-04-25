@@ -29,8 +29,14 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
       setFile(selectedFile);
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Use event.target?.result instead of event.target?.value
-        const text = event.target?.result as string;
+        // Safely access the result, ensuring it's a string
+        const text = event.target?.result as string | null;
+        
+        if (!text) {
+          toast.error("Failed to read file contents");
+          return;
+        }
+
         try {
           const items = parseCSVData(text, selectedLocation);
           
