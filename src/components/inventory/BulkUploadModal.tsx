@@ -29,6 +29,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
       setFile(selectedFile);
       const reader = new FileReader();
       reader.onload = (event) => {
+        // Use event.target?.result instead of event.target?.value
         const text = event.target?.result as string;
         try {
           const items = parseCSVData(text, selectedLocation);
