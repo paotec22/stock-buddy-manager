@@ -82,3 +82,4 @@ export const recordSale = async (
     throw new Error("Failed to update inventory");
   }
 };
+
