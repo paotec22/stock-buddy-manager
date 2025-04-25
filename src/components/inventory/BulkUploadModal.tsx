@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
       setFile(selectedFile);
       const reader = new FileReader();
       reader.onload = (event) => {
+        // Use result instead of value
         const text = event.target?.result as string | null;
         
         if (!text) {
