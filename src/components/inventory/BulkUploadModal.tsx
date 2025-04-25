@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
       setFile(selectedFile);
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Safely access the result, ensuring it's a string
         const text = event.target?.result as string | null;
         
         if (!text) {
@@ -127,19 +125,9 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
           <DialogTitle>Bulk Upload Inventory</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <Select value={selectedLocation} onValueChange={(value) => {
-              setSelectedLocation(value);
-              if (file) {
-                // If there's already a file loaded, update the preview with the new location
-                const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-                if (fileInput && fileInput.files && fileInput.files[0]) {
-                  const event = { target: { files: fileInput.files } } as unknown as React.ChangeEvent<HTMLInputElement>;
-                  handleFileChange(event);
-                }
-              }
-            }}>
-              <SelectTrigger className="w-[200px]">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+              <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
@@ -150,7 +138,7 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={downloadTemplate}>
+            <Button variant="outline" onClick={downloadTemplate} className="w-full sm:w-auto">
               <Download className="mr-2" />
               Download Template
             </Button>
@@ -169,7 +157,9 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
           </div>
           
           {previewData.length > 0 && (
-            <InventoryPreviewTable items={previewData} />
+            <div className="overflow-auto max-h-[400px] rounded-md border">
+              <InventoryPreviewTable items={previewData} />
+            </div>
           )}
           
           <Button 
