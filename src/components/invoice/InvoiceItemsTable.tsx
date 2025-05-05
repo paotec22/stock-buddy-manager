@@ -36,7 +36,8 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
   }, [newItem.quantity, newItem.unit_price]);
 
   const handleAddItem = () => {
-    if (!newItem.description || newItem.quantity <= 0 || newItem.unit_price <= 0) {
+    // Allow zero as a valid unit price, but description and quantity validations remain
+    if (!newItem.description || newItem.quantity <= 0) {
       return;
     }
 
@@ -117,7 +118,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
               <Input
                 type="number"
                 min="0"
-                value={newItem.unit_price || ""}
+                value={newItem.unit_price === 0 ? "0" : newItem.unit_price || ""}
                 onChange={(e) => setNewItem({ ...newItem, unit_price: Number(e.target.value) })}
                 className="w-full"
               />

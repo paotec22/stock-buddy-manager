@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -34,7 +35,7 @@ const CreateInvoice = () => {
   }, [session, loading, navigate]);
 
   const validItems = items.filter(item => 
-    item.description && item.quantity > 0 && item.unit_price > 0
+    item.description && item.quantity > 0
   );
 
   const calculateTotals = () => {
