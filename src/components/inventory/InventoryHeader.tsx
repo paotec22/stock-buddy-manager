@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, Filter } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { SearchInput } from "@/components/ui/search-input";
 
 interface InventoryHeaderProps {
@@ -9,7 +9,6 @@ interface InventoryHeaderProps {
   onLocationChange: (location: string) => void;
   onAddItem: () => void;
   onBulkUpload: () => void;
-  onSortChange: (value: string) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
 }
@@ -21,7 +20,6 @@ export function InventoryHeader({
   onLocationChange,
   onAddItem,
   onBulkUpload,
-  onSortChange,
   searchTerm,
   onSearchChange,
 }: InventoryHeaderProps) {
@@ -41,27 +39,9 @@ export function InventoryHeader({
               ))}
             </SelectContent>
           </Select>
-
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select onValueChange={onSortChange} defaultValue="none">
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Sort by..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No sorting</SelectItem>
-                <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-                <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-                <SelectItem value="price_asc">Price (Low to High)</SelectItem>
-                <SelectItem value="price_desc">Price (High to Low)</SelectItem>
-                <SelectItem value="quantity_asc">Quantity (Low to High)</SelectItem>
-                <SelectItem value="quantity_desc">Quantity (High to Low)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           
-          {/* Search input - only visible on desktop */}
-          <div className="hidden md:block w-[250px]">
+          {/* Search input - visible on all devices */}
+          <div className="w-full sm:w-[250px]">
             <SearchInput 
               value={searchTerm}
               onChange={onSearchChange}

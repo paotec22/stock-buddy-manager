@@ -8,7 +8,6 @@ import { useInventoryRealtime } from "@/hooks/useInventoryRealtime";
 
 export function InventoryContent() {
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
-  const [sortBy, setSortBy] = useState("none");
   
   const { inventoryItems, isLoading, error, refetch } = useInventoryData(selectedLocation);
   
@@ -30,8 +29,6 @@ export function InventoryContent() {
       inventoryItems={inventoryItems}
       selectedLocation={selectedLocation}
       setSelectedLocation={setSelectedLocation}
-      sortBy={sortBy}
-      setSortBy={setSortBy}
       refetch={refetch}
     />
   );

@@ -10,14 +10,11 @@ import { InventoryGrandTotal } from "./InventoryGrandTotal";
 import { InventoryMobileNav } from "./InventoryMobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInventoryOperations } from "@/hooks/useInventoryOperations";
-import { getSortedInventoryItems } from "@/utils/inventorySortUtils";
 
 interface InventoryContentContainerProps {
   inventoryItems: InventoryItem[];
   selectedLocation: string;
   setSelectedLocation: (location: string) => void;
-  sortBy: string;
-  setSortBy: (sortBy: string) => void;
   refetch: () => void;
 }
 
@@ -25,8 +22,6 @@ export function InventoryContentContainer({
   inventoryItems,
   selectedLocation,
   setSelectedLocation,
-  sortBy,
-  setSortBy,
   refetch
 }: InventoryContentContainerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -35,15 +30,13 @@ export function InventoryContentContainer({
   const isMobile = useIsMobile();
   
   const { handlePriceEdit, handleQuantityEdit, handleDelete } = useInventoryOperations(refetch);
-  
-  const sortedItems = getSortedInventoryItems(inventoryItems, sortBy);
 
   // Filter items based on search term
   const filteredItems = searchTerm.trim() 
-    ? sortedItems.filter(item => 
+    ? inventoryItems.filter(item => 
         item["Item Description"]?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : sortedItems;
+    : inventoryItems;
 
   return (
     <div className="space-y-6 fade-in">
@@ -52,7 +45,6 @@ export function InventoryContentContainer({
         onLocationChange={setSelectedLocation}
         onAddItem={() => setShowAddForm(true)}
         onBulkUpload={() => setShowBulkUpload(true)}
-        onSortChange={setSortBy}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
       />

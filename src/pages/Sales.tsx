@@ -1,4 +1,3 @@
-
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { TotalSalesSummary } from "@/components/sales/TotalSalesSummary";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Plus, Upload, Search } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,8 +36,8 @@ const SalesHeader = ({ onAddSale, onBulkUpload, searchTerm, onSearchChange }: {
       <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
         <h1 className="text-2xl font-bold">Sales Management</h1>
         
-        {/* Search input - desktop only */}
-        <div className="hidden md:block w-[250px]">
+        {/* Search input - visible on all devices */}
+        <div className="w-full md:w-[250px]">
           <SearchInput 
             value={searchTerm}
             onChange={onSearchChange}
