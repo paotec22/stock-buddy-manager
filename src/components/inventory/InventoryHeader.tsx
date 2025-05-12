@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Upload, Filter } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
 
 interface InventoryHeaderProps {
   selectedLocation: string;
@@ -9,6 +10,8 @@ interface InventoryHeaderProps {
   onAddItem: () => void;
   onBulkUpload: () => void;
   onSortChange: (value: string) => void;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
 }
 
 const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
@@ -19,6 +22,8 @@ export function InventoryHeader({
   onAddItem,
   onBulkUpload,
   onSortChange,
+  searchTerm,
+  onSearchChange,
 }: InventoryHeaderProps) {
   return (
     <div className="bg-card shadow-sm border rounded-lg p-4 sm:p-6">
@@ -53,6 +58,15 @@ export function InventoryHeader({
                 <SelectItem value="quantity_desc">Quantity (High to Low)</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          {/* Search input - only visible on desktop */}
+          <div className="hidden md:block w-[250px]">
+            <SearchInput 
+              value={searchTerm}
+              onChange={onSearchChange}
+              placeholder="Search inventory..."
+            />
           </div>
         </div>
         <div className="flex flex-wrap gap-2">

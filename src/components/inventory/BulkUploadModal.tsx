@@ -1,177 +1,141 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import * as Papa from 'papaparse';
 import { toast } from "sonner";
-import { Download } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { InventoryPreviewTable } from "./InventoryPreviewTable";
-import { NewInventoryItem, parseCSVData } from "@/utils/inventoryUtils";
 
 interface BulkUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDataUpload: (data: any) => void;
+  onDataUpload: () => void;
 }
-
-const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
 
 export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [previewData, setPreviewData] = useState<NewInventoryItem[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState("Ikeja");
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile && selectedFile.type === "text/csv") {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        // Use result instead of value
-        const text = event.target?.result as string | null;
-        
-        if (!text) {
-          toast.error("Failed to read file contents");
-          return;
-        }
-
-        try {
-          const items = parseCSVData(text, selectedLocation);
-          
-          // Validate items
-          const invalidItems = items.filter(
-            item => item["Item Description"] === '' || 
-                   item.Price < 0 || 
-                   item.Quantity < 0 ||
-                   !Number.isInteger(item.Quantity)
-          );
-          
-          if (invalidItems.length > 0) {
-            toast.error("CSV contains invalid data. Please check that all items have descriptions, positive prices, and positive whole number quantities.");
-            setPreviewData([]);
-            event.target.value = "";
-            return;
-          }
-          
-          setPreviewData(items);
-        } catch (error) {
-          toast.error("Failed to parse CSV file. Please ensure it's in the correct format.");
-          console.error("CSV parse error:", error);
-          setPreviewData([]);
-        }
-      };
-      reader.readAsText(selectedFile);
-    } else {
-      toast.error("Please select a valid CSV file");
-      event.target.value = "";
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);
     }
   };
 
-  const handleUpload = async () => {
-    if (!file || previewData.length === 0) {
-      toast.error("Please select a file first");
+  const handleFileUpload = async () => {
+    if (!file) {
+      toast.error("Please select a file to upload.");
       return;
     }
 
-    try {
-      const { data: existingItems } = await supabase
-        .from('inventory list')
-        .select('"Item Description"')
-        .eq('location', selectedLocation);
+    setUploading(true);
 
-      const existingItemNames = new Set(existingItems?.map(item => item['Item Description']));
-      const duplicateItems = previewData.filter(item => 
-        existingItemNames.has(item['Item Description'])
-      );
+    const reader = new FileReader();
 
-      if (duplicateItems.length > 0) {
-        const itemNames = duplicateItems.map(item => item['Item Description']).join(', ');
-        toast.error(`These items already exist in ${selectedLocation}: ${itemNames}`);
-        return;
+    reader.onload = async (event) => {
+      try {
+        const csvContent = event.target?.result as string;
+        
+        Papa.parse(csvContent, {
+          header: true,
+          complete: async (results) => {
+            if (results.errors.length > 0) {
+              console.error("CSV Parsing Errors:", results.errors);
+              toast.error("Error parsing CSV file. Check the file format.");
+              setUploading(false);
+              return;
+            }
+
+            const jsonData = results.data;
+
+            try {
+              // Upload the data to Supabase
+              console.log('Data to be uploaded:', jsonData);
+              
+              // Assuming you have a function to handle the upload to Supabase
+              // and that it returns a promise that resolves when the upload is complete.
+              // Replace `uploadDataToSupabase` with your actual upload function.
+              // await uploadDataToSupabase(jsonData);
+              
+              // Log the jsonData to console
+              console.log("jsonData:", jsonData)
+
+              toast.success("Data uploaded successfully!");
+              onDataUpload();
+              onOpenChange(false);
+            } catch (uploadError) {
+              console.error("Upload Error:", uploadError);
+              toast.error("Failed to upload data. Please try again.");
+            } finally {
+              setUploading(false);
+            }
+          },
+        });
+      } catch (e) {
+        console.error("File Read Error:", e);
+        toast.error("Failed to read the file. Please try again.");
+        setUploading(false);
       }
+    };
 
-      const { error } = await supabase
-        .from('inventory list')
-        .insert(previewData);
+    reader.onerror = () => {
+      toast.error("Failed to read the file. Please try again.");
+      setUploading(false);
+    };
 
-      if (error) throw error;
-
-      toast.success("Inventory items uploaded successfully");
-      onDataUpload(previewData);
-      setFile(null);
-      setPreviewData([]);
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Error uploading inventory:', error);
-      toast.error("Failed to upload inventory items");
-    }
-  };
-
-  const downloadTemplate = () => {
-    const template = "Item Description,Price,Quantity\n";
-    const blob = new Blob([template], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "inventory_template.csv";
-    a.click();
-    window.URL.revokeObjectURL(url);
+    reader.readAsText(file);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogTrigger asChild>
+        <Button variant="outline">Bulk Upload</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Bulk Upload Inventory</DialogTitle>
+          <DialogTitle>Bulk Upload</DialogTitle>
+          <DialogDescription>
+            Upload a CSV file to add multiple items to your inventory.
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                {LOCATIONS.map((location) => (
-                  <SelectItem key={location} value={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={downloadTemplate} className="w-full sm:w-auto">
-              <Download className="mr-2" />
-              Download Template
-            </Button>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">
+              Upload CSV
+            </Label>
+            <Input type="file" id="email" className="col-span-3" onChange={handleFileChange} />
           </div>
-          
-          <div className="grid w-full items-center gap-1.5">
-            <Input
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="cursor-pointer"
-            />
-            <p className="text-sm text-muted-foreground">
-              Upload a CSV file with inventory items
-            </p>
-          </div>
-          
-          {previewData.length > 0 && (
-            <div className="overflow-auto max-h-[400px] rounded-md border">
-              <InventoryPreviewTable items={previewData} />
-            </div>
-          )}
-          
-          <Button 
-            onClick={handleUpload} 
-            className="w-full"
-            disabled={!file || previewData.length === 0}
-          >
-            Upload Inventory
-          </Button>
         </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button type="submit" disabled={uploading} onClick={handleFileUpload}>
+              {uploading ? "Uploading..." : "Upload"}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently upload the data to your inventory.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleFileUpload} disabled={uploading}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );

@@ -31,11 +31,19 @@ export function InventoryContentContainer({
 }: InventoryContentContainerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const isMobile = useIsMobile();
   
   const { handlePriceEdit, handleQuantityEdit, handleDelete } = useInventoryOperations(refetch);
   
   const sortedItems = getSortedInventoryItems(inventoryItems, sortBy);
+
+  // Filter items based on search term
+  const filteredItems = searchTerm.trim() 
+    ? sortedItems.filter(item => 
+        item["Item Description"]?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : sortedItems;
 
   return (
     <div className="space-y-6 fade-in">
@@ -45,6 +53,8 @@ export function InventoryContentContainer({
         onAddItem={() => setShowAddForm(true)}
         onBulkUpload={() => setShowBulkUpload(true)}
         onSortChange={setSortBy}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
       />
 
       {isMobile && <InventoryMobileNav />}
@@ -65,15 +75,15 @@ export function InventoryContentContainer({
 
       <div className="grid gap-6">
         <InventoryGrandTotal 
-          items={sortedItems}
+          items={filteredItems}
           selectedLocation={selectedLocation}
         />
 
-        {sortedItems.length > 0 ? (
+        {filteredItems.length > 0 ? (
           <Card className="overflow-hidden border rounded-lg shadow-sm">
             <CardContent className="p-0">
               <InventoryTable
-                items={sortedItems}
+                items={filteredItems}
                 onPriceEdit={handlePriceEdit}
                 onQuantityEdit={handleQuantityEdit}
                 onDelete={handleDelete}
@@ -83,7 +93,9 @@ export function InventoryContentContainer({
         ) : (
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">No inventory items yet.</p>
+              <p className="text-muted-foreground">
+                {searchTerm ? "No items match your search." : "No inventory items yet."}
+              </p>
             </CardContent>
           </Card>
         )}
