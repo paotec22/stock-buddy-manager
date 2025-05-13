@@ -59,6 +59,10 @@
     @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-lg;
   }
 
+  .dark .glass-effect {
+    @apply bg-black/30 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-105;
   }
@@ -78,4 +82,8 @@
 
 .data-card {
   @apply bg-card p-6 rounded-lg border shadow-sm card-hover;
+}
+
+.dark .data-card {
+  @apply border-gray-800 shadow-lg;
 }
