@@ -16,7 +16,11 @@ interface LocationSales {
   total_sales: number;
 }
 
-export function LocationPerformanceTable() {
+interface LocationPerformanceTableProps {
+  searchTerm?: string;
+}
+
+export function LocationPerformanceTable({ searchTerm = "" }: LocationPerformanceTableProps) {
   const { data: locationSales, isLoading } = useQuery({
     queryKey: ['location-sales'],
     queryFn: async () => {
@@ -66,15 +70,22 @@ export function LocationPerformanceTable() {
     }).format(amount);
   };
 
+  // Filter location sales based on search term
+  const filteredLocationSales = searchTerm.trim()
+    ? locationSales?.filter(item => 
+        item.location.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : locationSales;
+
   return (
-    <Card>
+    <Card className="glass-effect fade-in">
       <CardHeader>
         <CardTitle>Location Performance</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <p>Loading sales data...</p>
-        ) : (
+        ) : filteredLocationSales?.length ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -83,7 +94,7 @@ export function LocationPerformanceTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {locationSales?.map((item) => (
+              {filteredLocationSales?.map((item) => (
                 <TableRow key={item.location}>
                   <TableCell>{item.location}</TableCell>
                   <TableCell>{formatCurrency(item.total_sales)}</TableCell>
@@ -91,6 +102,8 @@ export function LocationPerformanceTable() {
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <p className="text-center py-4 text-muted-foreground">No matching location data found</p>
         )}
       </CardContent>
     </Card>

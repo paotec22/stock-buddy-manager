@@ -23,7 +23,11 @@ interface ActivityLog {
   created_at: string;
 }
 
-export function ActivityLogsTable() {
+interface ActivityLogsTableProps {
+  searchTerm?: string;
+}
+
+export function ActivityLogsTable({ searchTerm = "" }: ActivityLogsTableProps) {
   const { data: activityLogs, isLoading } = useQuery({
     queryKey: ['activity-logs'],
     queryFn: async () => {
@@ -49,15 +53,24 @@ export function ActivityLogsTable() {
     }).format(amount);
   };
 
+  // Filter logs based on search term
+  const filteredLogs = searchTerm.trim() 
+    ? activityLogs?.filter(log => 
+        (log.action_type && log.action_type.toLowerCase().includes(searchTerm.toLowerCase())) || 
+        (log.item_description && log.item_description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (log.location && log.location.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : activityLogs;
+
   return (
-    <Card>
+    <Card className="glass-effect fade-in">
       <CardHeader>
         <CardTitle>Recent Activities</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <p>Loading activity logs...</p>
-        ) : (
+        ) : filteredLogs?.length ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -70,7 +83,7 @@ export function ActivityLogsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activityLogs?.map((log) => (
+              {filteredLogs?.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell>{format(new Date(log.created_at), 'MMM dd, yyyy HH:mm')}</TableCell>
                   <TableCell className="capitalize">{log.action_type.toLowerCase()}</TableCell>
@@ -82,6 +95,8 @@ export function ActivityLogsTable() {
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <p className="text-center py-4 text-muted-foreground">No matching activity logs found</p>
         )}
       </CardContent>
     </Card>

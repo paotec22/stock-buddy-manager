@@ -18,7 +18,11 @@ interface MonthlyExpense {
   total_amount: number;
 }
 
-export function MonthlyExpensesTable() {
+interface MonthlyExpensesTableProps {
+  searchTerm?: string;
+}
+
+export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTableProps) {
   const { data: monthlyExpenses, isLoading } = useQuery({
     queryKey: ['monthly-expenses'],
     queryFn: async () => {
@@ -63,15 +67,23 @@ export function MonthlyExpensesTable() {
     }).format(amount);
   };
 
+  // Filter expenses based on search term
+  const filteredExpenses = searchTerm.trim() 
+    ? monthlyExpenses?.filter(expense => 
+        expense.category.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        expense.month.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : monthlyExpenses;
+
   return (
-    <Card>
+    <Card className="glass-effect fade-in">
       <CardHeader>
         <CardTitle>Monthly Expenses by Category</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <p>Loading expenses data...</p>
-        ) : (
+        ) : filteredExpenses?.length ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -81,7 +93,7 @@ export function MonthlyExpensesTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {monthlyExpenses?.map((expense, index) => (
+              {filteredExpenses?.map((expense, index) => (
                 <TableRow key={`${expense.month}-${expense.category}-${index}`}>
                   <TableCell>{expense.month}</TableCell>
                   <TableCell>{expense.category}</TableCell>
@@ -90,6 +102,8 @@ export function MonthlyExpensesTable() {
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <p className="text-center py-4 text-muted-foreground">No matching expense records found</p>
         )}
       </CardContent>
     </Card>
