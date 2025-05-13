@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,11 +6,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load pages for better initial load time
-const Index = lazy(() => import("./pages/Index"));
+// Import the Index page normally to avoid issues with the first page load
+import Index from "./pages/Index";
+
+// Lazy load other pages for better initial load time
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const Sales = lazy(() => import("./pages/Sales"));
@@ -44,25 +47,6 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  useEffect(() => {
-    const loadFont = async () => {
-      const font = new FontFace(
-        'Lato',
-        'url(https://fonts.gstatic.com/s/lato/v24/S6uyw4BMUTPHjx4wXiWtFCc.woff2)'
-      );
-
-      try {
-        await font.load();
-        document.fonts.add(font);
-        console.log('Lato font loaded successfully');
-      } catch (error) {
-        console.error('Error loading Lato font:', error);
-      }
-    };
-
-    loadFont();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="app-theme">
@@ -71,19 +55,48 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/inventory" element={<Inventory />} />
-                  <Route path="/sales" element={<Sales />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/expenses" element={<Expenses />} />
-                  <Route path="/create-invoice" element={<CreateInvoice />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Suspense>
+              <Routes>
+                {/* Load the Index page without Suspense */}
+                <Route path="/" element={<Index />} />
+                
+                {/* Wrap each lazy-loaded route with its own Suspense */}
+                <Route path="/dashboard" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Dashboard />
+                  </Suspense>
+                } />
+                <Route path="/inventory" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Inventory />
+                  </Suspense>
+                } />
+                <Route path="/sales" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Sales />
+                  </Suspense>
+                } />
+                <Route path="/reports" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Reports />
+                  </Suspense>
+                } />
+                <Route path="/settings" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Settings />
+                  </Suspense>
+                } />
+                <Route path="/expenses" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <Expenses />
+                  </Suspense>
+                } />
+                <Route path="/create-invoice" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <CreateInvoice />
+                  </Suspense>
+                } />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
