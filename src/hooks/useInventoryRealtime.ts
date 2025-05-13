@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 export const useInventoryRealtime = (onUpdate: () => void) => {
   useEffect(() => {
@@ -16,7 +16,10 @@ export const useInventoryRealtime = (onUpdate: () => void) => {
         },
         () => {
           onUpdate();
-          toast.success('Inventory updated');
+          toast({
+            title: "Inventory Updated",
+            description: "The inventory data has been refreshed.",
+          });
         }
       )
       .subscribe();

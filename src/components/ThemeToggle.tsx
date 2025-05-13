@@ -2,14 +2,20 @@
 import { Moon, Sun, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   const handleRefresh = () => {
-    toast.info("Refreshing page...");
-    window.location.reload();
+    // Create a custom event that components can listen to for refreshing data
+    const refreshEvent = new CustomEvent('app:refresh-data');
+    window.dispatchEvent(refreshEvent);
+    
+    toast({
+      title: "Refreshing content...",
+      description: "Updating data without reloading the page."
+    });
   };
 
   return (
@@ -28,10 +34,10 @@ export function ThemeToggle() {
         variant="ghost"
         size="icon"
         onClick={handleRefresh}
-        title="Refresh page"
+        title="Refresh content"
       >
         <RefreshCw className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Refresh page</span>
+        <span className="sr-only">Refresh content</span>
       </Button>
     </div>
   );

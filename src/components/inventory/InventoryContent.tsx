@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useInventoryData } from "@/hooks/useInventoryData";
 import { InventoryLoadingState } from "./InventoryLoadingState";
 import { InventoryErrorState } from "./InventoryErrorState";
@@ -15,6 +15,20 @@ export function InventoryContent() {
   useInventoryRealtime(() => {
     refetch();
   });
+  
+  // Add event listener for manual refresh
+  useEffect(() => {
+    const handleRefreshData = () => {
+      console.log('Refreshing inventory data');
+      refetch();
+    };
+    
+    window.addEventListener('app:refresh-data', handleRefreshData);
+    
+    return () => {
+      window.removeEventListener('app:refresh-data', handleRefreshData);
+    };
+  }, [refetch]);
 
   if (isLoading) {
     return <InventoryLoadingState />;
