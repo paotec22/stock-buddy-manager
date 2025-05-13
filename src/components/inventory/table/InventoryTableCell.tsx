@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell } from "@/components/ui/table";
 import { Edit2, Trash } from "lucide-react";
-import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
 
 interface EditableCellProps {
@@ -21,7 +20,7 @@ export function EditableCell({ isEditing, value, onEdit, onStartEdit, isCurrency
         <Input
           type="number"
           defaultValue={value}
-          className="w-20 sm:w-24 text-sm sm:text-base"
+          className="w-20 sm:w-24 text-sm sm:text-base h-8 px-2 py-1 rounded-md"
           autoFocus
           min="0"
           step={isCurrency ? "0.01" : "1"}
@@ -40,10 +39,10 @@ export function EditableCell({ isEditing, value, onEdit, onStartEdit, isCurrency
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 sm:h-8 sm:w-8"
+            className="h-6 w-6 sm:h-8 sm:w-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={onStartEdit}
           >
-            <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Edit2 className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
             <span className="sr-only">Edit</span>
           </Button>
         </>
@@ -58,14 +57,14 @@ interface DeleteCellProps {
 
 export function DeleteCell({ onDelete }: DeleteCellProps) {
   return (
-    <TableCell>
+    <TableCell className="p-2">
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 sm:h-8 sm:w-8"
+        className="h-6 w-6 sm:h-8 sm:w-8 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
         onClick={onDelete}
       >
-        <Trash className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
+        <Trash className="h-3 w-3 sm:h-4 sm:w-4 text-rose-500" />
         <span className="sr-only">Delete item</span>
       </Button>
     </TableCell>

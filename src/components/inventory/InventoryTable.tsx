@@ -82,39 +82,39 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
         isDeleting={isDeleting}
       />
       
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      <div className="overflow-x-auto rounded-xl border shadow-sm bg-card glass-effect">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-muted/30">
               <TableHead className="w-[50px]">
                 <Checkbox
                   checked={items.length > 0 && selectedItems.length === items.length}
                   onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                  className="h-2 w-2" 
+                  className="h-3 w-3"
                 />
               </TableHead>
-              <TableHead className="text-xs sm:text-sm">Item Description</TableHead>
-              <TableHead className="text-xs sm:text-sm">Price</TableHead>
-              <TableHead className="text-xs sm:text-sm">Quantity</TableHead>
-              <TableHead className="text-xs sm:text-sm">Total</TableHead>
-              <TableHead className="text-xs sm:text-sm">Actions</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Quantity</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Total</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.map((item) => (
               <TableRow 
                 key={item.id}
-                className={item.Quantity < 1 ? "bg-red-100/50 dark:bg-red-950/30" : ""}
+                className={`transition-colors ${item.Quantity < 1 ? "bg-red-50/70 dark:bg-red-950/30" : "hover:bg-muted/30"}`}
               >
-                <TableCell>
+                <TableCell className="p-2 pl-4">
                   <Checkbox
                     checked={selectedItems.includes(item.id)}
                     onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
-                    className="h-2 w-2"
+                    className="h-3 w-3"
                   />
                 </TableCell>
-                <TableCell className="min-w-[200px] text-xs sm:text-sm">{item["Item Description"]}</TableCell>
-                <TableCell>
+                <TableCell className="min-w-[200px] text-xs sm:text-sm p-2">{item["Item Description"]}</TableCell>
+                <TableCell className="p-2">
                   <EditableCell
                     isEditing={editingPrice[item["Item Description"]]}
                     value={item.Price}
@@ -131,7 +131,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     isCurrency={true}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell className="p-2">
                   <EditableCell
                     isEditing={editingQuantity[item["Item Description"]]}
                     value={item.Quantity}
@@ -147,7 +147,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     onStartEdit={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
                   />
                 </TableCell>
-                <TableCell className="text-xs sm:text-sm">{formatCurrency(Number(item.Total))}</TableCell>
+                <TableCell className="text-xs sm:text-sm font-medium p-2">{formatCurrency(Number(item.Total))}</TableCell>
                 <DeleteCell onDelete={() => onDelete(item)} />
               </TableRow>
             ))}
