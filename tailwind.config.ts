@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -34,6 +35,9 @@ export default {
         'safe-bottom': 'env(safe-area-inset-bottom)',
         'safe-left': 'env(safe-area-inset-left)',
         'safe-right': 'env(safe-area-inset-right)',
+      },
+      scale: {
+        '103': '1.03',
       },
       colors: {
         border: 'hsl(var(--border))',

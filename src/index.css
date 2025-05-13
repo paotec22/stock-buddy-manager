@@ -195,7 +195,7 @@
   }
   
   .hover-scale {
-    @apply transition-transform duration-200 ease-out hover:scale-103;
+    @apply transition-transform duration-200 ease-out hover:scale-105;
   }
   
   .animated-gradient {
