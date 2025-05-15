@@ -82,13 +82,13 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Remove gradient background as we're using particles now */
-    background-image: none;
+    /* Re-enable the gradient background */
+    background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0));
     background-attachment: fixed;
   }
 
   .dark body {
-    background-image: none;
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0));
     background-color: hsl(240 10% 3.9%);
     background-attachment: fixed;
   }
