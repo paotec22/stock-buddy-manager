@@ -8,6 +8,12 @@ export function ParticleBackground() {
   const particlesRef = useRef<Particle[]>([]);
   const { theme } = useTheme();
 
+  // Configuration - moved inside component scope
+  const particleRadius = 2;
+  const particleSpeed = 0.5; // <-- Moved this here to fix the scope issue
+  const connectionDistance = 120;
+  const lineWidth = 0.5;
+
   // Particle class definition
   class Particle {
     x: number;
@@ -57,12 +63,6 @@ export function ParticleBackground() {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    // Configuration
-    const particleRadius = 2;
-    const particleSpeed = 0.5;
-    const connectionDistance = 120;
-    const lineWidth = 0.5;
 
     // Theme-based colors
     const particleColor = theme === 'dark' 
