@@ -8,6 +8,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Suspense, lazy } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ParticleBackground } from "@/components/ParticleBackground";
 
 // Import the Index page normally to avoid issues with the first page load
 import Index from "./pages/Index";
@@ -50,6 +51,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="app-theme">
+        <ParticleBackground />
         <TooltipProvider>
           <Toaster />
           <Sonner />

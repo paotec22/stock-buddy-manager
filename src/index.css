@@ -82,8 +82,8 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.9) 100%), 
-                      radial-gradient(at 50% 0%, rgba(200,210,255,0.3) 0%, rgba(250,250,255,0.1) 75%);
+    /* Remove gradient background as we're using particles now */
+    background-image: none;
     background-attachment: fixed;
   }
 
