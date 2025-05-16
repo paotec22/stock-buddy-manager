@@ -99,9 +99,9 @@ export function BulkUploadModal({ open, onOpenChange, onDataUpload }: BulkUpload
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
+      {/* <DialogTrigger asChild>
         <Button variant="outline">Bulk Upload</Button>
-      </DialogTrigger>
+      </DialogTrigger> */}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Bulk Upload</DialogTitle>
