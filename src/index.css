@@ -82,13 +82,13 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.9) 100%), 
-                      radial-gradient(at 50% 0%, rgba(200,210,255,0.3) 0%, rgba(250,250,255,0.1) 75%);
+    /* Re-enable the gradient background */
+    background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0));
     background-attachment: fixed;
   }
 
   .dark body {
-    background-image: none;
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0));
     background-color: hsl(240 10% 3.9%);
     background-attachment: fixed;
   }
