@@ -1,11 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/lib/supabase";
-import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ItemDescriptionAutocompleteProps {
   value: string;
@@ -60,9 +56,28 @@ export const ItemDescriptionAutocomplete = ({
   }, [value]);
 
   const handleSelect = (item: any) => {
+    // Replace the content in the input with the selected item's description
     onChange(item["Item Description"]);
+    // Call the onSelect callback to populate other fields like unit price
     onSelect?.(item);
+    // Close the dropdown
     setOpen(false);
+  };
+
+  const handleInputFocus = () => {
+    if (value.length >= 2 && items.length > 0) {
+      setOpen(true);
+    }
+  };
+
+  const handleInputBlur = (e: React.FocusEvent) => {
+    // Check if the blur event is caused by clicking on a dropdown item
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (relatedTarget && relatedTarget.closest('[data-dropdown-item]')) {
+      return; // Don't close if clicking on dropdown item
+    }
+    // Delay closing to allow for item selection
+    setTimeout(() => setOpen(false), 150);
   };
 
   return (
@@ -73,15 +88,8 @@ export const ItemDescriptionAutocomplete = ({
         onChange={(e) => {
           onChange(e.target.value);
         }}
-        onFocus={() => {
-          if (value.length >= 2 && items.length > 0) {
-            setOpen(true);
-          }
-        }}
-        onBlur={() => {
-          // Delay closing to allow for item selection
-          setTimeout(() => setOpen(false), 200);
-        }}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
         className="w-full"
       />
       
@@ -98,7 +106,9 @@ export const ItemDescriptionAutocomplete = ({
               {items.map((item) => (
                 <div
                   key={item.id}
+                  data-dropdown-item
                   onClick={() => handleSelect(item)}
+                  onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking
                   className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                 >
                   <div className="flex flex-col">

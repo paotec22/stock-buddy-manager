@@ -67,8 +67,10 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
   };
 
   const handleItemSelect = (selectedItem: any) => {
+    console.log('Selected item:', selectedItem);
     setNewItem(prev => ({
       ...prev,
+      description: selectedItem["Item Description"], // Ensure description is set
       unit_price: selectedItem.Price || 0
     }));
   };
@@ -108,7 +110,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
             <TableCell>
               <ItemDescriptionAutocomplete
                 value={newItem.description}
-                onChange={(value) => setNewItem({ ...newItem, description: value })}
+                onChange={(value) => setNewItem(prev => ({ ...prev, description: value }))}
                 onSelect={handleItemSelect}
               />
             </TableCell>
