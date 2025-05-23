@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/lib/supabase";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ItemDescriptionAutocompleteProps {
@@ -26,6 +25,7 @@ export const ItemDescriptionAutocomplete = ({
   const fetchItems = async (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 2) {
       setItems([]);
+      setOpen(false);
       return;
     }
 
@@ -43,6 +43,7 @@ export const ItemDescriptionAutocomplete = ({
       }
 
       setItems(data || []);
+      setOpen(data && data.length > 0);
     } catch (error) {
       console.error('Error fetching items:', error);
     } finally {
@@ -65,69 +66,53 @@ export const ItemDescriptionAutocomplete = ({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between h-10 px-3 py-2 text-left font-normal"
-        >
-          <Input
-            placeholder="Item description"
-            value={value}
-            onChange={(e) => {
-              onChange(e.target.value);
-              setOpen(true);
-            }}
-            className="border-0 p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
-            onFocus={() => setOpen(true)}
-          />
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput 
-            placeholder="Search items..." 
-            value={value}
-            onValueChange={onChange}
-          />
-          <CommandList>
-            {loading && (
-              <div className="p-2 text-sm text-muted-foreground">Loading...</div>
-            )}
-            {!loading && items.length === 0 && value.length >= 2 && (
-              <CommandEmpty>No items found.</CommandEmpty>
-            )}
-            {!loading && items.length > 0 && (
-              <CommandGroup>
-                {items.map((item) => (
-                  <CommandItem
-                    key={item.id}
-                    value={item["Item Description"]}
-                    onSelect={() => handleSelect(item)}
-                    className="cursor-pointer"
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === item["Item Description"] ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <div className="flex flex-col">
-                      <span>{item["Item Description"]}</span>
-                      <span className="text-sm text-muted-foreground">
-                        Price: ₦{item.Price?.toLocaleString()} | Stock: {item.Quantity}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div className="relative">
+      <Input
+        placeholder="Item description"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
+        onFocus={() => {
+          if (value.length >= 2 && items.length > 0) {
+            setOpen(true);
+          }
+        }}
+        onBlur={() => {
+          // Delay closing to allow for item selection
+          setTimeout(() => setOpen(false), 200);
+        }}
+        className="w-full"
+      />
+      
+      {open && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+          {loading && (
+            <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+          )}
+          {!loading && items.length === 0 && value.length >= 2 && (
+            <div className="p-2 text-sm text-muted-foreground">No items found.</div>
+          )}
+          {!loading && items.length > 0 && (
+            <div>
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleSelect(item)}
+                  className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{item["Item Description"]}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Price: ₦{item.Price?.toLocaleString()} | Stock: {item.Quantity}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
