@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ItemDescriptionAutocomplete } from "./ItemDescriptionAutocomplete";
 
 interface InvoiceItem {
   description: string;
@@ -65,6 +66,13 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
     }).format(amount);
   };
 
+  const handleItemSelect = (selectedItem: any) => {
+    setNewItem(prev => ({
+      ...prev,
+      unit_price: selectedItem.Price || 0
+    }));
+  };
+
   return (
     <div className="space-y-4 overflow-x-auto">
       <Table>
@@ -98,11 +106,10 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
           {/* New item row - hidden when printing */}
           <TableRow className="print:hidden">
             <TableCell>
-              <Input
-                placeholder="Item description"
+              <ItemDescriptionAutocomplete
                 value={newItem.description}
-                onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                className="w-full"
+                onChange={(value) => setNewItem({ ...newItem, description: value })}
+                onSelect={handleItemSelect}
               />
             </TableCell>
             <TableCell>
