@@ -66,13 +66,14 @@ const CreateInvoice = () => {
             onShowSavedInvoices={handleShowSavedInvoices}
           />
           
-          <div className="flex justify-between items-center mb-6">
-            <CustomerInfo
-              customerName={customerName}
-              onNameChange={setCustomerName}
-              customerPhone={customerPhone}
-              onPhoneChange={setCustomerPhone}
-            />
+          <CustomerInfo
+            customerName={customerName}
+            onNameChange={setCustomerName}
+            customerPhone={customerPhone}
+            onPhoneChange={setCustomerPhone}
+          />
+          
+          <div className="flex justify-end mb-6">
             <CurrencyChanger
               selectedCurrency={selectedCurrency}
               onCurrencyChange={setSelectedCurrency}

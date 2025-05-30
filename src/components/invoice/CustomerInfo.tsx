@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ export const CustomerInfo = ({ customerName, customerPhone, onNameChange, onPhon
   return (
     <Card className="mb-6 print:shadow-none">
       <CardContent className="p-6">
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label htmlFor="customerName">Invoice to:</Label>
             <Input
