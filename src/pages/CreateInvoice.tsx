@@ -21,6 +21,7 @@ const CreateInvoice = () => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]); // Default to NGN
+  const [amountPaid, setAmountPaid] = useState(0);
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
@@ -85,6 +86,8 @@ const CreateInvoice = () => {
             setItems={setItems}
             totals={calculateTotals()}
             currency={selectedCurrency}
+            amountPaid={amountPaid}
+            onAmountPaidChange={setAmountPaid}
           />
           
           <BankDetails />

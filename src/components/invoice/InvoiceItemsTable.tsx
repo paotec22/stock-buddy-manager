@@ -1,6 +1,8 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ItemDescriptionAutocomplete } from "./ItemDescriptionAutocomplete";
@@ -22,9 +24,18 @@ interface InvoiceItemsTableProps {
     total: number;
   };
   currency: Currency;
+  amountPaid: number;
+  onAmountPaidChange: (amount: number) => void;
 }
 
-export const InvoiceItemsTable = ({ items, setItems, totals, currency }: InvoiceItemsTableProps) => {
+export const InvoiceItemsTable = ({ 
+  items, 
+  setItems, 
+  totals, 
+  currency, 
+  amountPaid, 
+  onAmountPaidChange 
+}: InvoiceItemsTableProps) => {
   const [newItem, setNewItem] = useState<InvoiceItem>({
     description: "",
     quantity: 0,
@@ -69,6 +80,8 @@ export const InvoiceItemsTable = ({ items, setItems, totals, currency }: Invoice
       unit_price: selectedItem.Price || 0
     }));
   };
+
+  const balance = totals.total - amountPaid;
 
   return (
     <div className="space-y-4 overflow-x-auto">
@@ -142,9 +155,26 @@ export const InvoiceItemsTable = ({ items, setItems, totals, currency }: Invoice
       </Table>
 
       <div className="flex flex-col gap-2 items-end">
-        <div className="flex justify-between w-full md:w-64 font-bold">
+        <div className="flex justify-between w-full md:w-64">
           <span>Total:</span>
           <span>{formatCurrency(totals.total, currency)}</span>
+        </div>
+        
+        <div className="flex justify-between w-full md:w-64 print:hidden">
+          <Label htmlFor="amountPaid">Amount Paid:</Label>
+          <Input
+            id="amountPaid"
+            type="number"
+            min="0"
+            value={amountPaid || ""}
+            onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
+            className="w-32"
+          />
+        </div>
+        
+        <div className="flex justify-between w-full md:w-64 font-bold text-lg border-t pt-2">
+          <span>Balance:</span>
+          <span>{formatCurrency(balance, currency)}</span>
         </div>
       </div>
     </div>
