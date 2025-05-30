@@ -8,6 +8,7 @@ import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
 import { BankDetails } from "@/components/invoice/BankDetails";
 import { SavedInvoicesModal } from "@/components/invoice/SavedInvoicesModal";
 import { InvoiceFooter } from "@/components/invoice/InvoiceFooter";
+import { CurrencyChanger, currencies, type Currency } from "@/components/invoice/CurrencyChanger";
 import { useAuth } from "@/components/AuthProvider";
 import { useInvoiceOperations } from "@/hooks/useInvoiceOperations";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ const CreateInvoice = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]); // Default to NGN
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
@@ -64,17 +66,24 @@ const CreateInvoice = () => {
             onShowSavedInvoices={handleShowSavedInvoices}
           />
           
-          <CustomerInfo
-            customerName={customerName}
-            onNameChange={setCustomerName}
-            customerPhone={customerPhone}
-            onPhoneChange={setCustomerPhone}
-          />
+          <div className="flex justify-between items-center mb-6">
+            <CustomerInfo
+              customerName={customerName}
+              onNameChange={setCustomerName}
+              customerPhone={customerPhone}
+              onPhoneChange={setCustomerPhone}
+            />
+            <CurrencyChanger
+              selectedCurrency={selectedCurrency}
+              onCurrencyChange={setSelectedCurrency}
+            />
+          </div>
           
           <InvoiceItemsTable
             items={validItems}
             setItems={setItems}
             totals={calculateTotals()}
+            currency={selectedCurrency}
           />
           
           <BankDetails />

@@ -1,10 +1,11 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ItemDescriptionAutocomplete } from "./ItemDescriptionAutocomplete";
+import { formatCurrency } from "@/utils/formatters";
+import type { Currency } from "./CurrencyChanger";
 
 interface InvoiceItem {
   description: string;
@@ -20,9 +21,10 @@ interface InvoiceItemsTableProps {
     subtotal: number;
     total: number;
   };
+  currency: Currency;
 }
 
-export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTableProps) => {
+export const InvoiceItemsTable = ({ items, setItems, totals, currency }: InvoiceItemsTableProps) => {
   const [newItem, setNewItem] = useState<InvoiceItem>({
     description: "",
     quantity: 0,
@@ -59,13 +61,6 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(amount);
-  };
-
   const handleItemSelect = (selectedItem: any) => {
     console.log('Selected item:', selectedItem);
     setNewItem(prev => ({
@@ -92,8 +87,8 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
             <TableRow key={index}>
               <TableCell className="break-words">{item.description}</TableCell>
               <TableCell>{item.quantity}</TableCell>
-              <TableCell>{formatCurrency(item.unit_price)}</TableCell>
-              <TableCell>{formatCurrency(item.amount)}</TableCell>
+              <TableCell>{formatCurrency(item.unit_price, currency)}</TableCell>
+              <TableCell>{formatCurrency(item.amount, currency)}</TableCell>
               <TableCell className="print:hidden">
                 <Button
                   variant="ghost"
@@ -132,7 +127,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
                 className="w-full"
               />
             </TableCell>
-            <TableCell>{formatCurrency(newItem.amount)}</TableCell>
+            <TableCell>{formatCurrency(newItem.amount, currency)}</TableCell>
             <TableCell>
               <Button
                 variant="ghost"
@@ -149,7 +144,7 @@ export const InvoiceItemsTable = ({ items, setItems, totals }: InvoiceItemsTable
       <div className="flex flex-col gap-2 items-end">
         <div className="flex justify-between w-full md:w-64 font-bold">
           <span>Total:</span>
-          <span>{formatCurrency(totals.total)}</span>
+          <span>{formatCurrency(totals.total, currency)}</span>
         </div>
       </div>
     </div>
