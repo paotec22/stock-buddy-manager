@@ -160,16 +160,22 @@ export const InvoiceItemsTable = ({
           <span>{formatCurrency(totals.total, currency)}</span>
         </div>
         
-        <div className="flex justify-between w-full md:w-64 print:hidden">
-          <Label htmlFor="amountPaid">Amount Paid:</Label>
-          <Input
-            id="amountPaid"
-            type="number"
-            min="0"
-            value={amountPaid || ""}
-            onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
-            className="w-32"
-          />
+        <div className="flex justify-between w-full md:w-64">
+          <span className="print:hidden">
+            <Label htmlFor="amountPaid">Amount Paid:</Label>
+          </span>
+          <span className="print:block hidden">Amount Paid:</span>
+          <span className="print:hidden">
+            <Input
+              id="amountPaid"
+              type="number"
+              min="0"
+              value={amountPaid || ""}
+              onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
+              className="w-32"
+            />
+          </span>
+          <span className="print:block hidden">{formatCurrency(amountPaid, currency)}</span>
         </div>
         
         <div className="flex justify-between w-full md:w-64 font-bold text-lg border-t pt-2">
