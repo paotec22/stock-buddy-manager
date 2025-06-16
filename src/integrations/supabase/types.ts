@@ -263,6 +263,7 @@ export type Database = {
       }
       sales: {
         Row: {
+          actual_purchase_price: number | null
           id: number
           item_id: number | null
           quantity: number
@@ -272,6 +273,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          actual_purchase_price?: number | null
           id?: number
           item_id?: number | null
           quantity: number
@@ -281,6 +283,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          actual_purchase_price?: number | null
           id?: number
           item_id?: number | null
           quantity?: number
