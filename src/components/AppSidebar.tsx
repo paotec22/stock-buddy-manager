@@ -81,6 +81,7 @@ function SidebarContents() {
         <SidebarItem to="/inventory">Inventory</SidebarItem>
         <SidebarItem to="/sales">Sales</SidebarItem>
         <SidebarItem to="/expenses">Expenses</SidebarItem>
+        <SidebarItem to="/profit-analysis">Profit Analysis</SidebarItem>
         <SidebarItem to="/reports">Reports</SidebarItem>
         <SidebarItem to="/create-invoice">Create Invoice</SidebarItem>
         <SidebarItem to="/settings">Settings</SidebarItem>

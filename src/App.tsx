@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ const Reports = lazy(() => import("./pages/Reports"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Expenses = lazy(() => import("./pages/Expenses"));
 const CreateInvoice = lazy(() => import("./pages/CreateInvoice"));
+const ProfitAnalysis = lazy(() => import("./pages/ProfitAnalysis"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -93,6 +93,11 @@ const App = () => {
                 <Route path="/create-invoice" element={
                   <Suspense fallback={<PageLoader />}>
                     <CreateInvoice />
+                  </Suspense>
+                } />
+                <Route path="/profit-analysis" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <ProfitAnalysis />
                   </Suspense>
                 } />
                 <Route path="*" element={<Navigate to="/" replace />} />
