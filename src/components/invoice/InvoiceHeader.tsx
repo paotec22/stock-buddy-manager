@@ -12,8 +12,6 @@ interface InvoiceHeaderProps {
   isSubmitting: boolean;
   onSave: () => void;
   onShowSavedInvoices: () => void;
-  invoiceDate: string;
-  onDateChange: (date: string) => void;
 }
 
 export const InvoiceHeader = ({
@@ -22,27 +20,20 @@ export const InvoiceHeader = ({
   isSubmitting,
   onSave,
   onShowSavedInvoices,
-  invoiceDate,
-  onDateChange,
 }: InvoiceHeaderProps) => {
   const generateInvoiceNumber = () => {
     const now = new Date();
     return format(now, "ddMMHHmmss");
   };
 
+  const getCurrentDate = () => {
+    return format(new Date(), "dd/MM/yyyy");
+  };
+
   return (
     <div className="flex flex-col gap-4 mb-6">
       <div className="flex justify-between items-center">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="invoice-date" className="text-sm font-medium">Date:</Label>
-          <Input
-            id="invoice-date"
-            type="date"
-            value={invoiceDate}
-            onChange={(e) => onDateChange(e.target.value)}
-            className="w-40"
-          />
-        </div>
+        <p className="text-sm font-medium">Date: {getCurrentDate()}</p>
         <p className="text-sm font-medium">Invoice #: {generateInvoiceNumber()}</p>
       </div>
       <div className="flex justify-between items-center">

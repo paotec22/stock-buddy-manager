@@ -23,7 +23,6 @@ const CreateInvoice = () => {
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]); // Default to NGN
   const [amountPaid, setAmountPaid] = useState(0);
-  const [invoiceDate, setInvoiceDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
@@ -67,8 +66,6 @@ const CreateInvoice = () => {
             isSubmitting={isSubmitting}
             onSave={handleSubmit}
             onShowSavedInvoices={handleShowSavedInvoices}
-            invoiceDate={invoiceDate}
-            onDateChange={setInvoiceDate}
           />
           
           <CustomerInfo
