@@ -74,7 +74,7 @@ function SidebarContents() {
     <div className="space-y-4 py-4">
       <div className="px-3 py-2">
         <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Stock Buddy Manager
+          SI Manager
         </h2>
       </div>
       <div className="space-y-1 px-3">
