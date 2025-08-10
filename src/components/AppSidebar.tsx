@@ -32,8 +32,8 @@ function SidebarItem({ className, to, children, ...props }: SidebarItemProps) {
       to={to}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-          isActive ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50" : "",
+          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground hover:bg-muted/60",
+          isActive ? "bg-muted text-foreground font-medium" : "",
           className
         )
       }
@@ -92,7 +92,7 @@ function SidebarContents() {
       <div className="px-3 py-2">
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-red-600 font-bold transition-all hover:bg-red-100 dark:hover:bg-red-900/50"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-destructive font-bold transition-all hover:bg-destructive/10"
         >
           Logout
         </button>
@@ -121,6 +121,7 @@ export function AppSidebar() {
         <Button 
           variant="ghost" 
           size="icon"
+          aria-label="Open navigation menu"
           className="fixed top-4 left-4 z-40 bg-background"
           onClick={() => setIsOpen(true)}
         >

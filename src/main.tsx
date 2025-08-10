@@ -2,6 +2,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import './styles/a11y.css'
 
 // Wrap in a try-catch to handle errors during initial render
 try {

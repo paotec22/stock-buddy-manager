@@ -28,7 +28,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Lato', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       spacing: {
         'safe-top': 'env(safe-area-inset-top)',
