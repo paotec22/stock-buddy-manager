@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Import the Index page normally to avoid issues with the first page load
 import Index from "./pages/Index";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 // Lazy load other pages for better initial load time
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -55,53 +56,56 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <Routes>
-                {/* Load the Index page without Suspense */}
-                <Route path="/" element={<Index />} />
-                
-                {/* Wrap each lazy-loaded route with its own Suspense */}
-                <Route path="/dashboard" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Dashboard />
-                  </Suspense>
-                } />
-                <Route path="/inventory" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Inventory />
-                  </Suspense>
-                } />
-                <Route path="/sales" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Sales />
-                  </Suspense>
-                } />
-                <Route path="/reports" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Reports />
-                  </Suspense>
-                } />
-                <Route path="/settings" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Settings />
-                  </Suspense>
-                } />
-                <Route path="/expenses" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Expenses />
-                  </Suspense>
-                } />
-                <Route path="/create-invoice" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <CreateInvoice />
-                  </Suspense>
-                } />
-                <Route path="/profit-analysis" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <ProfitAnalysis />
-                  </Suspense>
-                } />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              <div className="min-h-screen pb-20 md:pb-0">
+                <Routes>
+                  {/* Load the Index page without Suspense */}
+                  <Route path="/" element={<Index />} />
+                  
+                  {/* Wrap each lazy-loaded route with its own Suspense */}
+                  <Route path="/dashboard" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Dashboard />
+                    </Suspense>
+                  } />
+                  <Route path="/inventory" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Inventory />
+                    </Suspense>
+                  } />
+                  <Route path="/sales" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Sales />
+                    </Suspense>
+                  } />
+                  <Route path="/reports" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Reports />
+                    </Suspense>
+                  } />
+                  <Route path="/settings" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Settings />
+                    </Suspense>
+                  } />
+                  <Route path="/expenses" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Expenses />
+                    </Suspense>
+                  } />
+                  <Route path="/create-invoice" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <CreateInvoice />
+                    </Suspense>
+                  } />
+                  <Route path="/profit-analysis" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <ProfitAnalysis />
+                    </Suspense>
+                  } />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </div>
+              <MobileBottomNav />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
