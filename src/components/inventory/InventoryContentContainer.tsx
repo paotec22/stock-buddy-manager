@@ -7,8 +7,8 @@ import { AddInventoryForm } from "@/components/inventory/AddInventoryForm";
 import { BulkUploadModal } from "@/components/inventory/BulkUploadModal";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryGrandTotal } from "./InventoryGrandTotal";
-import { InventoryMobileNav } from "./InventoryMobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
+
+
 import { useInventoryOperations } from "@/hooks/useInventoryOperations";
 
 interface InventoryContentContainerProps {
@@ -27,7 +27,7 @@ export function InventoryContentContainer({
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const isMobile = useIsMobile();
+  
   
   const { handlePriceEdit, handleQuantityEdit, handleDelete } = useInventoryOperations(refetch);
 
@@ -49,7 +49,7 @@ export function InventoryContentContainer({
         onSearchChange={setSearchTerm}
       />
 
-      {isMobile && <InventoryMobileNav />}
+      
 
       <AddInventoryForm 
         open={showAddForm} 
