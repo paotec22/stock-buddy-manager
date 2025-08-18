@@ -28,16 +28,18 @@ export const ItemSelect = ({ form, items, onItemSelect }: ItemSelectProps) => {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select item" />
               </SelectTrigger>
-              <SelectContent className="max-h-[200px] overflow-y-auto">
-                {items.map((item) => (
-                  <SelectItem 
-                    key={item.id} 
-                    value={item.id.toString()}
-                    className="py-2.5 px-4"
-                  >
-                    {item["Item Description"]}
-                  </SelectItem>
-                ))}
+              <SelectContent className="max-h-[200px] overflow-y-auto bg-background border z-50">
+                {items
+                  .sort((a, b) => a["Item Description"].localeCompare(b["Item Description"]))
+                  .map((item) => (
+                    <SelectItem 
+                      key={item.id} 
+                      value={item.id.toString()}
+                      className="py-2.5 px-4"
+                    >
+                      {item["Item Description"]}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </FormControl>
