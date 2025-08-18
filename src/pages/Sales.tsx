@@ -6,10 +6,11 @@ import { BulkSaleUploadModal } from "@/components/sales/BulkSaleUploadModal";
 import { SalesTable } from "@/components/sales/SalesTable";
 import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
 import { TotalSalesSummary } from "@/components/sales/TotalSalesSummary";
+import { SalesExportModal } from "@/components/sales/SalesExportModal";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,9 +26,10 @@ interface Sale {
   location: string;
 }
 
-const SalesHeader = ({ onAddSale, onBulkUpload, searchTerm, onSearchChange }: { 
+const SalesHeader = ({ onAddSale, onBulkUpload, onExport, searchTerm, onSearchChange }: { 
   onAddSale: () => void;
   onBulkUpload: () => void;
+  onExport: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
 }) => {
@@ -47,6 +49,12 @@ const SalesHeader = ({ onAddSale, onBulkUpload, searchTerm, onSearchChange }: {
       </div>
       
       <div className="flex gap-2">
+        <Button onClick={onExport} variant="outline">
+          <div className="flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            <span>Export</span>
+          </div>
+        </Button>
         <Button onClick={onBulkUpload} variant="outline">
           <div className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
@@ -67,6 +75,7 @@ const SalesHeader = ({ onAddSale, onBulkUpload, searchTerm, onSearchChange }: {
 const Sales = () => {
   const [showAddSale, setShowAddSale] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { session, loading } = useAuth();
   const navigate = useNavigate();
@@ -139,6 +148,7 @@ const Sales = () => {
           <SalesHeader 
             onAddSale={() => setShowAddSale(true)}
             onBulkUpload={() => setShowBulkUpload(true)}
+            onExport={() => setShowExport(true)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
           />
@@ -169,6 +179,12 @@ const Sales = () => {
             open={showBulkUpload}
             onOpenChange={setShowBulkUpload}
             onDataUpload={refetch}
+          />
+
+          <SalesExportModal
+            open={showExport}
+            onOpenChange={setShowExport}
+            sales={sales}
           />
         </main>
       </div>
