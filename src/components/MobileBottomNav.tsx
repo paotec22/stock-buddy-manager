@@ -3,7 +3,7 @@ import { Boxes, ShoppingCart, Receipt, BarChart3, Settings } from "lucide-react"
 
 export function MobileBottomNav() {
   return (
-    <nav aria-label="Primary" className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <nav aria-label="Primary" className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <ul className="grid grid-cols-5">
         <li>
           <NavLink to="/inventory" end className={({ isActive }) =>

@@ -24,11 +24,11 @@ interface SalesTableProps {
 export function SalesTable({ sales }: SalesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: isAdmin } = useQuery({
-    queryKey: ['isAdmin'],
+  const { data: userRole } = useQuery({
+    queryKey: ['userRole'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      if (!user) return null;
       
       const { data: profile } = await supabase
         .from('profiles')
@@ -36,9 +36,11 @@ export function SalesTable({ sales }: SalesTableProps) {
         .eq('id', user.id)
         .maybeSingle();
       
-      return profile?.role === 'admin';
+      return profile?.role;
     }
   });
+
+  const canEditDates = userRole === 'admin' || userRole === 'uploader';
 
   const handleDateUpdate = async (saleId: string, newDate: Date) => {
     try {
@@ -77,7 +79,7 @@ export function SalesTable({ sales }: SalesTableProps) {
               <SalesTableRow
                 key={sale.id}
                 sale={sale}
-                isAdmin={isAdmin || false}
+                isAdmin={canEditDates}
                 formatCurrency={formatCurrency}
                 onDateUpdate={handleDateUpdate}
               />
