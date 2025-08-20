@@ -11,11 +11,25 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { FileSpreadsheet } from "lucide-react";
+import { ExpensesExportModal } from "./ExpensesExportModal";
+import { useState } from "react";
 
 interface MonthlyExpense {
   month: string;
   category: string;
   total_amount: number;
+  descriptions: string[];
+}
+
+interface Expense {
+  id: string;
+  description: string;
+  category: string;
+  amount: number;
+  expense_date: string;
+  location: string;
 }
 
 interface MonthlyExpensesTableProps {
@@ -23,7 +37,8 @@ interface MonthlyExpensesTableProps {
 }
 
 export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTableProps) {
-  const { data: monthlyExpenses, isLoading } = useQuery({
+  const [showExport, setShowExport] = useState(false);
+  const { data: { monthlyExpenses, allExpenses }, isLoading } = useQuery({
     queryKey: ['monthly-expenses'],
     queryFn: async () => {
       console.log('Fetching monthly expenses...');
@@ -45,18 +60,23 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
 
         if (existingEntry) {
           existingEntry.total_amount += Number(expense.amount);
+          existingEntry.descriptions.push(expense.description);
         } else {
           acc.push({
             month,
             category: expense.category,
-            total_amount: Number(expense.amount)
+            total_amount: Number(expense.amount),
+            descriptions: [expense.description]
           });
         }
 
         return acc;
       }, []);
 
-      return expensesByMonth;
+      return {
+        monthlyExpenses: expensesByMonth,
+        allExpenses: data as Expense[]
+      };
     }
   });
 
@@ -71,14 +91,26 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
   const filteredExpenses = searchTerm.trim() 
     ? monthlyExpenses?.filter(expense => 
         expense.category.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        expense.month.toLowerCase().includes(searchTerm.toLowerCase())
+        expense.month.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        expense.descriptions.some(desc => desc.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     : monthlyExpenses;
 
   return (
     <Card className="glass-effect fade-in">
       <CardHeader>
-        <CardTitle>Monthly Expenses by Category</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Monthly Expenses by Category</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowExport(true)}
+            className="flex items-center gap-2"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Export
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -89,6 +121,7 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
               <TableRow>
                 <TableHead>Month</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Descriptions</TableHead>
                 <TableHead>Total Amount</TableHead>
               </TableRow>
             </TableHeader>
@@ -97,6 +130,14 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
                 <TableRow key={`${expense.month}-${expense.category}-${index}`}>
                   <TableCell>{expense.month}</TableCell>
                   <TableCell>{expense.category}</TableCell>
+                  <TableCell>
+                    <div className="max-w-xs">
+                      <div className="text-sm text-muted-foreground">
+                        {expense.descriptions.slice(0, 3).join(', ')}
+                        {expense.descriptions.length > 3 && ` (+${expense.descriptions.length - 3} more)`}
+                      </div>
+                    </div>
+                  </TableCell>
                   <TableCell>{formatCurrency(expense.total_amount)}</TableCell>
                 </TableRow>
               ))}
@@ -106,6 +147,12 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
           <p className="text-center py-4 text-muted-foreground">No matching expense records found</p>
         )}
       </CardContent>
+      
+      <ExpensesExportModal
+        open={showExport}
+        onOpenChange={setShowExport}
+        expenses={allExpenses || []}
+      />
     </Card>
   );
 }

@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { UserManagementSection } from "@/components/settings/UserManagementSection";
 import { DatabaseManagementSection } from "@/components/settings/DatabaseManagementSection";
+import { RoleManagementSection } from "@/components/settings/RoleManagementSection";
 import { useAuth } from "@/components/AuthProvider";
 
 const Settings = () => {
@@ -112,6 +113,12 @@ const Settings = () => {
               <AccordionTrigger>User Management</AccordionTrigger>
               <AccordionContent>
                 <UserManagementSection />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="role-management">
+              <AccordionTrigger>Role Management</AccordionTrigger>
+              <AccordionContent>
+                <RoleManagementSection />
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="database-management">
