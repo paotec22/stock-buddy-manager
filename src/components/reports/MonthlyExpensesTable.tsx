@@ -38,7 +38,7 @@ interface MonthlyExpensesTableProps {
 
 export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTableProps) {
   const [showExport, setShowExport] = useState(false);
-  const { data: { monthlyExpenses, allExpenses }, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['monthly-expenses'],
     queryFn: async () => {
       console.log('Fetching monthly expenses...');
@@ -79,6 +79,9 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
       };
     }
   });
+
+  const monthlyExpenses = data?.monthlyExpenses;
+  const allExpenses = data?.allExpenses;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
