@@ -23,11 +23,12 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-interface MonthlyExpense {
-  month: string;
+interface ExpenseRecord {
+  date: string;
   category: string;
   total_amount: number;
-  descriptions: string[];
+  description: string;
+  location: string;
 }
 
 interface Expense {
@@ -51,7 +52,7 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
   const { data, isLoading } = useQuery({
     queryKey: ['monthly-expenses', dateFrom, dateTo],
     queryFn: async () => {
-      console.log('Fetching monthly expenses...');
+      console.log('Fetching expenses...');
       let query = supabase
         .from('expenses')
         .select('*');
@@ -71,35 +72,22 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
         throw error;
       }
 
-      const expensesByMonth = data.reduce((acc: MonthlyExpense[], expense) => {
-        const month = format(new Date(expense.expense_date), 'MMMM yyyy');
-        const existingEntry = acc.find(
-          entry => entry.month === month && entry.category === expense.category
-        );
-
-        if (existingEntry) {
-          existingEntry.total_amount += Number(expense.amount);
-          existingEntry.descriptions.push(expense.description);
-        } else {
-          acc.push({
-            month,
-            category: expense.category,
-            total_amount: Number(expense.amount),
-            descriptions: [expense.description]
-          });
-        }
-
-        return acc;
-      }, []);
+      const expenseRecords = data.map(expense => ({
+        date: format(new Date(expense.expense_date), 'PPP'),
+        category: expense.category,
+        total_amount: Number(expense.amount),
+        description: expense.description,
+        location: expense.location
+      }));
 
       return {
-        monthlyExpenses: expensesByMonth,
+        expenseRecords,
         allExpenses: data as Expense[]
       };
     }
   });
 
-  const monthlyExpenses = data?.monthlyExpenses;
+  const expenseRecords = data?.expenseRecords;
   const allExpenses = data?.allExpenses;
 
   const formatCurrency = (amount: number) => {
@@ -111,18 +99,19 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
 
   // Filter expenses based on search term
   const filteredExpenses = searchTerm.trim() 
-    ? monthlyExpenses?.filter(expense => 
+    ? expenseRecords?.filter(expense => 
         expense.category.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        expense.month.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.descriptions.some(desc => desc.toLowerCase().includes(searchTerm.toLowerCase()))
+        expense.date.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        expense.location.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : monthlyExpenses;
+    : expenseRecords;
 
   return (
     <Card className="glass-effect fade-in">
       <CardHeader>
         <div className="flex justify-between items-center mb-4">
-          <CardTitle>Monthly Expenses by Category</CardTitle>
+          <CardTitle>Expense Records by Date</CardTitle>
           <Button 
             variant="outline" 
             size="sm"
@@ -214,25 +203,20 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Month</TableHead>
+                <TableHead>Date</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Descriptions</TableHead>
-                <TableHead>Total Amount</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredExpenses?.map((expense, index) => (
-                <TableRow key={`${expense.month}-${expense.category}-${index}`}>
-                  <TableCell>{expense.month}</TableCell>
+                <TableRow key={`${expense.date}-${expense.category}-${index}`}>
+                  <TableCell>{expense.date}</TableCell>
                   <TableCell>{expense.category}</TableCell>
-                  <TableCell>
-                    <div className="max-w-xs">
-                      <div className="text-sm text-muted-foreground">
-                        {expense.descriptions.slice(0, 3).join(', ')}
-                        {expense.descriptions.length > 3 && ` (+${expense.descriptions.length - 3} more)`}
-                      </div>
-                    </div>
-                  </TableCell>
+                  <TableCell>{expense.description}</TableCell>
+                  <TableCell>{expense.location}</TableCell>
                   <TableCell>{formatCurrency(expense.total_amount)}</TableCell>
                 </TableRow>
               ))}
