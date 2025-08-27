@@ -11,6 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
@@ -33,11 +42,12 @@ export default function Expenses() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [expenseDate, setExpenseDate] = useState<Date>(new Date());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!description || !amount || !category || !selectedLocation) {
+    if (!description || !amount || !category || !selectedLocation || !expenseDate) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -48,6 +58,7 @@ export default function Expenses() {
         amount: parseFloat(amount),
         category,
         location: selectedLocation,
+        expense_date: expenseDate.toISOString(),
         user_id: (await supabase.auth.getUser()).data.user?.id
       });
 
@@ -58,6 +69,7 @@ export default function Expenses() {
       setAmount("");
       setCategory("");
       setSelectedLocation("");
+      setExpenseDate(new Date());
     } catch (error) {
       console.error("Error recording expense:", error);
       toast.error("Failed to record expense");
@@ -138,6 +150,35 @@ export default function Expenses() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Expense Date
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !expenseDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {expenseDate ? format(expenseDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={expenseDate}
+                        onSelect={(date) => date && setExpenseDate(date)}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <Button type="submit" className="w-full">
