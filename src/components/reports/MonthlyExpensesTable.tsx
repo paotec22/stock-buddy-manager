@@ -12,9 +12,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, CalendarIcon } from "lucide-react";
 import { ExpensesExportModal } from "./ExpensesExportModal";
 import { useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface MonthlyExpense {
   month: string;
@@ -38,14 +45,26 @@ interface MonthlyExpensesTableProps {
 
 export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTableProps) {
   const [showExport, setShowExport] = useState(false);
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
+  
   const { data, isLoading } = useQuery({
-    queryKey: ['monthly-expenses'],
+    queryKey: ['monthly-expenses', dateFrom, dateTo],
     queryFn: async () => {
       console.log('Fetching monthly expenses...');
-      const { data, error } = await supabase
+      let query = supabase
         .from('expenses')
-        .select('*')
-        .order('expense_date', { ascending: false });
+        .select('*');
+
+      // Apply date filters if set
+      if (dateFrom) {
+        query = query.gte('expense_date', dateFrom.toISOString());
+      }
+      if (dateTo) {
+        query = query.lte('expense_date', dateTo.toISOString());
+      }
+
+      const { data, error } = await query.order('expense_date', { ascending: false });
 
       if (error) {
         console.error('Error fetching expenses:', error);
@@ -102,7 +121,7 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
   return (
     <Card className="glass-effect fade-in">
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
           <CardTitle>Monthly Expenses by Category</CardTitle>
           <Button 
             variant="outline" 
@@ -113,6 +132,79 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
             <FileSpreadsheet className="h-4 w-4" />
             Export
           </Button>
+        </div>
+        
+        {/* Date Filter Section */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">From Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[200px] justify-start text-left font-normal",
+                    !dateFrom && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateFrom ? format(dateFrom, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateFrom}
+                  onSelect={setDateFrom}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">To Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[200px] justify-start text-left font-normal",
+                    !dateTo && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateTo ? format(dateTo, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateTo}
+                  onSelect={setDateTo}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          {(dateFrom || dateTo) && (
+            <div className="flex items-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setDateFrom(undefined);
+                  setDateTo(undefined);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Clear Dates
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
