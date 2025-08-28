@@ -83,6 +83,33 @@ export type Database = {
         }
         Relationships: []
       }
+      installations: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: number
+          installation_date: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: number
+          installation_date?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: number
+          installation_date?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       "inventory list": {
         Row: {
           id: number

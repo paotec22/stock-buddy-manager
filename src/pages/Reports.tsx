@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MonthlyExpensesTable } from "@/components/reports/MonthlyExpensesTable";
+import { InstallationsTable } from "@/components/reports/InstallationsTable";
 import { LocationPerformanceTable } from "@/components/reports/LocationPerformanceTable";
 import { ActivityLogsTable } from "@/components/reports/ActivityLogsTable";
 import { SearchInput } from "@/components/ui/search-input";
@@ -27,6 +28,7 @@ const Reports = () => {
             </div>
           </div>
           <MonthlyExpensesTable searchTerm={searchTerm} />
+          <InstallationsTable searchTerm={searchTerm} />
           <LocationPerformanceTable searchTerm={searchTerm} />
           <ActivityLogsTable searchTerm={searchTerm} />
         </main>

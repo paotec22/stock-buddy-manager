@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Wrench } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -38,13 +38,19 @@ const LOCATIONS = [
 ];
 
 export default function Expenses() {
+  // Expense form states
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [expenseDate, setExpenseDate] = useState<Date>(new Date());
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Installation form states
+  const [installationDescription, setInstallationDescription] = useState("");
+  const [installationAmount, setInstallationAmount] = useState("");
+  const [installationDate, setInstallationDate] = useState<Date>(new Date());
+
+  const handleExpenseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!description || !amount || !category || !selectedLocation || !expenseDate) {
@@ -76,19 +82,48 @@ export default function Expenses() {
     }
   };
 
+  const handleInstallationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!installationDescription || !installationAmount || !installationDate) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("installations").insert({
+        description: installationDescription,
+        amount: parseFloat(installationAmount),
+        installation_date: installationDate.toISOString(),
+        user_id: (await supabase.auth.getUser()).data.user?.id
+      });
+
+      if (error) throw error;
+
+      toast.success("Installation recorded successfully");
+      setInstallationDescription("");
+      setInstallationAmount("");
+      setInstallationDate(new Date());
+    } catch (error) {
+      console.error("Error recording installation:", error);
+      toast.error("Failed to record installation");
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Record Expense</h1>
+          <h1 className="text-2xl font-bold mb-6">Expenses & Installations</h1>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>New Expense</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>New Expense</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleExpenseSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium mb-1">
                     Description
@@ -181,12 +216,85 @@ export default function Expenses() {
                   </Popover>
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Record Expense
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                  <Button type="submit" className="w-full">
+                    Record Expense
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wrench className="h-5 w-5" />
+                  New Installation
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleInstallationSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="installationDescription" className="block text-sm font-medium mb-1">
+                      Description
+                    </label>
+                    <Input
+                      id="installationDescription"
+                      value={installationDescription}
+                      onChange={(e) => setInstallationDescription(e.target.value)}
+                      placeholder="Enter installation description"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="installationAmount" className="block text-sm font-medium mb-1">
+                      Amount (₦)
+                    </label>
+                    <Input
+                      id="installationAmount"
+                      type="number"
+                      value={installationAmount}
+                      onChange={(e) => setInstallationAmount(e.target.value)}
+                      placeholder="Enter amount"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Installation Date
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !installationDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {installationDate ? format(installationDate, "PPP") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={installationDate}
+                          onSelect={(date) => date && setInstallationDate(date)}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    Record Installation
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
     </SidebarProvider>
