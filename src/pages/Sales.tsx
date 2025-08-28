@@ -140,6 +140,58 @@ const Sales = () => {
     return <div>Loading sales data...</div>;
   }
 
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background pb-16">
+        <main className="p-4">
+          <SalesHeader 
+            onAddSale={() => setShowAddSale(true)}
+            onBulkUpload={() => setShowBulkUpload(true)}
+            onExport={() => setShowExport(true)}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
+
+          <div className="grid gap-4 mb-6">
+            <TotalSalesSummary />
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold">Sales Summary</h2>
+              <SalesSummaryTable sales={filteredSales} />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold">Sales Details</h2>
+            <SalesTable sales={filteredSales} />
+          </div>
+
+          <AddSaleForm
+            open={showAddSale}
+            onOpenChange={setShowAddSale}
+            onSuccess={() => {
+              refetch();
+              setShowAddSale(false);
+            }}
+          />
+
+          <BulkSaleUploadModal
+            open={showBulkUpload}
+            onOpenChange={setShowBulkUpload}
+            onDataUpload={refetch}
+          />
+
+          <SalesExportModal
+            open={showExport}
+            onOpenChange={setShowExport}
+            sales={sales}
+          />
+        </main>
+      </div>
+    );
+  }
+
+  // Desktop layout
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
