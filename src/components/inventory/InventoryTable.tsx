@@ -1,13 +1,10 @@
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+// ...existing code...
+import React, { useState, useRef, useEffect } from "react";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InventoryTableActions } from "@/components/inventory/InventoryTableActions";
 import { InventoryItem } from "@/utils/inventoryUtils";
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
-import { InventoryTableActions } from "./table/InventoryTableActions";
-import { DeleteCell, EditableCell } from "./table/InventoryTableCell";
-import { formatCurrency } from "@/utils/formatters";
+// ...existing code...
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -22,6 +19,10 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Optional: multi-select mode for long-press on mobile (not strictly required for default row-click selection)
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const longPressTimer = useRef<number | null>(null);
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedItems(items.map(item => item.id));
@@ -30,40 +31,38 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
     }
   };
 
-  const handleSelectItem = (checked: boolean, itemId: number) => {
-    if (checked) {
-      setSelectedItems([...selectedItems, itemId]);
-    } else {
-      setSelectedItems(selectedItems.filter(id => id !== itemId));
-    }
+  const toggleSelectItem = (itemId: number) => {
+    setSelectedItems(prev =>
+      prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
+    );
   };
 
   const handleBulkDelete = async (): Promise<void> => {
     if (selectedItems.length === 0) return Promise.resolve();
-    
+
     setIsDeleting(true);
     try {
       // Get the location of the first item (all selected items should be from the same location)
       const location = items.find(item => item.id === selectedItems[0])?.location;
-      
+
       if (!location) {
         throw new Error("Could not determine location for bulk delete");
       }
-      
+
       const { error } = await supabase
         .from('inventory list')
         .delete()
         .in('id', selectedItems)
         .eq('location', location);
-        
+
       if (error) throw error;
-      
+
       toast.success(`Successfully deleted ${selectedItems.length} items`);
       setSelectedItems([]);
-      
+
       // Force a page refresh to show updated inventory
       window.location.reload();
-      
+
       return Promise.resolve();
     } catch (error) {
       console.error('Error performing bulk delete:', error);
@@ -74,86 +73,179 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
     }
   };
 
+  // Long-press handlers (optional, mobile): enter multi-select mode
+  const startLongPress = () => {
+    if (longPressTimer.current) window.clearTimeout(longPressTimer.current);
+    longPressTimer.current = window.setTimeout(() => {
+      setMultiSelectMode(true);
+    }, 600);
+  };
+
+  const clearLongPress = () => {
+    if (longPressTimer.current) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  // Helper to determine if all are selected
+  const allSelected = items.length > 0 && selectedItems.length === items.length;
+
   return (
-    <div className="space-y-4">
-      <InventoryTableActions 
-        selectedItems={selectedItems}
-        onBulkDelete={handleBulkDelete}
-        isDeleting={isDeleting}
-      />
-      
+    <div className="space-y-4 relative">
+      {/* Floating action toolbar: appears when there are selected items */}
+      {selectedItems.length > 0 ? (
+        <div className="fixed bottom-6 right-6 z-50">
+          <InventoryTableActions
+            selectedItems={selectedItems}
+            onBulkDelete={handleBulkDelete}
+            isDeleting={isDeleting}
+          />
+        </div>
+      ) : (
+        // Keep actions accessible when nothing selected (non-floating)
+        <div>
+          <InventoryTableActions
+            selectedItems={selectedItems}
+            onBulkDelete={handleBulkDelete}
+            isDeleting={isDeleting}
+          />
+        </div>
+      )}
+
       <div className="overflow-x-auto rounded-xl border shadow-sm bg-card glass-effect">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="w-[50px]">
-                <Checkbox
-                  checked={items.length > 0 && selectedItems.length === items.length}
-                  onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                  className="h-3 w-3"
-                />
+                {/* Keep an accessible checkbox for screen readers but hide visually.
+                    Visual selection is handled via row background + a check icon shown only when selected. */}
+                <div className="flex items-center gap-2">
+                  <span className="sr-only">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={(checked) => handleSelectAll(checked === true)}
+                    />
+                  </span>
+
+                  {/* Visual select-all / status */}
+                  {selectedItems.length > 0 ? (
+                    <div className="text-xs text-foreground/80">
+                      {selectedItems.length} selected
+                      <button
+                        onClick={() => handleSelectAll(false)}
+                        className="ml-3 text-xs underline"
+                        aria-label="Clear selection"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleSelectAll(true)}
+                      className="text-xs text-foreground/70 hover:underline"
+                      aria-label="Select all"
+                    >
+                      Select all
+                    </button>
+                  )}
+                </div>
               </TableHead>
+
               <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">SKU</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Qty</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">Quantity</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">Total</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {items.map((item) => (
-              <TableRow 
-                key={item.id}
-                className={`transition-colors ${item.Quantity < 1 ? "bg-red-50/70 dark:bg-red-950/30" : "hover:bg-muted/30"}`}
-              >
-                <TableCell className="p-2 pl-4">
-                  <Checkbox
-                    checked={selectedItems.includes(item.id)}
-                    onCheckedChange={(checked) => handleSelectItem(checked === true, item.id)}
-                    className="h-3 w-3"
-                  />
-                </TableCell>
-                <TableCell className="min-w-[200px] text-xs sm:text-sm p-2">{item["Item Description"]}</TableCell>
-                <TableCell className="p-2">
-                  <EditableCell
-                    isEditing={editingPrice[item["Item Description"]]}
-                    value={item.Price}
-                    onEdit={(e) => {
-                      const value = parseFloat(e.currentTarget.value);
-                      if (isNaN(value) || value < 0) {
-                        toast.error("Price must be a positive number");
-                        return;
-                      }
-                      onPriceEdit(item, value);
-                      setEditingPrice({ ...editingPrice, [item["Item Description"]]: false });
-                    }}
-                    onStartEdit={() => setEditingPrice({ ...editingPrice, [item["Item Description"]]: true })}
-                    isCurrency={true}
-                  />
-                </TableCell>
-                <TableCell className="p-2">
-                  <EditableCell
-                    isEditing={editingQuantity[item["Item Description"]]}
-                    value={item.Quantity}
-                    onEdit={(e) => {
-                      const value = parseInt(e.currentTarget.value);
-                      if (isNaN(value) || value < 0 || !Number.isInteger(parseFloat(e.currentTarget.value))) {
-                        toast.error("Quantity must be a positive whole number");
-                        return;
-                      }
-                      onQuantityEdit(item, value);
-                      setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: false });
-                    }}
-                    onStartEdit={() => setEditingQuantity({ ...editingQuantity, [item["Item Description"]]: true })}
-                  />
-                </TableCell>
-                <TableCell className="text-xs sm:text-sm font-medium p-2">{formatCurrency(Number(item.Total))}</TableCell>
-                <DeleteCell onDelete={() => onDelete(item)} />
-              </TableRow>
-            ))}
+            {items.map((item) => {
+              const isSelected = selectedItems.includes(item.id);
+
+              return (
+                <TableRow
+                  key={item.id}
+                  onClick={(e) => {
+                    // Avoid toggling selection when clicking on interactive children (like edit inputs/buttons)
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button") || target.closest("a") || target.closest("input")) {
+                      return;
+                    }
+                    toggleSelectItem(item.id);
+                  }}
+                  onPointerDown={startLongPress}
+                  onPointerUp={clearLongPress}
+                  onPointerLeave={clearLongPress}
+                  className={`group cursor-pointer select-none ${isSelected ? "bg-accent/10" : "hover:bg-muted/50"}`}
+                  aria-pressed={isSelected}
+                >
+                  <TableCell className="relative w-[50px]">
+                    {/* Invisible checkbox for accessibility */}
+                    <span className="sr-only">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          if (checked === true && !isSelected) toggleSelectItem(item.id);
+                          if (checked === false && isSelected) toggleSelectItem(item.id);
+                        }}
+                      />
+                    </span>
+
+                    {/* Visible checkmark only when selected */}
+                    {isSelected && (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                        {/* simple check SVG to avoid adding icon deps */}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                    )}
+                  </TableCell>
+
+                  <TableCell className={`${isSelected ? "pl-10" : "pl-4"} pr-4`}>
+                    <div className="flex items-center gap-3">
+                      <div className="font-medium">{item["Item Description"]}</div>
+                    </div>
+                  </TableCell>
+
+                  <TableCell>{item.sku ?? "—"}</TableCell>
+
+                  <TableCell>
+                    {/* Quantity cell - keep existing edit UI, but clicks on input won't toggle selection due to above guard */}
+                    <div>{item.quantity}</div>
+                  </TableCell>
+
+                  <TableCell>
+                    <div>{item.price ? `$${item.price.toFixed(2)}` : "—"}</div>
+                  </TableCell>
+
+                  <TableCell>
+                    {/* Keep existing per-row actions; clicking these won't toggle selection due to event guard above */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await onDelete(item);
+                        }}
+                        className="text-destructive text-sm"
+                        aria-label={`Delete ${item["Item Description"]}`}
+                      >
+                        Delete
+                      </button>
+                      {/* other actions like edit could go here */}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
     </div>
   );
 }
+// ...existing code...import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
+// ...existing code...
