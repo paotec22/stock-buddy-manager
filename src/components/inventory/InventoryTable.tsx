@@ -1,10 +1,10 @@
-// ...existing code...
 import React, { useState, useRef, useEffect } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryTableActions } from "@/components/inventory/InventoryTableActions";
 import { InventoryItem } from "@/utils/inventoryUtils";
-// ...existing code...
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -19,9 +19,19 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Optional: multi-select mode for long-press on mobile (not strictly required for default row-click selection)
+  // Optional: multi-select mode for long-press on mobile
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const longPressTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      // cleanup long press timer on unmount
+      if (longPressTimer.current) {
+        window.clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+  }, []);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -38,11 +48,10 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
   };
 
   const handleBulkDelete = async (): Promise<void> => {
-    if (selectedItems.length === 0) return Promise.resolve();
+    if (selectedItems.length === 0) return;
 
     setIsDeleting(true);
     try {
-      // Get the location of the first item (all selected items should be from the same location)
       const location = items.find(item => item.id === selectedItems[0])?.location;
 
       if (!location) {
@@ -50,24 +59,19 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
       }
 
       const { error } = await supabase
-        .from('inventory list')
+        .from("inventory list")
         .delete()
-        .in('id', selectedItems)
-        .eq('location', location);
+        .in("id", selectedItems)
+        .eq("location", location);
 
       if (error) throw error;
 
       toast.success(`Successfully deleted ${selectedItems.length} items`);
       setSelectedItems([]);
-
-      // Force a page refresh to show updated inventory
       window.location.reload();
-
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error performing bulk delete:', error);
+    } catch (err) {
+      console.error("Error performing bulk delete:", err);
       toast.error("Failed to delete selected items");
-      return Promise.resolve();
     } finally {
       setIsDeleting(false);
     }
@@ -91,9 +95,18 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
   // Helper to determine if all are selected
   const allSelected = items.length > 0 && selectedItems.length === items.length;
 
+  // keyboard support: toggle selection on Enter / Space (skip when focusing interactive elements)
+  const handleRowKey = (e: React.KeyboardEvent, itemId: number) => {
+    const active = document.activeElement;
+    if (active && (active.tagName === "INPUT" || active.tagName === "BUTTON" || active.tagName === "A")) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleSelectItem(itemId);
+    }
+  };
+
   return (
     <div className="space-y-4 relative">
-      {/* Floating action toolbar: appears when there are selected items */}
       {selectedItems.length > 0 ? (
         <div className="fixed bottom-6 right-6 z-50">
           <InventoryTableActions
@@ -103,7 +116,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
           />
         </div>
       ) : (
-        // Keep actions accessible when nothing selected (non-floating)
         <div>
           <InventoryTableActions
             selectedItems={selectedItems}
@@ -118,8 +130,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="w-[50px]">
-                {/* Keep an accessible checkbox for screen readers but hide visually.
-                    Visual selection is handled via row background + a check icon shown only when selected. */}
                 <div className="flex items-center gap-2">
                   <span className="sr-only">
                     <Checkbox
@@ -128,7 +138,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     />
                   </span>
 
-                  {/* Visual select-all / status */}
                   {selectedItems.length > 0 ? (
                     <div className="text-xs text-foreground/80">
                       {selectedItems.length} selected
@@ -168,7 +177,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                 <TableRow
                   key={item.id}
                   onClick={(e) => {
-                    // Avoid toggling selection when clicking on interactive children (like edit inputs/buttons)
                     const target = e.target as HTMLElement;
                     if (target.closest("button") || target.closest("a") || target.closest("input")) {
                       return;
@@ -178,11 +186,12 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   onPointerDown={startLongPress}
                   onPointerUp={clearLongPress}
                   onPointerLeave={clearLongPress}
+                  onKeyDown={(e) => handleRowKey(e, item.id)}
+                  tabIndex={0}
                   className={`group cursor-pointer select-none ${isSelected ? "bg-accent/10" : "hover:bg-muted/50"}`}
                   aria-pressed={isSelected}
                 >
                   <TableCell className="relative w-[50px]">
-                    {/* Invisible checkbox for accessibility */}
                     <span className="sr-only">
                       <Checkbox
                         checked={isSelected}
@@ -193,10 +202,8 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                       />
                     </span>
 
-                    {/* Visible checkmark only when selected */}
                     {isSelected && (
                       <span className="absolute left-3 top-1/2 -translate-y-1/2">
-                        {/* simple check SVG to avoid adding icon deps */}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                           <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -213,7 +220,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   <TableCell>{item.sku ?? "—"}</TableCell>
 
                   <TableCell>
-                    {/* Quantity cell - keep existing edit UI, but clicks on input won't toggle selection due to above guard */}
                     <div>{item.quantity}</div>
                   </TableCell>
 
@@ -222,7 +228,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   </TableCell>
 
                   <TableCell>
-                    {/* Keep existing per-row actions; clicking these won't toggle selection due to event guard above */}
                     <div className="flex items-center gap-2">
                       <button
                         onClick={async (e) => {
@@ -234,7 +239,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                       >
                         Delete
                       </button>
-                      {/* other actions like edit could go here */}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -246,6 +250,3 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
     </div>
   );
 }
-// ...existing code...import { supabase } from "@/lib/supabaseClient";
-import { toast } from "sonner";
-// ...existing code...
