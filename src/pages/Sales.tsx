@@ -99,7 +99,7 @@ const Sales = () => {
             location
           )
         `)
-        .order('sale_date', { ascending: false });
+        .order('sale_date', { ascending: true });
 
       if (error) {
         console.error('Error fetching sales:', error);
