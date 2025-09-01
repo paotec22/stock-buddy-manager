@@ -26,67 +26,19 @@ interface Sale {
   location: string;
 }
 
-const ORDER_FIELDS = [
-  { value: "sale_date", label: "Sale Date" },
-  { value: "total_amount", label: "Total Amount" },
-  { value: "item_name", label: "Item Name" },
-];
-
-const ORDER_DIRECTIONS = [
-  { value: "asc", label: "Ascending" },
-  { value: "desc", label: "Descending" },
-];
-
-// Simple Select component for dropdowns
-const Select = ({
-  value,
-  onChange,
-  options,
-  className,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  className?: string;
-}) => (
-  <select
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    className={`border rounded px-2 py-1 ${className ?? ""}`}
-  >
-    {options.map(opt => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-);
-
-const SalesHeader = ({
-  onAddSale,
-  onBulkUpload,
-  onExport,
-  searchTerm,
-  onSearchChange,
-  orderField,
-  orderDirection,
-  onOrderFieldChange,
-  onOrderDirectionChange,
-}: {
+const SalesHeader = ({ onAddSale, onBulkUpload, onExport, searchTerm, onSearchChange }: { 
   onAddSale: () => void;
   onBulkUpload: () => void;
   onExport: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  orderField: string;
-  orderDirection: string;
-  onOrderFieldChange: (value: string) => void;
-  onOrderDirectionChange: (value: string) => void;
 }) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
       <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
         <h1 className="text-2xl font-bold">Sales Management</h1>
+        
+        {/* Search input - visible on all devices */}
         <div className="w-full md:w-[250px]">
           <SearchInput 
             value={searchTerm}
@@ -94,19 +46,8 @@ const SalesHeader = ({
             placeholder="Search sales..."
           />
         </div>
-        <Select
-          value={orderField}
-          onChange={onOrderFieldChange}
-          options={ORDER_FIELDS}
-          className="md:w-[150px]"
-        />
-        <Select
-          value={orderDirection}
-          onChange={onOrderDirectionChange}
-          options={ORDER_DIRECTIONS}
-          className="md:w-[150px]"
-        />
       </div>
+      
       <div className="flex gap-2">
         <Button onClick={onExport} variant="outline">
           <div className="flex items-center gap-2">
@@ -136,16 +77,15 @@ const Sales = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [orderField, setOrderField] = useState("sale_date");
-  const [orderDirection, setOrderDirection] = useState("desc");
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const { data: sales = [], isLoading, refetch } = useQuery({
-    queryKey: ['sales', orderField, orderDirection],
+    queryKey: ['sales'],
     queryFn: async () => {
-      let query = supabase
+      console.log('Fetching sales data...');
+      const { data: salesData, error } = await supabase
         .from('sales')
         .select(`
           id,
@@ -158,23 +98,17 @@ const Sales = () => {
             "Item Description",
             location
           )
-        `);
-
-      // Supabase can't order by joined fields, so we sort by item_name in JS
-      if (orderField !== "item_name") {
-        query = query.order(orderField, { ascending: orderDirection === "asc" });
-      } else {
-        query = query.order("item_id", { ascending: true }); // fallback order
-      }
-
-      const { data: salesData, error } = await query;
+        `)
+        .order('sale_date', { ascending: false });
 
       if (error) {
         console.error('Error fetching sales:', error);
         throw error;
       }
 
-      let mappedSales = (salesData || []).map((sale: any) => ({
+      console.log('Sales data received:', salesData);
+
+      return (salesData || []).map((sale: any) => ({
         id: sale.id,
         quantity: sale.quantity,
         sale_price: sale.sale_price,
@@ -183,16 +117,6 @@ const Sales = () => {
         item_name: sale["inventory list"]?.["Item Description"] || "Unknown Item",
         location: sale["inventory list"]?.location || "Unknown Location"
       })) as Sale[];
-
-      if (orderField === "item_name") {
-        mappedSales = mappedSales.sort((a, b) => {
-          if (a.item_name < b.item_name) return orderDirection === "asc" ? -1 : 1;
-          if (a.item_name > b.item_name) return orderDirection === "asc" ? 1 : -1;
-          return 0;
-        });
-      }
-
-      return mappedSales;
     },
     enabled: !!session
   });
@@ -227,10 +151,6 @@ const Sales = () => {
             onExport={() => setShowExport(true)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
-            orderField={orderField}
-            orderDirection={orderDirection}
-            onOrderFieldChange={setOrderField}
-            onOrderDirectionChange={setOrderDirection}
           />
 
           <div className="grid gap-4 mb-6">
@@ -283,10 +203,6 @@ const Sales = () => {
             onExport={() => setShowExport(true)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
-            orderField={orderField}
-            orderDirection={orderDirection}
-            onOrderFieldChange={setOrderField}
-            onOrderDirectionChange={setOrderDirection}
           />
 
           <div className="grid gap-6 mb-6">
