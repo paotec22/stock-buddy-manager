@@ -6,6 +6,7 @@ import { useState } from "react";
 import { InventoryErrorState } from "@/components/inventory/InventoryErrorState";
 import { InventoryLoadingState } from "@/components/inventory/InventoryLoadingState";
 
+// Fixed import issue - using InventoryContentContainer instead of deleted InventoryContent
 const Inventory = () => {
   const [selectedLocation, setSelectedLocation] = useState("Main Store");
   const { inventoryItems, isLoading, error, refetch } = useInventoryData(selectedLocation);
