@@ -1,5 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { SalesDateCell } from "./SalesDateCell";
+import { SalesPriceCell } from "./SalesPriceCell";
 
 interface Sale {
   id: string;
@@ -13,25 +14,34 @@ interface Sale {
 
 interface SalesTableRowProps {
   sale: Sale;
+  canEditDates: boolean;
   isAdmin: boolean;
   formatCurrency: (amount: number) => string;
   onDateUpdate: (saleId: string, date: Date) => void;
+  onPriceUpdate: (saleId: string, price: number) => void;
 }
 
-export function SalesTableRow({ sale, isAdmin, formatCurrency, onDateUpdate }: SalesTableRowProps) {
+export function SalesTableRow({ sale, canEditDates, isAdmin, formatCurrency, onDateUpdate, onPriceUpdate }: SalesTableRowProps) {
   return (
     <TableRow key={sale.id}>
       <TableCell>
         <SalesDateCell
           date={sale.sale_date}
-          isAdmin={isAdmin}
+          isAdmin={canEditDates}
           onDateUpdate={(date) => onDateUpdate(sale.id, date)}
         />
       </TableCell>
       <TableCell>{sale.item_name}</TableCell>
       <TableCell>{sale.location}</TableCell>
       <TableCell>{sale.quantity}</TableCell>
-      <TableCell>{formatCurrency(sale.sale_price)}</TableCell>
+      <TableCell>
+        <SalesPriceCell
+          price={sale.sale_price}
+          isAdmin={isAdmin}
+          formatCurrency={formatCurrency}
+          onPriceUpdate={(price) => onPriceUpdate(sale.id, price)}
+        />
+      </TableCell>
       <TableCell>{formatCurrency(sale.total_amount)}</TableCell>
     </TableRow>
   );

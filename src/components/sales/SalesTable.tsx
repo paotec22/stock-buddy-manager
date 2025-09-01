@@ -41,6 +41,7 @@ export function SalesTable({ sales }: SalesTableProps) {
   });
 
   const canEditDates = userRole === 'admin' || userRole === 'uploader';
+  const isAdmin = userRole === 'admin';
 
   const handleDateUpdate = async (saleId: string, newDate: Date) => {
     try {
@@ -54,6 +55,30 @@ export function SalesTable({ sales }: SalesTableProps) {
     } catch (error) {
       console.error('Error updating sale date:', error);
       toast.error("Failed to update sale date");
+    }
+  };
+
+  const handlePriceUpdate = async (saleId: string, newPrice: number) => {
+    try {
+      // Calculate new total amount (price * quantity)
+      const sale = sales.find(s => s.id === saleId);
+      if (!sale) return;
+      
+      const newTotalAmount = newPrice * sale.quantity;
+      
+      const { error } = await supabase
+        .from('sales')
+        .update({ 
+          sale_price: newPrice,
+          total_amount: newTotalAmount
+        })
+        .eq('id', saleId);
+
+      if (error) throw error;
+      toast.success("Sale price updated successfully");
+    } catch (error) {
+      console.error('Error updating sale price:', error);
+      toast.error("Failed to update sale price");
     }
   };
 
@@ -79,9 +104,11 @@ export function SalesTable({ sales }: SalesTableProps) {
               <SalesTableRow
                 key={sale.id}
                 sale={sale}
-                isAdmin={canEditDates}
+                canEditDates={canEditDates}
+                isAdmin={isAdmin}
                 formatCurrency={formatCurrency}
                 onDateUpdate={handleDateUpdate}
+                onPriceUpdate={handlePriceUpdate}
               />
             ))}
           </TableBody>
