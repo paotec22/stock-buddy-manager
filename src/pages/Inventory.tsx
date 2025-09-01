@@ -8,7 +8,7 @@ import { InventoryLoadingState } from "@/components/inventory/InventoryLoadingSt
 
 // Fixed import issue - using InventoryContentContainer instead of deleted InventoryContent
 const Inventory = () => {
-  const [selectedLocation, setSelectedLocation] = useState("Main Store");
+  const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const { inventoryItems, isLoading, error, refetch } = useInventoryData(selectedLocation);
 
   if (isLoading) return <InventoryLayout><InventoryLoadingState /></InventoryLayout>;
