@@ -1,11 +1,26 @@
 
 import { InventoryLayout } from "@/components/inventory/InventoryLayout";
-import { InventoryContent } from "@/components/inventory/InventoryContent";
+import { InventoryContentContainer } from "@/components/inventory/InventoryContentContainer";
+import { useInventoryData } from "@/hooks/useInventoryData";
+import { useState } from "react";
+import { InventoryErrorState } from "@/components/inventory/InventoryErrorState";
+import { InventoryLoadingState } from "@/components/inventory/InventoryLoadingState";
 
 const Inventory = () => {
+  const [selectedLocation, setSelectedLocation] = useState("Main Store");
+  const { inventoryItems, isLoading, error, refetch } = useInventoryData(selectedLocation);
+
+  if (isLoading) return <InventoryLayout><InventoryLoadingState /></InventoryLayout>;
+  if (error) return <InventoryLayout><InventoryErrorState /></InventoryLayout>;
+
   return (
     <InventoryLayout>
-      <InventoryContent />
+      <InventoryContentContainer 
+        inventoryItems={inventoryItems}
+        selectedLocation={selectedLocation}
+        setSelectedLocation={setSelectedLocation}
+        refetch={refetch}
+      />
     </InventoryLayout>
   );
 };

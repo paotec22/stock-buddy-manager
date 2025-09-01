@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { InventoryTableActions } from "@/components/inventory/InventoryTableActions";
+import { InventoryTableActions } from "./table/InventoryTableActions";
 import { InventoryItem } from "@/utils/inventoryUtils";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface InventoryTableProps {
@@ -107,16 +107,8 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
 
   return (
     <div className="space-y-4 relative">
-      {selectedItems.length > 0 ? (
-        <div className="fixed bottom-6 right-6 z-50">
-          <InventoryTableActions
-            selectedItems={selectedItems}
-            onBulkDelete={handleBulkDelete}
-            isDeleting={isDeleting}
-          />
-        </div>
-      ) : (
-        <div>
+      {selectedItems.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-50 shadow-lg">
           <InventoryTableActions
             selectedItems={selectedItems}
             onBulkDelete={handleBulkDelete}
@@ -162,7 +154,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
               </TableHead>
 
               <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">SKU</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Qty</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Actions</TableHead>
@@ -188,7 +179,11 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   onPointerLeave={clearLongPress}
                   onKeyDown={(e) => handleRowKey(e, item.id)}
                   tabIndex={0}
-                  className={`group cursor-pointer select-none ${isSelected ? "bg-accent/10" : "hover:bg-muted/50"}`}
+                  className={`group cursor-pointer select-none transition-colors ${
+                    isSelected 
+                      ? "bg-primary/10 border-primary/20" 
+                      : "hover:bg-muted/50"
+                  }`}
                   aria-pressed={isSelected}
                 >
                   <TableCell className="relative w-[50px]">
@@ -203,7 +198,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     </span>
 
                     {isSelected && (
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                           <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -217,14 +212,12 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     </div>
                   </TableCell>
 
-                  <TableCell>{item.sku ?? "—"}</TableCell>
-
                   <TableCell>
-                    <div>{item.quantity}</div>
+                    <div>{item.Quantity}</div>
                   </TableCell>
 
                   <TableCell>
-                    <div>{item.price ? `$${item.price.toFixed(2)}` : "—"}</div>
+                    <div>{item.Price ? `$${item.Price.toFixed(2)}` : "—"}</div>
                   </TableCell>
 
                   <TableCell>
