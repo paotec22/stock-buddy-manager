@@ -5,6 +5,7 @@ import { InventoryTableActions } from "./table/InventoryTableActions";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { formatCurrency } from "@/utils/formatters";
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -217,7 +218,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   </TableCell>
 
                   <TableCell>
-                    <div>{item.Price ? `$${item.Price.toFixed(2)}` : "—"}</div>
+                    <div>{item.Price ? formatCurrency(item.Price) : "—"}</div>
                   </TableCell>
 
                   <TableCell>
