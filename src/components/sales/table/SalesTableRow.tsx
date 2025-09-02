@@ -42,7 +42,9 @@ export function SalesTableRow({ sale, canEditDates, isAdmin, formatCurrency, onD
           onPriceUpdate={(price) => onPriceUpdate(sale.id, price)}
         />
       </TableCell>
-      <TableCell>{formatCurrency(sale.total_amount)}</TableCell>
+      <TableCell>
+        <span className="currency-display">{formatCurrency(sale.total_amount)}</span>
+      </TableCell>
     </TableRow>
   );
 }

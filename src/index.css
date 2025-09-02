@@ -10,15 +10,15 @@
 }
 
 @layer base {
-  :root {
+:root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
@@ -29,8 +29,20 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 217.2 91.2% 59.8%;
     --radius: 0.75rem;
+    
+    /* Enhanced colors for better UI */
+    --primary-light: 213.3 93.9% 67.8%;
+    --success: 142.1 76.2% 36.3%;
+    --warning: 32.6 94.6% 43.7%;
+    --info: 217.2 91.2% 59.8%;
+    
+    /* Table alternating colors */
+    --table-row-even: 210 40% 98%;
+    --table-row-odd: 0 0% 100%;
+    --table-row-hover: 213.3 93.9% 95.1%;
+    
     --sidebar-background: 210 40% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -41,15 +53,15 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .dark {
+.dark {
     --background: 240 10% 3.9%;
     --foreground: 210 40% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 210 40% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 240 10% 3.9%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
@@ -61,6 +73,18 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
+    /* Enhanced dark colors */
+    --primary-light: 213.3 93.9% 67.8%;
+    --success: 142.1 70.6% 45.3%;
+    --warning: 32.6 94.6% 43.7%;
+    --info: 217.2 91.2% 59.8%;
+    
+    /* Dark table colors */
+    --table-row-even: 217.2 32.6% 17.5%;
+    --table-row-odd: 240 10% 3.9%;
+    --table-row-hover: 215.4 16.3% 25.9%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,19 +124,22 @@
     background-attachment: fixed;
   }
 
-  /* Responsive Typography */
+/* Responsive Typography with Poppins for headings */
   h1 {
     @apply text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
     line-height: 1.2;
   }
 
   h2 {
     @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
     line-height: 1.3;
   }
 
   h3 {
     @apply text-lg md:text-xl lg:text-2xl font-semibold tracking-tight;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
     line-height: 1.4;
   }
 

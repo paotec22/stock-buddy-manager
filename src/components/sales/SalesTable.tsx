@@ -94,10 +94,10 @@ export function SalesTable({ sales }: SalesTableProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4 animate-fade-in">
       <SalesSearchInput value={searchTerm} onChange={setSearchTerm} />
-      <div className="rounded-md border">
-        <Table>
+      <div className="table-card">
+        <Table className="table-enhanced">
           <SalesTableHeader />
           <TableBody>
             {filteredSales.map((sale) => (

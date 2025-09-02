@@ -36,7 +36,7 @@ const SalesHeader = ({ onAddSale, onBulkUpload, onExport, searchTerm, onSearchCh
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
       <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
-        <h1 className="text-2xl font-bold">Sales Management</h1>
+        <h1 className="section-title">Sales Management</h1>
         
         {/* Search input - visible on all devices */}
         <div className="w-full md:w-[250px]">
@@ -49,23 +49,17 @@ const SalesHeader = ({ onAddSale, onBulkUpload, onExport, searchTerm, onSearchCh
       </div>
       
       <div className="flex gap-2">
-        <Button onClick={onExport} variant="outline">
-          <div className="flex items-center gap-2">
-            <FileSpreadsheet className="h-4 w-4" />
-            <span>Export</span>
-          </div>
+        <Button onClick={onExport} variant="outline" className="btn-with-icon">
+          <FileSpreadsheet className="h-4 w-4" />
+          <span>Export</span>
         </Button>
-        <Button onClick={onBulkUpload} variant="outline">
-          <div className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            <span>Bulk Upload</span>
-          </div>
+        <Button onClick={onBulkUpload} variant="outline" className="btn-with-icon">
+          <Upload className="h-4 w-4" />
+          <span>Bulk Upload</span>
         </Button>
-        <Button onClick={onAddSale}>
-          <div className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <span>Record Sale</span>
-          </div>
+        <Button onClick={onAddSale} className="btn-with-icon">
+          <Plus className="h-4 w-4" />
+          <span>Record Sale</span>
         </Button>
       </div>
     </div>
@@ -143,7 +137,7 @@ const Sales = () => {
   // Mobile layout
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background pb-16">
+      <div className="min-h-screen bg-background pb-16 page-transition">
         <main className="p-4">
           <SalesHeader 
             onAddSale={() => setShowAddSale(true)}
@@ -153,18 +147,31 @@ const Sales = () => {
             onSearchChange={setSearchTerm}
           />
 
-          <div className="grid gap-4 mb-6">
-            <TotalSalesSummary />
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Sales Summary</h2>
-              <SalesSummaryTable sales={filteredSales} />
+          <div className="grid gap-6 mb-6">
+            <div className="summary-card">
+              <TotalSalesSummary />
+            </div>
+            <div className="space-y-4">
+              <h2 className="section-title">Sales Summary</h2>
+              <div className="table-card">
+                <SalesSummaryTable sales={filteredSales} />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Sales Details</h2>
+          <div className="space-y-4">
+            <h2 className="section-title">Sales Details</h2>
             <SalesTable sales={filteredSales} />
           </div>
+
+          {/* Floating Action Button for mobile */}
+          <button 
+            onClick={() => setShowAddSale(true)}
+            className="fab"
+            aria-label="Add new sale"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
 
           <AddSaleForm
             open={showAddSale}
@@ -194,7 +201,7 @@ const Sales = () => {
   // Desktop layout
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full page-transition">
         <AppSidebar />
         <main className="flex-1 p-6">
           <SalesHeader 
@@ -206,15 +213,19 @@ const Sales = () => {
           />
 
           <div className="grid gap-6 mb-6">
-            <TotalSalesSummary />
+            <div className="summary-card">
+              <TotalSalesSummary />
+            </div>
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Sales Summary</h2>
-              <SalesSummaryTable sales={filteredSales} />
+              <h2 className="section-title">Sales Summary</h2>
+              <div className="table-card">
+                <SalesSummaryTable sales={filteredSales} />
+              </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Sales Details</h2>
+            <h2 className="section-title">Sales Details</h2>
             <SalesTable sales={filteredSales} />
           </div>
 

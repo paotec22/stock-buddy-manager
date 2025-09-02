@@ -1,0 +1,158 @@
+/* Enhanced table styles */
+.table-enhanced {
+  @apply w-full border-collapse;
+}
+
+.table-enhanced tbody tr:nth-child(even) {
+  background-color: hsl(var(--table-row-even));
+}
+
+.table-enhanced tbody tr:nth-child(odd) {
+  background-color: hsl(var(--table-row-odd));
+}
+
+.table-enhanced tbody tr:hover {
+  background-color: hsl(var(--table-row-hover));
+  transform: scale(1.001);
+  transition: all 0.15s ease-in-out;
+}
+
+.table-enhanced td,
+.table-enhanced th {
+  @apply px-6 py-4 text-left border-b border-border;
+}
+
+.table-enhanced th {
+  @apply font-semibold text-muted-foreground text-sm uppercase tracking-wide;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+}
+
+/* Enhanced card wrapper for tables */
+.table-card {
+  @apply bg-card border rounded-lg overflow-hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.table-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Currency display enhancement */
+.currency-display {
+  @apply font-semibold text-primary;
+  font-size: 1.05em;
+}
+
+/* Summary card with gradient background */
+.summary-card {
+  @apply p-6 rounded-xl border;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--primary-light) / 0.1));
+  border-color: hsl(var(--primary) / 0.2);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .summary-card {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary-light) / 0.05));
+}
+
+/* Icon button styles */
+.icon-button {
+  @apply inline-flex items-center justify-center p-2 rounded-md transition-all duration-200 hover:bg-muted;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+}
+
+.icon-button:hover {
+  transform: scale(1.05);
+}
+
+.icon-button-destructive:hover {
+  @apply bg-destructive/10 text-destructive;
+}
+
+/* Mobile card rows for responsive tables */
+@media (max-width: 768px) {
+  .mobile-card-row {
+    @apply block p-4 mb-3 bg-card border rounded-lg;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .mobile-card-row:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  .mobile-card-field {
+    @apply flex justify-between items-center py-1;
+  }
+  
+  .mobile-card-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+  
+  .mobile-card-value {
+    @apply text-sm font-medium;
+  }
+}
+
+/* Floating Action Button */
+.fab {
+  @apply fixed bottom-20 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full border-none flex items-center justify-center z-50 transition-all duration-200;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced loading skeleton */
+.skeleton-enhanced {
+  @apply animate-pulse rounded-md bg-muted;
+  background: linear-gradient(90deg, hsl(var(--muted)), hsl(var(--muted) / 0.8), hsl(var(--muted)));
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Section headers with enhanced styling */
+.section-header {
+  @apply flex items-center gap-3 mb-6;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+}
+
+.section-title {
+  @apply text-xl font-semibold text-foreground;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+}
+
+/* Enhanced button with icons */
+.btn-with-icon {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: page-enter 0.3s ease-out;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
