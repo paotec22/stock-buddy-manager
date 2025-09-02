@@ -213,12 +213,72 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     </div>
                   </TableCell>
 
-                  <TableCell>
-                    <div>{item.Quantity}</div>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    {editingQuantity[item.id] ? (
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        defaultValue={item.Quantity?.toString() || "0"}
+                        className="w-20 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        onBlur={(e) => {
+                          const newQuantity = parseInt(e.target.value) || 0;
+                          if (newQuantity !== item.Quantity) {
+                            onQuantityEdit(item, newQuantity);
+                          }
+                          setEditingQuantity(prev => ({ ...prev, [item.id]: false }));
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          } else if (e.key === 'Escape') {
+                            setEditingQuantity(prev => ({ ...prev, [item.id]: false }));
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setEditingQuantity(prev => ({ ...prev, [item.id]: true }))}
+                        className="text-left hover:bg-muted/50 px-2 py-1 rounded transition-colors"
+                      >
+                        {item.Quantity || 0}
+                      </button>
+                    )}
                   </TableCell>
 
-                  <TableCell>
-                    <div>{item.Price ? formatCurrency(item.Price) : "—"}</div>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    {editingPrice[item.id] ? (
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        defaultValue={item.Price?.toString() || "0"}
+                        className="w-24 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        onBlur={(e) => {
+                          const newPrice = parseFloat(e.target.value) || 0;
+                          if (newPrice !== item.Price) {
+                            onPriceEdit(item, newPrice);
+                          }
+                          setEditingPrice(prev => ({ ...prev, [item.id]: false }));
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          } else if (e.key === 'Escape') {
+                            setEditingPrice(prev => ({ ...prev, [item.id]: false }));
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setEditingPrice(prev => ({ ...prev, [item.id]: true }))}
+                        className="text-left hover:bg-muted/50 px-2 py-1 rounded transition-colors"
+                      >
+                        {item.Price ? formatCurrency(item.Price) : "—"}
+                      </button>
+                    )}
                   </TableCell>
 
                   <TableCell>
