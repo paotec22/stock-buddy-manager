@@ -13,6 +13,7 @@ import { useAuth } from "./AuthProvider";
 import { ThemeToggle } from "./ThemeToggle";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -48,6 +49,23 @@ function SidebarContents() {
   const { session } = useAuth();
   const navigate = useNavigate();
   
+  // Get user role
+  const { data: userRole } = useQuery({
+    queryKey: ['user-role', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      
+      return profile?.role;
+    },
+    enabled: !!session?.user?.id
+  });
+  
   if (!session) {
     return null;
   }
@@ -70,6 +88,11 @@ function SidebarContents() {
     }
   };
 
+  // Define which pages each role can access
+  const isInventoryManager = userRole === 'inventory_manager';
+  const isAdmin = userRole === 'admin';
+  const isUploader = userRole === 'uploader';
+
   return (
     <div className="space-y-4 py-4">
       <div className="px-3 py-2">
@@ -79,12 +102,18 @@ function SidebarContents() {
       </div>
       <div className="space-y-1 px-3">
         <SidebarItem to="/inventory">Inventory</SidebarItem>
-        <SidebarItem to="/sales">Sales</SidebarItem>
-        <SidebarItem to="/expenses">Expenses</SidebarItem>
-        <SidebarItem to="/profit-analysis">Profit Analysis</SidebarItem>
-        <SidebarItem to="/reports">Reports</SidebarItem>
-        <SidebarItem to="/create-invoice">Create Invoice</SidebarItem>
-        <SidebarItem to="/settings">Settings</SidebarItem>
+        {!isInventoryManager && (
+          <>
+            <SidebarItem to="/sales">Sales</SidebarItem>
+            <SidebarItem to="/expenses">Expenses</SidebarItem>
+            <SidebarItem to="/profit-analysis">Profit Analysis</SidebarItem>
+            <SidebarItem to="/reports">Reports</SidebarItem>
+            <SidebarItem to="/create-invoice">Create Invoice</SidebarItem>
+          </>
+        )}
+        {isAdmin && (
+          <SidebarItem to="/settings">Settings</SidebarItem>
+        )}
       </div>
       <div className="px-3 py-2">
         <ThemeToggle />

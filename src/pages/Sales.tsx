@@ -18,6 +18,7 @@ import { Plus, Upload, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { SearchInput } from "@/components/ui/search-input";
 
 interface Sale {
@@ -164,113 +165,117 @@ const Sales = () => {
   // Mobile layout
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background pb-16 page-transition">
-        <main className="p-4">
-          <SalesHeader 
-            onAddSale={() => setShowAddSale(true)}
-            onBulkUpload={() => setShowBulkUpload(true)}
-            onExport={() => setShowExport(true)}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            currentView={currentView}
-            onViewChange={setCurrentView}
-          />
-
-          {/* Content based on view */}
-          {currentView === 'chart' ? (
-            <SalesGraphicalView
-              sales={filteredSales}
-              filters={chartFilters}
-              onFiltersChange={setChartFilters}
+      <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
+        <div className="min-h-screen bg-background pb-16 page-transition">
+          <main className="p-4">
+            <SalesHeader 
+              onAddSale={() => setShowAddSale(true)}
+              onBulkUpload={() => setShowBulkUpload(true)}
+              onExport={() => setShowExport(true)}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              currentView={currentView}
+              onViewChange={setCurrentView}
             />
-          ) : (
-            <SalesTableView sales={filteredSales} />
-          )}
 
-          {/* Floating Action Button for mobile */}
-          <button 
-            onClick={() => setShowAddSale(true)}
-            className="fab"
-            aria-label="Add new sale"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
+            {/* Content based on view */}
+            {currentView === 'chart' ? (
+              <SalesGraphicalView
+                sales={filteredSales}
+                filters={chartFilters}
+                onFiltersChange={setChartFilters}
+              />
+            ) : (
+              <SalesTableView sales={filteredSales} />
+            )}
 
-          <AddSaleForm
-            open={showAddSale}
-            onOpenChange={setShowAddSale}
-            onSuccess={() => {
-              refetch();
-              setShowAddSale(false);
-            }}
-          />
+            {/* Floating Action Button for mobile */}
+            <button 
+              onClick={() => setShowAddSale(true)}
+              className="fab"
+              aria-label="Add new sale"
+            >
+              <Plus className="h-6 w-6" />
+            </button>
 
-          <BulkSaleUploadModal
-            open={showBulkUpload}
-            onOpenChange={setShowBulkUpload}
-            onDataUpload={refetch}
-          />
+            <AddSaleForm
+              open={showAddSale}
+              onOpenChange={setShowAddSale}
+              onSuccess={() => {
+                refetch();
+                setShowAddSale(false);
+              }}
+            />
 
-          <SalesExportModal
-            open={showExport}
-            onOpenChange={setShowExport}
-            sales={sales}
-          />
-        </main>
-      </div>
+            <BulkSaleUploadModal
+              open={showBulkUpload}
+              onOpenChange={setShowBulkUpload}
+              onDataUpload={refetch}
+            />
+
+            <SalesExportModal
+              open={showExport}
+              onOpenChange={setShowExport}
+              sales={sales}
+            />
+          </main>
+        </div>
+      </RoleProtectedRoute>
     );
   }
 
   // Desktop layout
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full page-transition">
-        <AppSidebar />
-        <main className="flex-1 p-6">
-          <SalesHeader 
-            onAddSale={() => setShowAddSale(true)}
-            onBulkUpload={() => setShowBulkUpload(true)}
-            onExport={() => setShowExport(true)}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            currentView={currentView}
-            onViewChange={setCurrentView}
-          />
-
-          {/* Content based on view */}
-          {currentView === 'chart' ? (
-            <SalesGraphicalView
-              sales={filteredSales}
-              filters={chartFilters}
-              onFiltersChange={setChartFilters}
+    <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full page-transition">
+          <AppSidebar />
+          <main className="flex-1 p-6">
+            <SalesHeader 
+              onAddSale={() => setShowAddSale(true)}
+              onBulkUpload={() => setShowBulkUpload(true)}
+              onExport={() => setShowExport(true)}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              currentView={currentView}
+              onViewChange={setCurrentView}
             />
-          ) : (
-            <SalesTableView sales={filteredSales} />
-          )}
 
-          <AddSaleForm
-            open={showAddSale}
-            onOpenChange={setShowAddSale}
-            onSuccess={() => {
-              refetch();
-              setShowAddSale(false);
-            }}
-          />
+            {/* Content based on view */}
+            {currentView === 'chart' ? (
+              <SalesGraphicalView
+                sales={filteredSales}
+                filters={chartFilters}
+                onFiltersChange={setChartFilters}
+              />
+            ) : (
+              <SalesTableView sales={filteredSales} />
+            )}
 
-          <BulkSaleUploadModal
-            open={showBulkUpload}
-            onOpenChange={setShowBulkUpload}
-            onDataUpload={refetch}
-          />
+            <AddSaleForm
+              open={showAddSale}
+              onOpenChange={setShowAddSale}
+              onSuccess={() => {
+                refetch();
+                setShowAddSale(false);
+              }}
+            />
 
-          <SalesExportModal
-            open={showExport}
-            onOpenChange={setShowExport}
-            sales={sales}
-          />
-        </main>
-      </div>
-    </SidebarProvider>
+            <BulkSaleUploadModal
+              open={showBulkUpload}
+              onOpenChange={setShowBulkUpload}
+              onDataUpload={refetch}
+            />
+
+            <SalesExportModal
+              open={showExport}
+              onOpenChange={setShowExport}
+              sales={sales}
+            />
+          </main>
+        </div>
+      </SidebarProvider>
+    </RoleProtectedRoute>
   );
 };
 

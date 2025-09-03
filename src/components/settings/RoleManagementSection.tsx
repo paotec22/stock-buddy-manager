@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Shield, User, UserCheck } from "lucide-react";
+import { Shield, User, UserCheck, Package } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -59,6 +59,8 @@ export const RoleManagementSection = () => {
         return <Shield className="h-4 w-4" />;
       case 'uploader':
         return <UserCheck className="h-4 w-4" />;
+      case 'inventory_manager':
+        return <Package className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
     }
@@ -70,6 +72,8 @@ export const RoleManagementSection = () => {
         return 'destructive';
       case 'uploader':
         return 'secondary';
+      case 'inventory_manager':
+        return 'default';
       default:
         return 'outline';
     }
@@ -80,7 +84,7 @@ export const RoleManagementSection = () => {
       <CardHeader>
         <CardTitle>Role Management</CardTitle>
         <CardDescription>
-          Assign roles to users. Admin has full access, Uploader can edit inventory and sales dates, User has basic access.
+          Assign roles to users. Admin has full access, Uploader can edit inventory and sales dates, Inventory Manager can only view and add inventory, User has basic access.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -120,6 +124,7 @@ export const RoleManagementSection = () => {
                         <SelectContent>
                           <SelectItem value="user">User</SelectItem>
                           <SelectItem value="uploader">Uploader</SelectItem>
+                          <SelectItem value="inventory_manager">Inventory Manager</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>

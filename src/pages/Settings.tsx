@@ -10,6 +10,7 @@ import { UserManagementSection } from "@/components/settings/UserManagementSecti
 import { DatabaseManagementSection } from "@/components/settings/DatabaseManagementSection";
 import { RoleManagementSection } from "@/components/settings/RoleManagementSection";
 import { useAuth } from "@/components/AuthProvider";
+import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -102,73 +103,75 @@ const Settings = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-6">Settings</h1>
-          
-          <Accordion type="single" collapsible className="w-full max-w-md space-y-4">
-            <AccordionItem value="user-management">
-              <AccordionTrigger>User Management</AccordionTrigger>
-              <AccordionContent>
-                <UserManagementSection />
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="role-management">
-              <AccordionTrigger>Role Management</AccordionTrigger>
-              <AccordionContent>
-                <RoleManagementSection />
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="database-management">
-              <AccordionTrigger>Database Management</AccordionTrigger>
-              <AccordionContent>
-                <DatabaseManagementSection />
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="reset-data">
-              <AccordionTrigger>Reset Data</AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="resetType" className="block text-sm font-medium text-gray-700">Select Reset Type</label>
-                    <select
-                      id="resetType"
-                      value={resetType}
-                      onChange={(e) => setResetType(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+    <RoleProtectedRoute allowedRoles={['admin']}>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6">
+            <h1 className="text-2xl font-bold mb-6">Settings</h1>
+            
+            <Accordion type="single" collapsible className="w-full max-w-md space-y-4">
+              <AccordionItem value="user-management">
+                <AccordionTrigger>User Management</AccordionTrigger>
+                <AccordionContent>
+                  <UserManagementSection />
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="role-management">
+                <AccordionTrigger>Role Management</AccordionTrigger>
+                <AccordionContent>
+                  <RoleManagementSection />
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="database-management">
+                <AccordionTrigger>Database Management</AccordionTrigger>
+                <AccordionContent>
+                  <DatabaseManagementSection />
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="reset-data">
+                <AccordionTrigger>Reset Data</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="resetType" className="block text-sm font-medium text-gray-700">Select Reset Type</label>
+                      <select
+                        id="resetType"
+                        value={resetType}
+                        onChange={(e) => setResetType(e.target.value)}
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      >
+                        <option value="">Select an option</option>
+                        <option value="sales">Reset Sales</option>
+                        <option value="reports">Reset Reports</option>
+                        <option value="invoices">Reset Invoices</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                      <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      />
+                    </div>
+                    <button
+                      onClick={handleReset}
+                      disabled={isResetting || !resetType || !password}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <option value="">Select an option</option>
-                      <option value="sales">Reset Sales</option>
-                      <option value="reports">Reset Reports</option>
-                      <option value="invoices">Reset Invoices</option>
-                    </select>
+                      {isResetting ? "Resetting..." : "Reset Data"}
+                    </button>
                   </div>
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Confirm Password</label>
-                    <input
-                      type="password"
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                    />
-                  </div>
-                  <button
-                    onClick={handleReset}
-                    disabled={isResetting || !resetType || !password}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isResetting ? "Resetting..." : "Reset Data"}
-                  </button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </main>
-      </div>
-    </SidebarProvider>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </main>
+        </div>
+      </SidebarProvider>
+    </RoleProtectedRoute>
   );
 };
 
