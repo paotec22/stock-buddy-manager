@@ -7,6 +7,10 @@ import { SalesTable } from "@/components/sales/SalesTable";
 import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
 import { TotalSalesSummary } from "@/components/sales/TotalSalesSummary";
 import { SalesExportModal } from "@/components/sales/SalesExportModal";
+import { SalesViewToggle } from "@/components/sales/SalesViewToggle";
+import { SalesGraphicalView } from "@/components/sales/SalesGraphicalView";
+import { SalesTableView } from "@/components/sales/SalesTableView";
+import { ChartFilters } from "@/components/sales/SalesChartFilters";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -26,41 +30,58 @@ interface Sale {
   location: string;
 }
 
-const SalesHeader = ({ onAddSale, onBulkUpload, onExport, searchTerm, onSearchChange }: { 
+const SalesHeader = ({ 
+  onAddSale, 
+  onBulkUpload, 
+  onExport, 
+  searchTerm, 
+  onSearchChange,
+  currentView,
+  onViewChange
+}: { 
   onAddSale: () => void;
   onBulkUpload: () => void;
   onExport: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  currentView: 'table' | 'chart';
+  onViewChange: (view: 'table' | 'chart') => void;
 }) => {
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
-        <h1 className="section-title">Sales Management</h1>
+    <div className="flex flex-col gap-4 mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
+          <h1 className="section-title">Sales Management</h1>
+          
+          {/* Search input - visible on all devices */}
+          <div className="w-full md:w-[250px]">
+            <SearchInput 
+              value={searchTerm}
+              onChange={onSearchChange}
+              placeholder="Search sales..."
+            />
+          </div>
+        </div>
         
-        {/* Search input - visible on all devices */}
-        <div className="w-full md:w-[250px]">
-          <SearchInput 
-            value={searchTerm}
-            onChange={onSearchChange}
-            placeholder="Search sales..."
-          />
+        <div className="flex gap-2">
+          <Button onClick={onExport} variant="outline" className="btn-with-icon">
+            <FileSpreadsheet className="h-4 w-4" />
+            <span>Export</span>
+          </Button>
+          <Button onClick={onBulkUpload} variant="outline" className="btn-with-icon">
+            <Upload className="h-4 w-4" />
+            <span>Bulk Upload</span>
+          </Button>
+          <Button onClick={onAddSale} className="btn-with-icon">
+            <Plus className="h-4 w-4" />
+            <span>Record Sale</span>
+          </Button>
         </div>
       </div>
-      
-      <div className="flex gap-2">
-        <Button onClick={onExport} variant="outline" className="btn-with-icon">
-          <FileSpreadsheet className="h-4 w-4" />
-          <span>Export</span>
-        </Button>
-        <Button onClick={onBulkUpload} variant="outline" className="btn-with-icon">
-          <Upload className="h-4 w-4" />
-          <span>Bulk Upload</span>
-        </Button>
-        <Button onClick={onAddSale} className="btn-with-icon">
-          <Plus className="h-4 w-4" />
-          <span>Record Sale</span>
-        </Button>
+
+      {/* View Toggle */}
+      <div className="flex justify-center md:justify-start">
+        <SalesViewToggle currentView={currentView} onViewChange={onViewChange} />
       </div>
     </div>
   );
@@ -71,6 +92,12 @@ const Sales = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentView, setCurrentView] = useState<'table' | 'chart'>('table');
+  const [chartFilters, setChartFilters] = useState<ChartFilters>({
+    chartType: 'bar',
+    timePeriod: 'year',
+    location: 'all'
+  });
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -145,24 +172,20 @@ const Sales = () => {
             onExport={() => setShowExport(true)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
+            currentView={currentView}
+            onViewChange={setCurrentView}
           />
 
-          <div className="grid gap-6 mb-6">
-            <div className="summary-card">
-              <TotalSalesSummary />
-            </div>
-            <div className="space-y-4">
-              <h2 className="section-title">Sales Summary</h2>
-              <div className="table-card">
-                <SalesSummaryTable sales={filteredSales} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="section-title">Sales Details</h2>
-            <SalesTable sales={filteredSales} />
-          </div>
+          {/* Content based on view */}
+          {currentView === 'chart' ? (
+            <SalesGraphicalView
+              sales={filteredSales}
+              filters={chartFilters}
+              onFiltersChange={setChartFilters}
+            />
+          ) : (
+            <SalesTableView sales={filteredSales} />
+          )}
 
           {/* Floating Action Button for mobile */}
           <button 
@@ -210,24 +233,20 @@ const Sales = () => {
             onExport={() => setShowExport(true)}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
+            currentView={currentView}
+            onViewChange={setCurrentView}
           />
 
-          <div className="grid gap-6 mb-6">
-            <div className="summary-card">
-              <TotalSalesSummary />
-            </div>
-            <div className="space-y-4">
-              <h2 className="section-title">Sales Summary</h2>
-              <div className="table-card">
-                <SalesSummaryTable sales={filteredSales} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="section-title">Sales Details</h2>
-            <SalesTable sales={filteredSales} />
-          </div>
+          {/* Content based on view */}
+          {currentView === 'chart' ? (
+            <SalesGraphicalView
+              sales={filteredSales}
+              filters={chartFilters}
+              onFiltersChange={setChartFilters}
+            />
+          ) : (
+            <SalesTableView sales={filteredSales} />
+          )}
 
           <AddSaleForm
             open={showAddSale}
