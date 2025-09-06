@@ -109,7 +109,26 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
   return (
     <div className="space-y-4 relative">
       {selectedItems.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-50 shadow-lg">
+        <div className="flex items-center justify-between bg-primary/5 p-4 rounded-lg border border-primary/10 mb-4">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium">
+              {selectedItems.length} items selected
+            </span>
+            <button
+              onClick={() => handleSelectAll(true)}
+              className="text-xs text-primary hover:underline"
+              aria-label="Select all"
+            >
+              Select all
+            </button>
+            <button
+              onClick={() => handleSelectAll(false)}
+              className="text-xs text-muted-foreground hover:underline"
+              aria-label="Clear selection"
+            >
+              Clear
+            </button>
+          </div>
           <InventoryTableActions
             selectedItems={selectedItems}
             onBulkDelete={handleBulkDelete}
@@ -122,38 +141,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
-              <TableHead className="w-[50px]">
-                <div className="flex items-center gap-2">
-                  <span className="sr-only">
-                    <Checkbox
-                      checked={allSelected}
-                      onCheckedChange={(checked) => handleSelectAll(checked === true)}
-                    />
-                  </span>
-
-                  {selectedItems.length > 0 ? (
-                    <div className="text-xs text-foreground/80">
-                      {selectedItems.length} selected
-                      <button
-                        onClick={() => handleSelectAll(false)}
-                        className="ml-3 text-xs underline"
-                        aria-label="Clear selection"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleSelectAll(true)}
-                      className="text-xs text-foreground/70 hover:underline"
-                      aria-label="Select all"
-                    >
-                      Select all
-                    </button>
-                  )}
-                </div>
-              </TableHead>
-
               <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Qty</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
@@ -186,17 +173,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   }`}
                   aria-pressed={isSelected}
                 >
-                  <TableCell className="relative w-[50px]">
-                    <span className="sr-only">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={(checked) => {
-                          if (checked === true && !isSelected) toggleSelectItem(item.id);
-                          if (checked === false && isSelected) toggleSelectItem(item.id);
-                        }}
-                      />
-                    </span>
-
+                  <TableCell className="relative">
                     {isSelected && (
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -204,10 +181,8 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                         </svg>
                       </span>
                     )}
-                  </TableCell>
 
-                  <TableCell className={`${isSelected ? "pl-10" : "pl-4"} pr-4`}>
-                    <div className="flex items-center gap-3">
+                    <div className={`flex items-center gap-3 ${isSelected ? "pl-6" : ""}`}>
                       <div className="font-medium">{item["Item Description"]}</div>
                     </div>
                   </TableCell>
