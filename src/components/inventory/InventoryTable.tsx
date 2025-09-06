@@ -157,7 +157,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
               <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Qty</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -279,21 +278,6 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                         {item.Price ? formatCurrency(item.Price) : "—"}
                       </button>
                     )}
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          await onDelete(item);
-                        }}
-                        className="text-destructive text-sm"
-                        aria-label={`Delete ${item["Item Description"]}`}
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </TableCell>
                 </TableRow>
               );
