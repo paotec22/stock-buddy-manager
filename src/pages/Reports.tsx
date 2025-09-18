@@ -10,6 +10,8 @@ import { SearchInput } from "@/components/ui/search-input";
 
 const Reports = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [expensesCollapsed, setExpensesCollapsed] = useState(false);
+  const [installationsCollapsed, setInstallationsCollapsed] = useState(false);
 
   return (
     <SidebarProvider>
@@ -27,8 +29,16 @@ const Reports = () => {
               />
             </div>
           </div>
-          <MonthlyExpensesTable searchTerm={searchTerm} />
-          <InstallationsTable searchTerm={searchTerm} />
+          <MonthlyExpensesTable 
+            searchTerm={searchTerm} 
+            isCollapsed={expensesCollapsed}
+            onToggleCollapse={() => setExpensesCollapsed(!expensesCollapsed)}
+          />
+          <InstallationsTable 
+            searchTerm={searchTerm} 
+            isCollapsed={installationsCollapsed}
+            onToggleCollapse={() => setInstallationsCollapsed(!installationsCollapsed)}
+          />
           <LocationPerformanceTable searchTerm={searchTerm} />
           <ActivityLogsTable searchTerm={searchTerm} />
         </main>

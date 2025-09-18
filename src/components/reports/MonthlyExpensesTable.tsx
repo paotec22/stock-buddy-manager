@@ -8,11 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, CalendarIcon } from "lucide-react";
+import { FileSpreadsheet, CalendarIcon, ChevronDown, Save, X } from "lucide-react";
 import { ExpensesExportModal } from "./ExpensesExportModal";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
@@ -22,6 +22,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ExpenseRecord {
   date: string;
@@ -42,12 +45,17 @@ interface Expense {
 
 interface MonthlyExpensesTableProps {
   searchTerm?: string;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTableProps) {
+export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onToggleCollapse }: MonthlyExpensesTableProps) {
   const [showExport, setShowExport] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Partial<Expense>>({});
+  const queryClient = useQueryClient();
   
   const { data, isLoading } = useQuery({
     queryKey: ['monthly-expenses', dateFrom, dateTo],
@@ -107,21 +115,72 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
       )
     : expenseRecords;
 
+  const handleEdit = (expense: Expense) => {
+    setEditingId(expense.id);
+    setEditValues({
+      description: expense.description,
+      category: expense.category,
+      amount: expense.amount,
+      location: expense.location
+    });
+  };
+
+  const handleSave = async () => {
+    if (!editingId || !editValues) return;
+    
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .update(editValues)
+        .eq('id', editingId);
+
+      if (error) throw error;
+      
+      await queryClient.invalidateQueries({ queryKey: ['monthly-expenses'] });
+      setEditingId(null);
+      setEditValues({});
+      toast.success('Expense updated successfully');
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      toast.error('Failed to update expense');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditValues({});
+  };
+
   return (
-    <Card className="glass-effect fade-in">
-      <CardHeader>
-        <div className="flex justify-between items-center mb-4">
-          <CardTitle>Expense Records by Date</CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowExport(true)}
-            className="flex items-center gap-2"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            Export
-          </Button>
-        </div>
+    <Collapsible open={!isCollapsed} onOpenChange={() => onToggleCollapse?.()}>
+      <Card className="glass-effect fade-in">
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+                <CardTitle>Expense Records by Date</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExport(true);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Export
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <CardHeader className="pt-0">
         
         {/* Date Filter Section */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
@@ -194,44 +253,117 @@ export function MonthlyExpensesTable({ searchTerm = "" }: MonthlyExpensesTablePr
               </Button>
             </div>
           )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <p>Loading expenses data...</p>
-        ) : filteredExpenses?.length ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredExpenses?.map((expense, index) => (
-                <TableRow key={`${expense.date}-${expense.category}-${index}`}>
-                  <TableCell>{expense.date}</TableCell>
-                  <TableCell>{expense.category}</TableCell>
-                  <TableCell>{expense.description}</TableCell>
-                  <TableCell>{expense.location}</TableCell>
-                  <TableCell>{formatCurrency(expense.total_amount)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <p className="text-center py-4 text-muted-foreground">No matching expense records found</p>
-        )}
-      </CardContent>
+          </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <p>Loading expenses data...</p>
+            ) : filteredExpenses?.length ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredExpenses?.map((expense, index) => {
+                    const originalExpense = allExpenses?.find(e => 
+                      e.description === expense.description && 
+                      e.category === expense.category &&
+                      format(new Date(e.expense_date), 'PPP') === expense.date
+                    );
+                    const isEditing = editingId === originalExpense?.id;
+                    
+                    return (
+                      <TableRow key={`${expense.date}-${expense.category}-${index}`}>
+                        <TableCell>{expense.date}</TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Input
+                              value={editValues.category || ''}
+                              onChange={(e) => setEditValues(prev => ({ ...prev, category: e.target.value }))}
+                              className="h-8"
+                            />
+                          ) : (
+                            expense.category
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Input
+                              value={editValues.description || ''}
+                              onChange={(e) => setEditValues(prev => ({ ...prev, description: e.target.value }))}
+                              className="h-8"
+                            />
+                          ) : (
+                            expense.description
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Input
+                              value={editValues.location || ''}
+                              onChange={(e) => setEditValues(prev => ({ ...prev, location: e.target.value }))}
+                              className="h-8"
+                            />
+                          ) : (
+                            expense.location
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Input
+                              type="number"
+                              value={editValues.amount || ''}
+                              onChange={(e) => setEditValues(prev => ({ ...prev, amount: parseFloat(e.target.value) }))}
+                              className="h-8"
+                            />
+                          ) : (
+                            formatCurrency(expense.total_amount)
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <div className="flex items-center gap-2">
+                              <Button size="sm" variant="outline" onClick={handleSave}>
+                                <Save className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={handleCancel}>
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => originalExpense && handleEdit(originalExpense)}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-center py-4 text-muted-foreground">No matching expense records found</p>
+            )}
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
       
       <ExpensesExportModal
         open={showExport}
         onOpenChange={setShowExport}
         expenses={allExpenses || []}
       />
-    </Card>
+    </Collapsible>
   );
 }

@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarIcon, Download, X } from "lucide-react";
+import { CalendarIcon, Download, X, ChevronDown, Save } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { InstallationsExportModal } from "./InstallationsExportModal";
 import { formatCurrency } from "@/utils/formatters";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface InstallationRecord {
   id: number;
@@ -29,13 +32,18 @@ interface Installation {
 }
 
 interface InstallationsTableProps {
-  searchTerm?: string;  
+  searchTerm?: string;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function InstallationsTable({ searchTerm = "" }: InstallationsTableProps) {
+export function InstallationsTable({ searchTerm = "", isCollapsed = false, onToggleCollapse }: InstallationsTableProps) {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [showExportModal, setShowExportModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editValues, setEditValues] = useState<Partial<Installation>>({});
+  const queryClient = useQueryClient();
 
   const { data: installations = [], isLoading, error } = useQuery({
     queryKey: ['installations', dateFrom, dateTo],
@@ -73,27 +81,73 @@ export function InstallationsTable({ searchTerm = "" }: InstallationsTableProps)
     record.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleEdit = (installation: Installation) => {
+    setEditingId(installation.id);
+    setEditValues({
+      description: installation.description,
+      amount: installation.amount
+    });
+  };
+
+  const handleSave = async () => {
+    if (!editingId || !editValues) return;
+    
+    try {
+      const { error } = await supabase
+        .from('installations')
+        .update(editValues)
+        .eq('id', editingId);
+
+      if (error) throw error;
+      
+      await queryClient.invalidateQueries({ queryKey: ['installations'] });
+      setEditingId(null);
+      setEditValues({});
+      toast.success('Installation updated successfully');
+    } catch (error) {
+      console.error('Error updating installation:', error);
+      toast.error('Failed to update installation');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditValues({});
+  };
+
   if (isLoading) return <div>Loading installations...</div>;
   if (error) return <div>Error loading installations</div>;
 
   const totalAmount = filteredRecords.reduce((sum, record) => sum + record.amount, 0);
 
   return (
-    <>
+    <Collapsible open={!isCollapsed} onOpenChange={() => onToggleCollapse?.()}>
       <Card className="glass-effect">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Installation Records</CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowExportModal(true)}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+                <CardTitle>Installation Records</CardTitle>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowExportModal(true);
+                }}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <CardContent className="space-y-4">
           {/* Date Filters */}
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex flex-col space-y-1">
@@ -173,26 +227,71 @@ export function InstallationsTable({ searchTerm = "" }: InstallationsTableProps)
           ) : (
             <>
               <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-medium">{record.date}</TableCell>
-                        <TableCell>{record.description}</TableCell>
-                        <TableCell className="text-right font-mono">
-                          {formatCurrency(record.amount)}
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRecords.map((record) => {
+                        const originalInstallation = installations.find(i => i.id === record.id);
+                        const isEditing = editingId === record.id;
+                        
+                        return (
+                          <TableRow key={record.id}>
+                            <TableCell className="font-medium">{record.date}</TableCell>
+                            <TableCell>
+                              {isEditing ? (
+                                <Input
+                                  value={editValues.description || ''}
+                                  onChange={(e) => setEditValues(prev => ({ ...prev, description: e.target.value }))}
+                                  className="h-8"
+                                />
+                              ) : (
+                                record.description
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  value={editValues.amount || ''}
+                                  onChange={(e) => setEditValues(prev => ({ ...prev, amount: parseFloat(e.target.value) }))}
+                                  className="h-8 text-right"
+                                />
+                              ) : (
+                                formatCurrency(record.amount)
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {isEditing ? (
+                                <div className="flex items-center gap-2">
+                                  <Button size="sm" variant="outline" onClick={handleSave}>
+                                    <Save className="h-3 w-3" />
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={handleCancel}>
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => originalInstallation && handleEdit(originalInstallation)}
+                                >
+                                  Edit
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
               </div>
               
               <div className="flex justify-between items-center pt-4 border-t">
@@ -203,9 +302,10 @@ export function InstallationsTable({ searchTerm = "" }: InstallationsTableProps)
                   Total: {formatCurrency(totalAmount)}
                 </div>
               </div>
-            </>
-          )}
-        </CardContent>
+              </>
+            )}
+          </CardContent>
+        </CollapsibleContent>
       </Card>
 
       <InstallationsExportModal
@@ -213,6 +313,6 @@ export function InstallationsTable({ searchTerm = "" }: InstallationsTableProps)
         onOpenChange={setShowExportModal}
         installations={allInstallations}
       />
-    </>
+    </Collapsible>
   );
 }
