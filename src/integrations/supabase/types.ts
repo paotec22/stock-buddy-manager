@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          accessed_at: string | null
+          action_type: string
+          id: number
+          record_id: number | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          accessed_at?: string | null
+          action_type: string
+          id?: never
+          record_id?: number | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          accessed_at?: string | null
+          action_type?: string
+          id?: never
+          record_id?: number | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           action_type: string
@@ -342,6 +369,10 @@ export type Database = {
       delete_multiple_inventory_items: {
         Args: { item_ids: number[] }
         Returns: undefined
+      }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       upsert_inventory_item: {
         Args: {
