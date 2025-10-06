@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { SalesTableHeader } from "./table/SalesTableHeader";
 import { SalesTableRow } from "./table/SalesTableRow";
 import { SalesSearchInput } from "./table/SalesSearchInput";
-import { SalesTableActions } from "./table/SalesTableActions";
 
 interface Sale {
   id: string;
@@ -24,8 +23,6 @@ interface SalesTableProps {
 
 export function SalesTable({ sales }: SalesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSales, setSelectedSales] = useState<string[]>([]);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: userRole } = useQuery({
     queryKey: ['userRole'],
@@ -85,46 +82,24 @@ export function SalesTable({ sales }: SalesTableProps) {
     }
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedSales(filteredSales.map(sale => sale.id));
-    } else {
-      setSelectedSales([]);
-    }
-  };
-
-  const handleSelectSale = (saleId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedSales(prev => [...prev, saleId]);
-    } else {
-      setSelectedSales(prev => prev.filter(id => id !== saleId));
-    }
-  };
-
-  const handleBulkDelete = async () => {
+  const handleDelete = async (saleId: string) => {
     if (!isAdmin) {
       toast.error("Only admins can delete sales");
       return;
     }
 
-    if (selectedSales.length === 0) return;
-
-    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from('sales')
         .delete()
-        .in('id', selectedSales);
+        .eq('id', saleId);
 
       if (error) throw error;
       
-      toast.success(`Successfully deleted ${selectedSales.length} sale(s)`);
-      setSelectedSales([]);
+      toast.success("Sale deleted successfully");
     } catch (error) {
-      console.error('Error deleting sales:', error);
-      toast.error("Failed to delete sales");
-    } finally {
-      setIsDeleting(false);
+      console.error('Error deleting sale:', error);
+      toast.error("Failed to delete sale");
     }
   };
 
@@ -141,24 +116,10 @@ export function SalesTable({ sales }: SalesTableProps) {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between gap-4">
-        <SalesSearchInput value={searchTerm} onChange={setSearchTerm} />
-        {isAdmin && (
-          <SalesTableActions
-            selectedItems={selectedSales}
-            onBulkDelete={handleBulkDelete}
-            isDeleting={isDeleting}
-          />
-        )}
-      </div>
+      <SalesSearchInput value={searchTerm} onChange={setSearchTerm} />
       <div className="table-card">
         <Table className="table-enhanced">
-          <SalesTableHeader 
-            showCheckbox={isAdmin}
-            selectedCount={selectedSales.length}
-            totalCount={filteredSales.length}
-            onSelectAll={handleSelectAll}
-          />
+          <SalesTableHeader showActions={isAdmin} />
           <TableBody>
             {filteredSales.map((sale) => (
               <SalesTableRow
@@ -169,9 +130,7 @@ export function SalesTable({ sales }: SalesTableProps) {
                 formatCurrency={formatCurrency}
                 onDateUpdate={handleDateUpdate}
                 onPriceUpdate={handlePriceUpdate}
-                showCheckbox={isAdmin}
-                isSelected={selectedSales.includes(sale.id)}
-                onSelect={handleSelectSale}
+                onDelete={handleDelete}
               />
             ))}
           </TableBody>

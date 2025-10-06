@@ -1,7 +1,20 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { SalesDateCell } from "./SalesDateCell";
 import { SalesPriceCell } from "./SalesPriceCell";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface Sale {
   id: string;
@@ -20,9 +33,7 @@ interface SalesTableRowProps {
   formatCurrency: (amount: number) => string;
   onDateUpdate: (saleId: string, date: Date) => void;
   onPriceUpdate: (saleId: string, price: number) => void;
-  showCheckbox?: boolean;
-  isSelected?: boolean;
-  onSelect?: (saleId: string, checked: boolean) => void;
+  onDelete: (saleId: string) => void;
 }
 
 export function SalesTableRow({ 
@@ -32,21 +43,17 @@ export function SalesTableRow({
   formatCurrency, 
   onDateUpdate, 
   onPriceUpdate,
-  showCheckbox = false,
-  isSelected = false,
-  onSelect
+  onDelete
 }: SalesTableRowProps) {
+  const [open, setOpen] = useState(false);
+
+  const handleConfirmDelete = () => {
+    onDelete(sale.id);
+    setOpen(false);
+  };
+
   return (
     <TableRow key={sale.id}>
-      {showCheckbox && (
-        <TableCell className="w-12">
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={(checked) => onSelect?.(sale.id, checked as boolean)}
-            aria-label="Select sale"
-          />
-        </TableCell>
-      )}
       <TableCell>
         <SalesDateCell
           date={sale.sale_date}
@@ -68,6 +75,35 @@ export function SalesTableRow({
       <TableCell>
         <span className="currency-display">{formatCurrency(sale.total_amount)}</span>
       </TableCell>
+      {isAdmin && (
+        <TableCell className="w-16">
+          <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Sale</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this sale record for {sale.item_name}? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TableCell>
+      )}
     </TableRow>
   );
 }
