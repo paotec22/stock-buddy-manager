@@ -1,4 +1,5 @@
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SalesDateCell } from "./SalesDateCell";
 import { SalesPriceCell } from "./SalesPriceCell";
 
@@ -19,11 +20,33 @@ interface SalesTableRowProps {
   formatCurrency: (amount: number) => string;
   onDateUpdate: (saleId: string, date: Date) => void;
   onPriceUpdate: (saleId: string, price: number) => void;
+  showCheckbox?: boolean;
+  isSelected?: boolean;
+  onSelect?: (saleId: string, checked: boolean) => void;
 }
 
-export function SalesTableRow({ sale, canEditDates, isAdmin, formatCurrency, onDateUpdate, onPriceUpdate }: SalesTableRowProps) {
+export function SalesTableRow({ 
+  sale, 
+  canEditDates, 
+  isAdmin, 
+  formatCurrency, 
+  onDateUpdate, 
+  onPriceUpdate,
+  showCheckbox = false,
+  isSelected = false,
+  onSelect
+}: SalesTableRowProps) {
   return (
     <TableRow key={sale.id}>
+      {showCheckbox && (
+        <TableCell className="w-12">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelect?.(sale.id, checked as boolean)}
+            aria-label="Select sale"
+          />
+        </TableCell>
+      )}
       <TableCell>
         <SalesDateCell
           date={sale.sale_date}
