@@ -12,8 +12,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, CalendarIcon, ChevronDown, Save, X } from "lucide-react";
+import { FileSpreadsheet, CalendarIcon, ChevronDown, Save, X, Trash2 } from "lucide-react";
 import { ExpensesExportModal } from "./ExpensesExportModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -55,6 +65,8 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
   const [dateTo, setDateTo] = useState<Date>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<Expense>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const queryClient = useQueryClient();
   
   const { data, isLoading } = useQuery({
@@ -149,6 +161,34 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
   const handleCancel = () => {
     setEditingId(null);
     setEditValues({});
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', itemToDelete);
+
+      if (error) throw error;
+      
+      await queryClient.invalidateQueries({ queryKey: ['monthly-expenses'] });
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      setEditingId(null);
+      setEditValues({});
+      toast.success('Expense deleted successfully');
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast.error('Failed to delete expense');
+    }
+  };
+
+  const confirmDelete = (id: string) => {
+    setItemToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -336,6 +376,14 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
                               <Button size="sm" variant="outline" onClick={handleCancel}>
                                 <X className="h-3 w-3" />
                               </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => originalExpense && confirmDelete(originalExpense.id)}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
                           ) : (
                             <Button 
@@ -364,6 +412,23 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
         onOpenChange={setShowExport}
         expenses={allExpenses || []}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Expense</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this expense record? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Collapsible>
   );
 }

@@ -6,7 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarIcon, Download, X, ChevronDown, Save } from "lucide-react";
+import { CalendarIcon, Download, X, ChevronDown, Save, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { InstallationsExportModal } from "./InstallationsExportModal";
@@ -43,6 +53,8 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
   const [showExportModal, setShowExportModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValues, setEditValues] = useState<Partial<Installation>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const { data: installations = [], isLoading, error } = useQuery({
@@ -113,6 +125,34 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
   const handleCancel = () => {
     setEditingId(null);
     setEditValues({});
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('installations')
+        .delete()
+        .eq('id', itemToDelete);
+
+      if (error) throw error;
+      
+      await queryClient.invalidateQueries({ queryKey: ['installations'] });
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      setEditingId(null);
+      setEditValues({});
+      toast.success('Installation deleted successfully');
+    } catch (error) {
+      console.error('Error deleting installation:', error);
+      toast.error('Failed to delete installation');
+    }
+  };
+
+  const confirmDelete = (id: number) => {
+    setItemToDelete(id);
+    setDeleteDialogOpen(true);
   };
 
   if (isLoading) return <div>Loading installations...</div>;
@@ -276,6 +316,14 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
                                   <Button size="sm" variant="outline" onClick={handleCancel}>
                                     <X className="h-3 w-3" />
                                   </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => confirmDelete(record.id)}
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
                                 </div>
                               ) : (
                                 <Button 
@@ -313,6 +361,23 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
         onOpenChange={setShowExportModal}
         installations={allInstallations}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Installation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this installation record? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Collapsible>
   );
 }
