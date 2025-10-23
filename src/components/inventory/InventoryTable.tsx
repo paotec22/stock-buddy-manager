@@ -6,6 +6,7 @@ import { InventoryItem } from "@/utils/inventoryUtils";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
+import { StatusBadge, getStockStatus } from "@/components/ui/status-badge";
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -142,6 +143,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
+              <TableHead className="text-xs sm:text-sm font-medium">Status</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Qty</TableHead>
               <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
             </TableRow>
@@ -185,6 +187,13 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     <div className={`flex items-center gap-3 ${isSelected ? "pl-6" : ""}`}>
                       <div className="font-medium">{item["Item Description"]}</div>
                     </div>
+                  </TableCell>
+
+                  <TableCell>
+                    <StatusBadge 
+                      status={getStockStatus(item.Quantity || 0)} 
+                      size="sm"
+                    />
                   </TableCell>
 
                   <TableCell onClick={(e) => e.stopPropagation()}>

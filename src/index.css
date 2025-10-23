@@ -34,8 +34,8 @@
     
     /* Enhanced colors for better UI */
     --primary-light: 213.3 93.9% 67.8%;
-    --success: 142.1 76.2% 36.3%;
-    --warning: 32.6 94.6% 43.7%;
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
     --info: 217.2 91.2% 59.8%;
     
     /* Table alternating colors */
@@ -76,8 +76,8 @@
     
     /* Enhanced dark colors */
     --primary-light: 213.3 93.9% 67.8%;
-    --success: 142.1 70.6% 45.3%;
-    --warning: 32.6 94.6% 43.7%;
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
     --info: 217.2 91.2% 59.8%;
     
     /* Dark table colors */
