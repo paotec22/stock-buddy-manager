@@ -12,6 +12,7 @@ import { currencies } from "@/components/invoice/CurrencyChanger";
 import { SearchInput } from "@/components/ui/search-input";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { ProfitLoadingState } from "@/components/profit/ProfitLoadingState";
 
 interface SaleWithProfit {
   item_name: string;
@@ -169,7 +170,16 @@ const ProfitAnalysis = () => {
   }
 
   if (salesLoading || expensesLoading) {
-    return <div>Loading profit analysis...</div>;
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <main className="flex-1">
+            <ProfitLoadingState />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
   }
 
   return (
@@ -190,45 +200,45 @@ const ProfitAnalysis = () => {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
+            <Card className="card-hover">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold" style={{ color: 'hsl(var(--success))' }}>
                   {formatCurrency(totalSalesRevenue, currencies[0])}
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">Total Purchase Cost</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold" style={{ color: 'hsl(var(--info))' }}>
                   {formatCurrency(totalPurchaseCost, currencies[0])}
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">Gross Profit</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold" style={{ color: 'hsl(var(--warning))' }}>
                   {formatCurrency(grossProfit, currencies[0])}
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>
                   {formatCurrency(netProfit, currencies[0])}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -239,7 +249,7 @@ const ProfitAnalysis = () => {
           </div>
 
           {/* Grouped Sales Profit Table */}
-          <Card>
+          <Card className="card-hover">
             <CardHeader>
               <CardTitle>Grouped Sales with Profit Analysis</CardTitle>
             </CardHeader>

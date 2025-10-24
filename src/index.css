@@ -32,11 +32,24 @@
     --ring: 217.2 91.2% 59.8%;
     --radius: 0.75rem;
     
-    /* Enhanced colors for better UI */
-    --primary-light: 213.3 93.9% 67.8%;
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
-    --info: 217.2 91.2% 59.8%;
+  /* Enhanced colors for better UI */
+  --primary-light: 213.3 93.9% 67.8%;
+  --success: 142 76% 36%;
+  --warning: 38 92% 50%;
+  --info: 217.2 91.2% 59.8%;
+  
+  /* Text color utilities */
+  .text-success {
+    color: hsl(var(--success));
+  }
+  
+  .text-warning {
+    color: hsl(var(--warning));
+  }
+  
+  .text-info {
+    color: hsl(var(--info));
+  }
     
     /* Table alternating colors */
     --table-row-even: 210 40% 98%;
@@ -227,7 +240,11 @@
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30;
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-0.5;
+  }
+  
+  .card-hover-subtle {
+    @apply transition-all duration-200 hover:shadow-md hover:border-primary/10;
   }
   
   .glass-effect {

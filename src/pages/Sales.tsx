@@ -10,6 +10,7 @@ import { SalesExportModal } from "@/components/sales/SalesExportModal";
 import { SalesViewToggle } from "@/components/sales/SalesViewToggle";
 import { SalesGraphicalView } from "@/components/sales/SalesGraphicalView";
 import { SalesTableView } from "@/components/sales/SalesTableView";
+import { SalesLoadingState } from "@/components/sales/SalesLoadingState";
 import { ChartFilters } from "@/components/sales/SalesChartFilters";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -159,7 +160,20 @@ const Sales = () => {
   }
 
   if (isLoading) {
-    return <div>Loading sales data...</div>;
+    return isMobile ? (
+      <div className="min-h-screen bg-background pb-16">
+        <SalesLoadingState />
+      </div>
+    ) : (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <main className="flex-1">
+            <SalesLoadingState />
+          </main>
+        </div>
+      </SidebarProvider>
+    );
   }
 
   // Mobile layout

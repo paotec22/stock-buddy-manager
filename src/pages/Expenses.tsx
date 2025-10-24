@@ -118,7 +118,7 @@ export default function Expenses() {
           <h1 className="text-2xl font-bold mb-6">Expenses & Installations</h1>
           
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle>New Expense</CardTitle>
               </CardHeader>
@@ -223,7 +223,7 @@ export default function Expenses() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Wrench className="h-5 w-5" />

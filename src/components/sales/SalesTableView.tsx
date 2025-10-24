@@ -26,7 +26,7 @@ export function SalesTableView({ sales }: SalesTableViewProps) {
       </div>
 
       {/* Sales Summary Table */}
-      <Card>
+      <Card className="card-hover">
         <CardHeader>
           <CardTitle>Sales Summary</CardTitle>
         </CardHeader>
@@ -36,7 +36,7 @@ export function SalesTableView({ sales }: SalesTableViewProps) {
       </Card>
 
       {/* Detailed Sales Table */}
-      <Card>
+      <Card className="card-hover">
         <CardHeader>
           <CardTitle>Sales Details</CardTitle>
         </CardHeader>
