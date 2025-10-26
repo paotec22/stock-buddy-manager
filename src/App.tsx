@@ -2,11 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Suspense, lazy } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AnimatePresence } from "framer-motion";
+import { PageLoader } from "@/components/PageLoader";
 
 // Import the Index page normally to avoid issues with the first page load
 import Index from "./pages/Index";
@@ -22,18 +23,62 @@ const Expenses = lazy(() => import("./pages/Expenses"));
 const CreateInvoice = lazy(() => import("./pages/CreateInvoice"));
 const ProfitAnalysis = lazy(() => import("./pages/ProfitAnalysis"));
 
-// Loading fallback component
-const PageLoader = () => (
-  <div className="p-8 space-y-4">
-    <Skeleton className="h-8 w-[250px]" />
-    <Skeleton className="h-4 w-[300px]" />
-    <div className="grid gap-4 mt-6">
-      <Skeleton className="h-12" />
-      <Skeleton className="h-12" />
-      <Skeleton className="h-12" />
-    </div>
-  </div>
-);
+// Animated Routes Component
+function AnimatedRoutes() {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Load the Index page without Suspense */}
+        <Route path="/" element={<Index />} />
+        
+        {/* Wrap each lazy-loaded route with its own Suspense */}
+        <Route path="/dashboard" element={
+          <Suspense fallback={<PageLoader />}>
+            <Dashboard />
+          </Suspense>
+        } />
+        <Route path="/inventory" element={
+          <Suspense fallback={<PageLoader />}>
+            <Inventory />
+          </Suspense>
+        } />
+        <Route path="/sales" element={
+          <Suspense fallback={<PageLoader />}>
+            <Sales />
+          </Suspense>
+        } />
+        <Route path="/reports" element={
+          <Suspense fallback={<PageLoader />}>
+            <Reports />
+          </Suspense>
+        } />
+        <Route path="/settings" element={
+          <Suspense fallback={<PageLoader />}>
+            <Settings />
+          </Suspense>
+        } />
+        <Route path="/expenses" element={
+          <Suspense fallback={<PageLoader />}>
+            <Expenses />
+          </Suspense>
+        } />
+        <Route path="/create-invoice" element={
+          <Suspense fallback={<PageLoader />}>
+            <CreateInvoice />
+          </Suspense>
+        } />
+        <Route path="/profit-analysis" element={
+          <Suspense fallback={<PageLoader />}>
+            <ProfitAnalysis />
+          </Suspense>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 // Configure React Query for optimal performance
 const queryClient = new QueryClient({
@@ -57,53 +102,7 @@ const App = () => {
           <BrowserRouter>
             <AuthProvider>
               <div className="min-h-screen pb-20 md:pb-0">
-                <Routes>
-                  {/* Load the Index page without Suspense */}
-                  <Route path="/" element={<Index />} />
-                  
-                  {/* Wrap each lazy-loaded route with its own Suspense */}
-                  <Route path="/dashboard" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Dashboard />
-                    </Suspense>
-                  } />
-                  <Route path="/inventory" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Inventory />
-                    </Suspense>
-                  } />
-                  <Route path="/sales" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Sales />
-                    </Suspense>
-                  } />
-                  <Route path="/reports" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Reports />
-                    </Suspense>
-                  } />
-                  <Route path="/settings" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Settings />
-                    </Suspense>
-                  } />
-                  <Route path="/expenses" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <Expenses />
-                    </Suspense>
-                  } />
-                  <Route path="/create-invoice" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <CreateInvoice />
-                    </Suspense>
-                  } />
-                  <Route path="/profit-analysis" element={
-                    <Suspense fallback={<PageLoader />}>
-                      <ProfitAnalysis />
-                    </Suspense>
-                  } />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                <AnimatedRoutes />
               </div>
               <MobileBottomNav />
             </AuthProvider>
