@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
 import { StatusBadge, getStockStatus } from "@/components/ui/status-badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -16,6 +17,7 @@ export interface InventoryTableProps {
 }
 
 export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }: InventoryTableProps) {
+  const isMobile = useIsMobile();
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
   const [editingQuantity, setEditingQuantity] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -193,6 +195,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     <StatusBadge 
                       status={getStockStatus(item.Quantity || 0)} 
                       size="sm"
+                      variant={isMobile ? "dot" : "default"}
                     />
                   </TableCell>
 

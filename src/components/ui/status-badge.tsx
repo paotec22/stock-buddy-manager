@@ -8,9 +8,10 @@ interface StatusBadgeProps {
   quantity?: number;
   showIcon?: boolean;
   size?: "sm" | "md" | "lg";
+  variant?: "default" | "dot";
 }
 
-export function StatusBadge({ status, quantity, showIcon = true, size = "md" }: StatusBadgeProps) {
+export function StatusBadge({ status, quantity, showIcon = true, size = "md", variant = "default" }: StatusBadgeProps) {
   const sizeClasses = {
     sm: "text-xs px-2 py-0.5",
     md: "text-sm px-2.5 py-1",
@@ -42,6 +43,22 @@ export function StatusBadge({ status, quantity, showIcon = true, size = "md" }: 
 
   const config = statusConfig[status];
   const Icon = config.icon;
+
+  if (variant === "dot") {
+    return (
+      <span
+        className={cn(
+          "inline-block h-3 w-3 rounded-full border-2 transition-all duration-200",
+          status === "in-stock" && "bg-success border-success",
+          status === "low-stock" && "bg-warning border-warning",
+          status === "out-of-stock" && "bg-destructive border-destructive",
+          status === "normal" && "bg-muted-foreground border-muted-foreground",
+          "animate-scale-in"
+        )}
+        title={config.label}
+      />
+    );
+  }
 
   return (
     <span
