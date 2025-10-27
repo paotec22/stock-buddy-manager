@@ -7,6 +7,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CalendarIcon, Download, X, ChevronDown, Save, Trash2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileInstallationCard } from "./MobileInstallationCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,9 +49,14 @@ interface InstallationsTableProps {
   onToggleCollapse?: () => void;
 }
 
-export function InstallationsTable({ searchTerm = "", isCollapsed = false, onToggleCollapse }: InstallationsTableProps) {
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
+export function InstallationsTable({ searchTerm = "", isCollapsed = false, onToggleCollapse, dateFrom, dateTo, onDateFromChange, onDateToChange, onClearDates }: InstallationsTableProps & {
+  dateFrom?: Date;
+  dateTo?: Date;
+  onDateFromChange?: (date: Date | undefined) => void;
+  onDateToChange?: (date: Date | undefined) => void;
+  onClearDates?: () => void;
+}) {
+  const isMobile = useIsMobile();
   const [showExportModal, setShowExportModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValues, setEditValues] = useState<Partial<Installation>>({});
@@ -188,77 +195,75 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
         
         <CollapsibleContent>
           <CardContent className="space-y-4">
-          {/* Date Filters */}
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex flex-col space-y-1">
-              <label className="text-sm font-medium">From Date</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[150px] justify-start text-left font-normal",
-                      !dateFrom && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFrom ? format(dateFrom, "MMM dd") : "Select"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateFrom}
-                    onSelect={setDateFrom}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+          {!isMobile && (
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium">From Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[150px] justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "MMM dd") : "Select"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={onDateFromChange}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-            <div className="flex flex-col space-y-1">
-              <label className="text-sm font-medium">To Date</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[150px] justify-start text-left font-normal",
-                      !dateTo && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateTo ? format(dateTo, "MMM dd") : "Select"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateTo}
-                    onSelect={setDateTo}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium">To Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[150px] justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "MMM dd") : "Select"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={onDateToChange}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-            {(dateFrom || dateTo) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setDateFrom(undefined);
-                  setDateTo(undefined);
-                }}
-                className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-                Clear Dates
-              </Button>
-            )}
-          </div>
+              {(dateFrom || dateTo) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearDates}
+                  className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Dates
+                </Button>
+              )}
+            </div>
+          )}
 
           {filteredRecords.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -266,7 +271,34 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
             </div>
           ) : (
             <>
-              <div className="rounded-md border">
+              {isMobile ? (
+                <div className="space-y-3">
+                  {filteredRecords.map((record) => {
+                    const originalInstallation = installations.find(i => i.id === record.id);
+                    const isEditing = editingId === record.id;
+                    
+                    return originalInstallation ? (
+                      <MobileInstallationCard
+                        key={record.id}
+                        installation={originalInstallation}
+                        date={record.date}
+                        onEdit={handleEdit}
+                        onSave={async (id, values) => {
+                          setEditingId(id);
+                          setEditValues(values);
+                          await handleSave();
+                        }}
+                        onCancel={handleCancel}
+                        onDelete={confirmDelete}
+                        isEditing={isEditing}
+                        editValues={editValues}
+                        onEditValuesChange={setEditValues}
+                      />
+                    ) : null;
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -340,7 +372,8 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
                       })}
                     </TableBody>
                   </Table>
-              </div>
+                </div>
+              )}
               
               <div className="flex justify-between items-center pt-4 border-t">
                 <span className="text-sm text-muted-foreground">
@@ -350,8 +383,8 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
                   Total: {formatCurrency(totalAmount)}
                 </div>
               </div>
-              </>
-            )}
+            </>
+          )}
           </CardContent>
         </CollapsibleContent>
       </Card>

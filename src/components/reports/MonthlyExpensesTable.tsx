@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, CalendarIcon, ChevronDown, Save, X, Trash2 } from "lucide-react";
 import { ExpensesExportModal } from "./ExpensesExportModal";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileExpenseCard } from "./MobileExpenseCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -59,10 +60,15 @@ interface MonthlyExpensesTableProps {
   onToggleCollapse?: () => void;
 }
 
-export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onToggleCollapse }: MonthlyExpensesTableProps) {
+export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onToggleCollapse, dateFrom, dateTo, onDateFromChange, onDateToChange, onClearDates }: MonthlyExpensesTableProps & {
+  dateFrom?: Date;
+  dateTo?: Date;
+  onDateFromChange?: (date: Date | undefined) => void;
+  onDateToChange?: (date: Date | undefined) => void;
+  onClearDates?: () => void;
+}) {
+  const isMobile = useIsMobile();
   const [showExport, setShowExport] = useState(false);
-  const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<Expense>>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -220,97 +226,85 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
         </CollapsibleTrigger>
         
         <CollapsibleContent>
-          <CardHeader className="pt-0">
-        
-        {/* Date Filter Section */}
-        <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">From Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full sm:w-[200px] justify-start text-left font-normal",
-                    !dateFrom && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFrom ? format(dateFrom, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateFrom}
-                  onSelect={setDateFrom}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">To Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full sm:w-[200px] justify-start text-left font-normal",
-                    !dateTo && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateTo ? format(dateTo, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateTo}
-                  onSelect={setDateTo}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          {(dateFrom || dateTo) && (
-            <div className="flex items-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setDateFrom(undefined);
-                  setDateTo(undefined);
-                }}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Clear Dates
-              </Button>
-            </div>
+          {!isMobile && (
+            <CardHeader className="pt-0">
+              {/* Date Filter Section - Desktop Only */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">From Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full sm:w-[200px] justify-start text-left font-normal",
+                          !dateFrom && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateFrom ? format(dateFrom, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateFrom}
+                        onSelect={onDateFromChange}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">To Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full sm:w-[200px] justify-start text-left font-normal",
+                          !dateTo && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateTo ? format(dateTo, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateTo}
+                        onSelect={onDateToChange}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                {(dateFrom || dateTo) && (
+                  <div className="flex items-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onClearDates}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Clear Dates
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
           )}
-          </div>
-          </CardHeader>
           <CardContent>
             {isLoading ? (
               <p>Loading expenses data...</p>
             ) : filteredExpenses?.length ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              isMobile ? (
+                <div className="space-y-3">
                   {filteredExpenses?.map((expense, index) => {
                     const originalExpense = allExpenses?.find(e => 
                       e.description === expense.description && 
@@ -319,87 +313,129 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
                     );
                     const isEditing = editingId === originalExpense?.id;
                     
-                    return (
-                      <TableRow key={`${expense.date}-${expense.category}-${index}`}>
-                        <TableCell>{expense.date}</TableCell>
-                        <TableCell>
-                          {isEditing ? (
-                            <Input
-                              value={editValues.category || ''}
-                              onChange={(e) => setEditValues(prev => ({ ...prev, category: e.target.value }))}
-                              className="h-8"
-                            />
-                          ) : (
-                            expense.category
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {isEditing ? (
-                            <Input
-                              value={editValues.description || ''}
-                              onChange={(e) => setEditValues(prev => ({ ...prev, description: e.target.value }))}
-                              className="h-8"
-                            />
-                          ) : (
-                            expense.description
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {isEditing ? (
-                            <Input
-                              value={editValues.location || ''}
-                              onChange={(e) => setEditValues(prev => ({ ...prev, location: e.target.value }))}
-                              className="h-8"
-                            />
-                          ) : (
-                            expense.location
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {isEditing ? (
-                            <Input
-                              type="number"
-                              value={editValues.amount || ''}
-                              onChange={(e) => setEditValues(prev => ({ ...prev, amount: parseFloat(e.target.value) }))}
-                              className="h-8"
-                            />
-                          ) : (
-                            formatCurrency(expense.total_amount)
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {isEditing ? (
-                            <div className="flex items-center gap-2">
-                              <Button size="sm" variant="outline" onClick={handleSave}>
-                                <Save className="h-3 w-3" />
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={handleCancel}>
-                                <X className="h-3 w-3" />
-                              </Button>
+                    return originalExpense ? (
+                      <MobileExpenseCard
+                        key={`${expense.date}-${expense.category}-${index}`}
+                        expense={originalExpense}
+                        date={expense.date}
+                        onEdit={handleEdit}
+                        onSave={async (id, values) => {
+                          setEditingId(id);
+                          setEditValues(values);
+                          await handleSave();
+                        }}
+                        onCancel={handleCancel}
+                        onDelete={confirmDelete}
+                        isEditing={isEditing}
+                        editValues={editValues}
+                        onEditValuesChange={setEditValues}
+                      />
+                    ) : null;
+                  })}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredExpenses?.map((expense, index) => {
+                      const originalExpense = allExpenses?.find(e => 
+                        e.description === expense.description && 
+                        e.category === expense.category &&
+                        format(new Date(e.expense_date), 'PPP') === expense.date
+                      );
+                      const isEditing = editingId === originalExpense?.id;
+                      
+                      return (
+                        <TableRow key={`${expense.date}-${expense.category}-${index}`}>
+                          <TableCell>{expense.date}</TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Input
+                                value={editValues.category || ''}
+                                onChange={(e) => setEditValues(prev => ({ ...prev, category: e.target.value }))}
+                                className="h-8"
+                              />
+                            ) : (
+                              expense.category
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Input
+                                value={editValues.description || ''}
+                                onChange={(e) => setEditValues(prev => ({ ...prev, description: e.target.value }))}
+                                className="h-8"
+                              />
+                            ) : (
+                              expense.description
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Input
+                                value={editValues.location || ''}
+                                onChange={(e) => setEditValues(prev => ({ ...prev, location: e.target.value }))}
+                                className="h-8"
+                              />
+                            ) : (
+                              expense.location
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={editValues.amount || ''}
+                                onChange={(e) => setEditValues(prev => ({ ...prev, amount: parseFloat(e.target.value) }))}
+                                className="h-8"
+                              />
+                            ) : (
+                              formatCurrency(expense.total_amount)
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" onClick={handleSave}>
+                                  <Save className="h-3 w-3" />
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={handleCancel}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => originalExpense && confirmDelete(originalExpense.id)}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
                               <Button 
                                 size="sm" 
                                 variant="outline" 
-                                onClick={() => originalExpense && confirmDelete(originalExpense.id)}
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => originalExpense && handleEdit(originalExpense)}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                Edit
                               </Button>
-                            </div>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => originalExpense && handleEdit(originalExpense)}
-                            >
-                              Edit
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )
             ) : (
               <p className="text-center py-4 text-muted-foreground">No matching expense records found</p>
             )}
