@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { Boxes, ShoppingCart, Receipt, BarChart3, Settings } from "lucide-react";
+import { Boxes, ShoppingCart, Receipt, BarChart3, Settings, Wallet } from "lucide-react";
 
 export function MobileBottomNav() {
   return (
     <nav aria-label="Primary" className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         <li>
           <NavLink to="/inventory" end className={({ isActive }) =>
             `flex flex-col items-center justify-center gap-1 py-2 text-xs ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`
@@ -19,6 +19,14 @@ export function MobileBottomNav() {
           } aria-label="Sales">
             <ShoppingCart className="h-5 w-5" />
             <span>Sales</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/expenses" className={({ isActive }) =>
+            `flex flex-col items-center justify-center gap-1 py-2 text-xs ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`
+          } aria-label="Expenses">
+            <Wallet className="h-5 w-5" />
+            <span>Expenses</span>
           </NavLink>
         </li>
         <li>
