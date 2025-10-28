@@ -85,8 +85,9 @@ export function ExpenseTrendChart({ dateFrom, dateTo }: ExpenseTrendChartProps) 
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5}/>
+                <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -112,9 +113,10 @@ export function ExpenseTrendChart({ dateFrom, dateTo }: ExpenseTrendChartProps) 
               type="monotone"
               dataKey="amount"
               stroke="hsl(var(--primary))"
-              strokeWidth={2}
+              strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorAmount)"
+              activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
             />
           </AreaChart>
         </ResponsiveContainer>

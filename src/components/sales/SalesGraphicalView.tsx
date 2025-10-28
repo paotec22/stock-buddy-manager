@@ -99,13 +99,20 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
   const averageSale = filteredSales.length > 0 ? totalSales / filteredSales.length : 0;
   const totalQuantity = filteredSales.reduce((sum, sale) => sum + sale.quantity, 0);
 
-  // Chart colors
-  const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+  // Chart colors using semantic tokens
+  const chartColors = [
+    'hsl(var(--primary))',
+    'hsl(var(--secondary))',
+    'hsl(var(--accent))',
+    'hsl(var(--success))',
+    'hsl(var(--warning))',
+    'hsl(217 91% 60%)',
+  ];
 
   const chartConfig = {
     sales: {
       label: "Sales",
-      color: "#3b82f6"
+      color: "hsl(var(--primary))"
     }
   };
 
@@ -121,14 +128,21 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
               labelLine={false}
               label={({ name, value }) => `${name}: ${formatCurrency(value as number)}`}
               outerRadius={120}
-              fill="#8884d8"
+              fill="hsl(var(--primary))"
               dataKey="value"
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => [formatCurrency(value as number), 'Sales']} />
+            <Tooltip 
+              formatter={(value) => [formatCurrency(value as number), 'Sales']}
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '6px',
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
       );
@@ -136,12 +150,25 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
       return (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={(value) => formatCurrency(value)} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis 
+              dataKey="month" 
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={12}
+            />
+            <YAxis 
+              tickFormatter={(value) => formatCurrency(value)}
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={12}
+            />
             <Tooltip 
               formatter={(value, name) => [formatCurrency(value as number), name]}
               labelFormatter={(label) => `Month: ${label}`}
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '6px',
+              }}
             />
             {availableLocations.map((location, index) => (
               <Line
@@ -149,8 +176,9 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
                 type="monotone"
                 dataKey={location}
                 stroke={chartColors[index % chartColors.length]}
-                strokeWidth={2}
-                dot={{ fill: chartColors[index % chartColors.length], strokeWidth: 2, r: 4 }}
+                strokeWidth={3}
+                dot={{ fill: chartColors[index % chartColors.length], strokeWidth: 2, r: 5 }}
+                activeDot={{ r: 7 }}
               />
             ))}
           </LineChart>
@@ -160,19 +188,32 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
       return (
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis tickFormatter={(value) => formatCurrency(value)} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis 
+              dataKey="month" 
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={12}
+            />
+            <YAxis 
+              tickFormatter={(value) => formatCurrency(value)}
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={12}
+            />
             <Tooltip 
               formatter={(value, name) => [formatCurrency(value as number), name]}
               labelFormatter={(label) => `Month: ${label}`}
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '6px',
+              }}
             />
             {availableLocations.map((location, index) => (
               <Bar
                 key={location}
                 dataKey={location}
                 fill={chartColors[index % chartColors.length]}
-                radius={[2, 2, 0, 0]}
+                radius={[8, 8, 0, 0]}
               />
             ))}
           </BarChart>

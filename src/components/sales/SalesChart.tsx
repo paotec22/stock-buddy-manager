@@ -32,7 +32,7 @@ export function SalesChart({ sales }: SalesChartProps) {
   const chartConfig = {
     sales: {
       label: "Daily Sales",
-      color: "#3b82f6"
+      color: "hsl(var(--primary))"
     }
   };
 
@@ -42,11 +42,34 @@ export function SalesChart({ sales }: SalesChartProps) {
       <ChartContainer config={chartConfig}>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="amount" fill="#3b82f6" />
+            <defs>
+              <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.9}/>
+                <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0.7}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis 
+              dataKey="date" 
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={12}
+            />
+            <YAxis 
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={12}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '6px',
+              }}
+            />
+            <Bar 
+              dataKey="amount" 
+              fill="url(#colorBar)" 
+              radius={[8, 8, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>

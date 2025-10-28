@@ -10,11 +10,14 @@ interface ExpenseCategoryChartProps {
 }
 
 const COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  'hsl(var(--primary))',
+  'hsl(var(--secondary))',
+  'hsl(var(--accent))',
+  'hsl(var(--success))',
+  'hsl(var(--warning))',
+  'hsl(217 91% 60%)',
+  'hsl(262 83% 58%)',
+  'hsl(142 76% 36%)',
 ];
 
 export function ExpenseCategoryChart({ dateFrom, dateTo }: ExpenseCategoryChartProps) {
