@@ -1,0 +1,30 @@
+[
+  {
+    "id": "inventory-header",
+    "title": "Inventory Header",
+    "source": "src/components/inventory/InventoryHeader.tsx",
+    "content": "Header actions include Add Item, Bulk Upload, and filters for inventory. Use Bulk Upload to import a CSV of items.",
+    "tags": ["inventory","upload","bulk"]
+  },
+  {
+    "id": "bulk-upload-modal",
+    "title": "Bulk Upload Modal",
+    "source": "src/components/inventory/BulkUploadModal.tsx",
+    "content": "The Bulk Upload modal accepts a CSV file and has an Upload confirmation. The modal can be triggered from the header.",
+    "tags": ["upload","modal","csv"]
+  },
+  {
+    "id": "invoice-items",
+    "title": "Invoice Items Table",
+    "source": "src/components/invoice/InvoiceItemsTable.tsx",
+    "content": "Invoice items have description, quantity, unit_price, and amount. Adding an item appends a new row and the totals are computed from item amounts.",
+    "tags": ["invoice","items","totals"]
+  },
+  {
+    "id": "general-app",
+    "title": "App Overview",
+    "source": "src/",
+    "content": "Stock Buddy Manager is a single-page app that manages inventory, invoices, sales, and reports. Key pages include Inventory, Invoices, Sales, and Settings.",
+    "tags": ["app","overview"]
+  }
+]
