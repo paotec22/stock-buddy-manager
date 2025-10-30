@@ -12,6 +12,7 @@ import { PageLoader } from "@/components/PageLoader";
 // Import the Index page normally to avoid issues with the first page load
 import Index from "./pages/Index";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import Chatbot from "@/components/chat/Chatbot";
 
 // Lazy load other pages for better initial load time
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -105,6 +106,7 @@ const App = () => {
                 <AnimatedRoutes />
               </div>
               <MobileBottomNav />
+              <Chatbot />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
