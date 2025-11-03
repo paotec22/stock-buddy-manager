@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type Message = {
@@ -35,18 +34,27 @@ export const Chatbot: React.FC = () => {
     const allMessages = [...messages, { id: Date.now().toString(), from: "user" as const, text: userMessage }];
     
     try {
-      const response = await supabase.functions.invoke("chat-agent", {
-        body: { 
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-agent`;
+      
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ 
           messages: allMessages.map(m => ({ 
             role: m.from === "user" ? "user" : "assistant", 
             content: m.text 
           }))
-        }
+        }),
       });
 
-      if (response.error) throw response.error;
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to start stream: ${response.status}`);
+      }
 
-      const reader = response.data.getReader();
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
       let streamDone = false;
