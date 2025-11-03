@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import siteContent from "../../data/siteContent.json";
+import React, { useEffect, useState, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Message = {
   id: string;
@@ -7,88 +8,170 @@ type Message = {
   text: string;
 };
 
-function scoreContent(query: string, text: string) {
-  if (!query) return 0;
-  const q = query.toLowerCase();
-  const tokens = q.split(/\s+/).filter(Boolean);
-  let score = 0;
-  for (const t of tokens) {
-    if (text.toLowerCase().includes(t)) score += 1;
-  }
-  return score;
-}
-
 export const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-
-  const contentIndex = useMemo(() => siteContent as Array<any>, []);
+  const isMobile = useIsMobile();
+  
+  // Draggable state for mobile
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // welcome message
     setMessages([
       {
         id: "welcome",
         from: "bot",
-        text: "Hi — ask me about the app (inventory, bulk upload, invoices, totals) and I'll answer with snippets from the app."
+        text: "Hi! I'm your SI Manager assistant. Ask me anything about inventory, sales, expenses, invoices, or reports."
       }
     ]);
   }, []);
 
-  const appendMessage = (m: Message) => setMessages(prev => [...prev, m]);
+  const streamChat = async (userMessage: string) => {
+    const allMessages = [...messages, { id: Date.now().toString(), from: "user" as const, text: userMessage }];
+    
+    try {
+      const response = await supabase.functions.invoke("chat-agent", {
+        body: { 
+          messages: allMessages.map(m => ({ 
+            role: m.from === "user" ? "user" : "assistant", 
+            content: m.text 
+          }))
+        }
+      });
 
-  const retrieve = (query: string) => {
-    // simple keyword match ranking
-    const scored = contentIndex
-      .map(item => ({ item, score: scoreContent(query, (item.title || "") + " " + (item.content || "")) }))
-      .filter(x => x.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
+      if (response.error) throw response.error;
 
-    return scored.map(s => ({ title: s.item.title, source: s.item.source, snippet: s.item.content }));
+      const reader = response.data.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let streamDone = false;
+      let assistantText = "";
+
+      // Add empty assistant message
+      const assistantId = Date.now().toString() + "-bot";
+      setMessages(prev => [...prev, { id: assistantId, from: "bot", text: "" }]);
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantText += content;
+              setMessages(prev => 
+                prev.map(m => m.id === assistantId ? { ...m, text: assistantText } : m)
+              );
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages(prev => [...prev, { 
+        id: Date.now().toString() + "-error", 
+        from: "bot", 
+        text: "Sorry, I encountered an error. Please try again." 
+      }]);
+    }
   };
 
   const handleSend = async () => {
     const text = input.trim();
-    if (!text) return;
-    appendMessage({ id: Date.now().toString(), from: "user", text });
+    if (!text || loading) return;
+    
+    const userMsg = { id: Date.now().toString(), from: "user" as const, text };
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
-    // retrieve relevant snippets
-    const results = retrieve(text);
-
-    let reply = "";
-    if (results.length === 0) {
-      reply = "I couldn't find an exact match in the app content. Try asking about inventory, bulk upload, invoices or totals.";
-    } else {
-      reply = results
-        .map((r, i) => `Source: ${r.title} (${r.source})\n${r.snippet}`)
-        .join("\n\n---\n\n");
-    }
-
-    // small delay to mimic thinking
-    await new Promise(res => setTimeout(res, 250));
-    appendMessage({ id: Date.now().toString() + "-bot", from: "bot", text: reply });
+    await streamChat(text);
     setLoading(false);
-    // keep open on send
-    setOpen(true);
+  };
+
+  // Dragging handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isMobile) return;
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !isMobile) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const newX = touch.clientX - dragStart.x;
+    const newY = touch.clientY - dragStart.y;
+    
+    // Keep within viewport bounds
+    const maxX = window.innerWidth - 64;
+    const maxY = window.innerHeight - 64;
+    
+    setPosition({
+      x: Math.max(-window.innerWidth / 2 + 32, Math.min(newX, maxX - window.innerWidth / 2 + 32)),
+      y: Math.max(0, Math.min(newY, maxY))
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
   };
 
   return (
     <div>
-      {/* Floating placeholder button - bottom-right on desktop, centered on small screens */}
-      <div className="fixed z-50 right-4 bottom-4 md:bottom-6 md:right-6 left-0 md:left-auto flex justify-center md:justify-end pointer-events-none">
+      {/* Floating button - draggable on mobile */}
+      <div 
+        ref={buttonRef}
+        className="fixed z-50 pointer-events-none"
+        style={isMobile ? {
+          left: '50%',
+          bottom: '1rem',
+          transform: `translate(calc(-50% + ${position.x}px), ${position.y}px)`,
+          transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+        } : {
+          right: '1.5rem',
+          bottom: '1.5rem'
+        }}
+      >
         <div className="pointer-events-auto">
           {!open ? (
             <button
               aria-label="Open assistant"
               onClick={() => setOpen(true)}
-              className="bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg focus:outline-none"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className="bg-gradient-to-br from-primary to-secondary text-primary-foreground rounded-full w-14 h-14 flex items-center justify-center shadow-elegant hover:shadow-glow transition-all active:scale-95"
+              style={{ touchAction: 'none' }}
             >
-              <span className="text-xl">💬</span>
+              <span className="text-2xl">💬</span>
             </button>
           ) : null}
         </div>
@@ -98,35 +181,59 @@ export const Chatbot: React.FC = () => {
       {open && (
         <div className="fixed z-50 right-4 bottom-20 md:bottom-6 md:right-6 left-4 md:left-auto flex justify-center md:justify-end">
           <div className="w-[92vw] md:w-96 max-w-md">
-            <div className="flex flex-col bg-white border rounded-lg shadow-lg overflow-hidden">
-              <div className="px-4 py-2 bg-gray-50 border-b flex items-center justify-between">
-                <strong>Assistant</strong>
+            <div className="flex flex-col bg-card border border-border rounded-lg shadow-elegant overflow-hidden">
+              <div className="px-4 py-3 bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">Local app knowledge</span>
-                  <button aria-label="Close assistant" onClick={() => setOpen(false)} className="ml-2 text-gray-500 hover:text-gray-800">
-                    ✕
-                  </button>
+                  <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                  <strong className="text-foreground">SI Manager Assistant</strong>
                 </div>
+                <button 
+                  aria-label="Close assistant" 
+                  onClick={() => setOpen(false)} 
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ✕
+                </button>
               </div>
-              <div className="p-3 h-64 overflow-y-auto" aria-live="polite">
+              <div className="p-4 h-80 overflow-y-auto bg-background/50" aria-live="polite">
                 {messages.map(m => (
                   <div key={m.id} className={`mb-3 ${m.from === "user" ? "text-right" : "text-left"}`}>
-                    <div className={`inline-block p-2 rounded ${m.from === "user" ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-900"}`}>
-                      <pre className="whitespace-pre-wrap text-sm">{m.text}</pre>
+                    <div className={`inline-block p-3 rounded-lg max-w-[85%] ${
+                      m.from === "user" 
+                        ? "bg-gradient-to-br from-primary to-secondary text-primary-foreground" 
+                        : "bg-muted text-foreground"
+                    }`}>
+                      <div className="whitespace-pre-wrap text-sm">{m.text}</div>
                     </div>
                   </div>
                 ))}
+                {loading && (
+                  <div className="text-left mb-3">
+                    <div className="inline-block p-3 rounded-lg bg-muted">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-2 h-2 rounded-full bg-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 rounded-full bg-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="p-3 border-t">
+              <div className="p-3 border-t border-border bg-card">
                 <div className="flex gap-2">
                   <input
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter") handleSend(); }}
-                    placeholder="Ask about the app..."
-                    className="flex-1 border rounded px-2 py-1 text-sm"
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }}}
+                    placeholder="Ask about inventory, sales, expenses..."
+                    className="flex-1 bg-background border border-input rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    disabled={loading}
                   />
-                  <button onClick={handleSend} disabled={loading} className="px-3 py-1 rounded bg-blue-600 text-white text-sm disabled:opacity-50">
+                  <button 
+                    onClick={handleSend} 
+                    disabled={loading || !input.trim()} 
+                    className="px-4 py-2 rounded-lg bg-gradient-to-br from-primary to-secondary text-primary-foreground text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-glow transition-all"
+                  >
                     {loading ? "..." : "Send"}
                   </button>
                 </div>
