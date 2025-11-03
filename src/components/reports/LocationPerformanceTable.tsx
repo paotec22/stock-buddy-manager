@@ -86,7 +86,8 @@ export function LocationPerformanceTable({ searchTerm = "" }: LocationPerformanc
         {isLoading ? (
           <p>Loading sales data...</p>
         ) : filteredLocationSales?.length ? (
-          <Table>
+          <div className="max-h-[calc(100vh-400px)] overflow-auto rounded-md border">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Location</TableHead>
@@ -102,6 +103,7 @@ export function LocationPerformanceTable({ searchTerm = "" }: LocationPerformanc
               ))}
             </TableBody>
           </Table>
+          </div>
         ) : (
           <p className="text-center py-4 text-muted-foreground">No matching location data found</p>
         )}

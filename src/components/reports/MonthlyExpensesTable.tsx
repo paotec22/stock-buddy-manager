@@ -304,7 +304,7 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
               <p>Loading expenses data...</p>
             ) : filteredExpenses?.length ? (
               isMobile ? (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[calc(100vh-400px)] overflow-auto">
                   {filteredExpenses?.map((expense, index) => {
                     const originalExpense = allExpenses?.find(e => 
                       e.description === expense.description && 
@@ -334,7 +334,8 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
                   })}
                 </div>
               ) : (
-                <Table>
+                <div className="max-h-[calc(100vh-400px)] overflow-auto rounded-md border">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
@@ -435,6 +436,7 @@ export function MonthlyExpensesTable({ searchTerm = "", isCollapsed = false, onT
                     })}
                   </TableBody>
                 </Table>
+                </div>
               )
             ) : (
               <p className="text-center py-4 text-muted-foreground">No matching expense records found</p>

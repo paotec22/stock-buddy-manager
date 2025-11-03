@@ -272,7 +272,7 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
           ) : (
             <>
               {isMobile ? (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[calc(100vh-400px)] overflow-auto">
                   {filteredRecords.map((record) => {
                     const originalInstallation = installations.find(i => i.id === record.id);
                     const isEditing = editingId === record.id;
@@ -298,7 +298,7 @@ export function InstallationsTable({ searchTerm = "", isCollapsed = false, onTog
                   })}
                 </div>
               ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border max-h-[calc(100vh-450px)] overflow-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
