@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,20 +19,80 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // System prompt with context about the app
-    const systemPrompt = `You are a helpful assistant for the SI Manager application. This is an inventory, sales, and business management system.
+    // Initialize Supabase client with service role for full access
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-Key features you can help with:
-- Inventory Management: Track items, quantities, prices, locations, and user assignments
-- Sales Tracking: Record and analyze sales data with charts and reports
-- Expense Management: Track and categorize business expenses
-- Invoice Generation: Create professional invoices with customizable details
-- Reports & Analytics: View trends, performance metrics, and export data
-- Profit Analysis: Calculate and analyze profit margins
-- Multi-location Support: Manage inventory across different locations
-- User Management: Role-based access control and user assignments
+    // Enhanced system prompt with database access capabilities
+    const systemPrompt = `You are an AI assistant for the SI Manager application with full database access. This is an inventory, sales, and business management system.
 
-Answer questions clearly and concisely based on the app's features. If you're not sure about something, say so.`;
+You have access to these database tables and can query/modify them:
+- inventory list: Items with description, price, quantity, location, total
+- sales: Sales records with item_id, quantity, sale_price, total_amount, sale_date
+- expenses: Business expenses with description, amount, category, expense_date, location
+- invoices: Invoice records with customer info, totals, dates
+- invoice_items: Line items for invoices
+- installations: Installation records
+- profiles: User profiles with roles (admin, user, uploader, inventory_manager)
+
+Available tools you can use:
+1. query_database: Query any table to get information
+2. create_invoice: Create a new invoice with items
+3. add_inventory: Add or update inventory items
+4. record_sale: Record a new sale
+5. add_expense: Add a new expense
+
+When users ask questions about data, query the database to provide accurate answers. When they ask to perform actions, use the appropriate tools.
+
+Always be helpful, accurate, and use real data from the database.`;
+
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "query_database",
+          description: "Query the database to retrieve information from any table",
+          parameters: {
+            type: "object",
+            properties: {
+              table: { type: "string", description: "Table name to query" },
+              filters: { type: "object", description: "Filters to apply" },
+              limit: { type: "number", description: "Limit results" }
+            },
+            required: ["table"]
+          }
+        }
+      },
+      {
+        type: "function",
+        function: {
+          name: "create_invoice",
+          description: "Create a new invoice with customer details and items",
+          parameters: {
+            type: "object",
+            properties: {
+              customer_name: { type: "string" },
+              customer_address: { type: "string" },
+              customer_phone: { type: "string" },
+              items: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    description: { type: "string" },
+                    quantity: { type: "number" },
+                    unit_price: { type: "number" }
+                  }
+                }
+              }
+            },
+            required: ["customer_name", "items"]
+          }
+        }
+      }
+    ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -45,6 +106,7 @@ Answer questions clearly and concisely based on the app's features. If you're no
           { role: "system", content: systemPrompt },
           ...messages,
         ],
+        tools: tools,
         stream: true,
       }),
     });
