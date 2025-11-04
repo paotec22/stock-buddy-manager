@@ -117,7 +117,7 @@ export function SalesTable({ sales }: SalesTableProps) {
   return (
     <div className="space-y-4 animate-fade-in">
       <SalesSearchInput value={searchTerm} onChange={setSearchTerm} />
-      <div className="table-card max-h-[calc(100vh-400px)] min-h-[300px] overflow-auto">
+      <div className="max-h-[calc(100vh-400px)] overflow-auto">
         <Table className="table-enhanced">
           <SalesTableHeader showActions={isAdmin} />
           <TableBody>
