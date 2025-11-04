@@ -23,13 +23,13 @@ export function RoleProtectedRoute({
     queryFn: async () => {
       if (!session?.user?.id) return null;
       
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: role } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', session.user.id)
+        .eq('user_id', session.user.id)
         .maybeSingle();
       
-      return profile?.role;
+      return role?.role;
     },
     enabled: !!session?.user?.id
   });

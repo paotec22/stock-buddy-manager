@@ -24,11 +24,19 @@ export const RoleManagementSection = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, role')
+        .select(`
+          id, 
+          email,
+          user_roles!inner(role)
+        `)
         .order('email');
-
+      
       if (error) throw error;
-      return data as Profile[];
+      return data.map((p: any) => ({
+        id: p.id,
+        email: p.email,
+        role: p.user_roles[0]?.role || 'user'
+      })) as Profile[];
     }
   });
 

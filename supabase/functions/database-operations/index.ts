@@ -13,6 +13,46 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - missing auth header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    // Create authenticated client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    // Verify user authentication
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - invalid token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    // Check admin role using new user_roles table
+    const { data: userRole } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+
+    if (userRole?.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - admin access required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      )
+    }
+
+    // Use service role for actual operations (now that auth is verified)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -25,6 +65,13 @@ serve(async (req) => {
     console.log('Processing database operation:', action)
 
     if (action === 'export') {
+      // Log access attempt
+      await supabase.from('access_logs').insert({
+        table_name: 'database_export',
+        action_type: 'EXPORT',
+        user_id: user.id
+      })
+
       // Fetch data from all tables
       const [inventoryData, salesData, expensesData] = await Promise.all([
         supabase.from('inventory list').select('*'),
@@ -39,7 +86,6 @@ serve(async (req) => {
         exportDate: new Date().toISOString(),
       }
 
-      console.log('Export completed successfully')
       return new Response(
         JSON.stringify({ data: exportData }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -49,7 +95,17 @@ serve(async (req) => {
         throw new Error('No data provided for import')
       }
 
-      console.log('Starting database import')
+      // Validate import data structure
+      if (!data.inventory && !data.sales && !data.expenses) {
+        throw new Error('Import data must contain at least one of: inventory, sales, or expenses')
+      }
+
+      // Log access attempt
+      await supabase.from('access_logs').insert({
+        table_name: 'database_import',
+        action_type: 'IMPORT',
+        user_id: user.id
+      })
       
       // Clear existing data
       await Promise.all([
@@ -58,20 +114,19 @@ serve(async (req) => {
         supabase.from('inventory list').delete().neq('id', 0),
       ])
 
-      // Import new data
+      // Import new data with validation
       const importPromises = []
-      if (data.inventory) {
+      if (data.inventory && Array.isArray(data.inventory)) {
         importPromises.push(supabase.from('inventory list').insert(data.inventory))
       }
-      if (data.sales) {
+      if (data.sales && Array.isArray(data.sales)) {
         importPromises.push(supabase.from('sales').insert(data.sales))
       }
-      if (data.expenses) {
+      if (data.expenses && Array.isArray(data.expenses)) {
         importPromises.push(supabase.from('expenses').insert(data.expenses))
       }
 
       await Promise.all(importPromises)
-      console.log('Import completed successfully')
 
       return new Response(
         JSON.stringify({ message: 'Data imported successfully' }),
@@ -84,9 +139,8 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     )
   } catch (error) {
-    console.error('Error in database operation:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Internal server error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

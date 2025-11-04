@@ -1,4 +1,7 @@
 project_id = "itycbazttpidqlgmmrot"
 
 [functions.chat-agent]
-verify_jwt = false
+verify_jwt = true
+
+[functions.database-operations]
+verify_jwt = true

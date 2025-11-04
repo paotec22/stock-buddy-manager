@@ -76,13 +76,13 @@ function SidebarContents() {
     queryFn: async () => {
       if (!session?.user?.id) return null;
       
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: role } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', session.user.id)
+        .eq('user_id', session.user.id)
         .maybeSingle();
       
-      return profile?.role;
+      return role?.role;
     },
     enabled: !!session?.user?.id
   });
@@ -93,18 +93,14 @@ function SidebarContents() {
 
   const handleSignOut = async () => {
     try {
-      console.log("Attempting to sign out...");
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("Error signing out:", error);
         toast.error("Failed to sign out");
         return;
       }
-      console.log("Successfully signed out");
       toast.success("Successfully signed out");
       navigate('/');
     } catch (error) {
-      console.error("Unexpected error during sign out:", error);
       toast.error("An unexpected error occurred");
     }
   };

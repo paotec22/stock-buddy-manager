@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
+import { loginSchema } from "@/lib/validationSchemas";
 
 const Index = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -15,9 +16,7 @@ const Index = () => {
   const { session } = useAuth();
 
   useEffect(() => {
-    console.log("Index: Checking session state:", { hasSession: !!session });
     if (session?.user) {
-      console.log("Index: User is authenticated, redirecting to inventory");
       navigate('/inventory');
     }
   }, [session, navigate]);
@@ -25,34 +24,33 @@ const Index = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("Index: Attempting login");
 
     try {
+      // Validate input
+      const validatedData = loginSchema.parse(loginData);
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password,
+        email: validatedData.email,
+        password: validatedData.password,
       });
 
       if (error) {
-        console.error("Login error:", error);
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error("Invalid email or password");
-        } else if (error.message.includes('email_not_confirmed')) {
-          toast.error("Please check your email to confirm your account");
-        } else {
-          toast.error(error.message || "Failed to login");
-        }
+        // Use generic error message to prevent account enumeration
+        toast.error("Invalid email or password");
         return;
       }
 
       if (data?.session) {
-        console.log("Index: Login successful");
         toast.success("Login successful!");
         navigate("/inventory");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("An unexpected error occurred during login");
+    } catch (error: any) {
+      if (error.errors) {
+        // Zod validation error
+        toast.error(error.errors[0]?.message || "Invalid input");
+      } else {
+        toast.error("An error occurred during login");
+      }
     } finally {
       setIsLoading(false);
     }
