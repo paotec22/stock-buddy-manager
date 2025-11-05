@@ -14,87 +14,85 @@ serve(async (req) => {
   try {
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const authHeader = req.headers.get('Authorization');
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Initialize Supabase client with service role for full access
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Initialize user-scoped Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Enhanced system prompt with database access capabilities
-    const systemPrompt = `You are an AI assistant for the SI Manager application with full database access. This is an inventory, sales, and business management system.
+    // Verify authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid authentication" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-You have access to these database tables and can query/modify them:
-- inventory list: Items with description, price, quantity, location, total
-- sales: Sales records with item_id, quantity, sale_price, total_amount, sale_date
-- expenses: Business expenses with description, amount, category, expense_date, location
-- invoices: Invoice records with customer info, totals, dates
-- invoice_items: Line items for invoices
-- installations: Installation records
-- profiles: User profiles with roles (admin, user, uploader, inventory_manager)
+    // Enhanced system prompt
+    const systemPrompt = `You are an AI assistant for the SI Manager application. This is an inventory, sales, and business management system.
 
-Available tools you can use:
-1. query_database: Query any table to get information
-2. create_invoice: Create a new invoice with items
-3. add_inventory: Add or update inventory items
-4. record_sale: Record a new sale
-5. add_expense: Add a new expense
+You have access to query the database for:
+- Inventory items (description, price, quantity, location)
+- Sales records (item, quantity, price, date)
+- Expenses (description, amount, category, date, location)
+- Invoices and invoice items
 
-When users ask questions about data, query the database to provide accurate answers. When they ask to perform actions, use the appropriate tools.
-
-Always be helpful, accurate, and use real data from the database.`;
+When users ask about data, use the query_database tool to fetch real information. Keep responses concise and helpful.`;
 
     const tools = [
       {
         type: "function",
         function: {
           name: "query_database",
-          description: "Query the database to retrieve information from any table",
+          description: "Query the database to retrieve information. Use this to answer questions about inventory, sales, or expenses.",
           parameters: {
             type: "object",
             properties: {
-              table: { type: "string", description: "Table name to query" },
-              filters: { type: "object", description: "Filters to apply" },
-              limit: { type: "number", description: "Limit results" }
+              table: { 
+                type: "string", 
+                description: "Table name: 'inventory list', 'sales', 'expenses', 'invoices'",
+                enum: ["inventory list", "sales", "expenses", "invoices"]
+              },
+              limit: { type: "number", description: "Limit results (default 10, max 50)" }
             },
             required: ["table"]
-          }
-        }
-      },
-      {
-        type: "function",
-        function: {
-          name: "create_invoice",
-          description: "Create a new invoice with customer details and items",
-          parameters: {
-            type: "object",
-            properties: {
-              customer_name: { type: "string" },
-              customer_address: { type: "string" },
-              customer_phone: { type: "string" },
-              items: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    description: { type: "string" },
-                    quantity: { type: "number" },
-                    unit_price: { type: "number" }
-                  }
-                }
-              }
-            },
-            required: ["customer_name", "items"]
           }
         }
       }
     ];
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Function to execute tools
+    const executeFunction = async (name: string, args: any) => {
+      if (name === "query_database") {
+        const limit = Math.min(args.limit || 10, 50);
+        const { data, error } = await supabase
+          .from(args.table)
+          .select('*')
+          .limit(limit);
+        
+        if (error) throw error;
+        return { success: true, data, count: data?.length || 0 };
+      }
+      throw new Error(`Unknown function: ${name}`);
+    };
+
+    // First AI call with tools
+    let response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -107,7 +105,6 @@ Always be helpful, accurate, and use real data from the database.`;
           ...messages,
         ],
         tools: tools,
-        stream: true,
       }),
     });
 
@@ -125,12 +122,75 @@ Always be helpful, accurate, and use real data from the database.`;
         });
       }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
       return new Response(JSON.stringify({ error: "AI gateway error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const firstResult = await response.json();
+    const choice = firstResult.choices?.[0];
+    
+    // Check if AI wants to call a function
+    if (choice?.message?.tool_calls) {
+      const toolCall = choice.message.tool_calls[0];
+      const functionName = toolCall.function.name;
+      const functionArgs = JSON.parse(toolCall.function.arguments);
+      
+      // Execute the function
+      const functionResult = await executeFunction(functionName, functionArgs);
+      
+      // Call AI again with function result
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages,
+            choice.message,
+            {
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(functionResult)
+            }
+          ],
+          stream: true,
+        }),
+      });
+
+      if (!response.ok) {
+        return new Response(JSON.stringify({ error: "AI gateway error" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(response.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+    
+    // No tool call needed, stream the response
+    response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages,
+        ],
+        stream: true,
+      }),
+    });
 
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
