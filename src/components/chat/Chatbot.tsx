@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   id: string;
@@ -34,13 +35,20 @@ export const Chatbot: React.FC = () => {
     const allMessages = [...messages, { id: Date.now().toString(), from: "user" as const, text: userMessage }];
     
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-agent`;
+      // Get the user's session token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("You must be logged in to use the assistant");
+      }
+
+      const CHAT_URL = `https://itycbazttpidqlgmmrot.supabase.co/functions/v1/chat-agent`;
       
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ 
           messages: allMessages.map(m => ({ 
