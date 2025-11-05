@@ -36,10 +36,15 @@ export const Chatbot: React.FC = () => {
     
     try {
       // Get the user's session token
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session) {
-        throw new Error("You must be logged in to use the assistant");
+      if (sessionError || !session) {
+        setMessages(prev => [...prev, { 
+          id: Date.now().toString() + "-error", 
+          from: "bot", 
+          text: "Please log in to use the assistant. You need to be authenticated to access your data." 
+        }]);
+        return;
       }
 
       const CHAT_URL = `https://itycbazttpidqlgmmrot.supabase.co/functions/v1/chat-agent`;
@@ -58,8 +63,13 @@ export const Chatbot: React.FC = () => {
         }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error(`Failed to start stream: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error("No response body");
       }
 
       const reader = response.body.getReader();
@@ -109,11 +119,10 @@ export const Chatbot: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error("Chat error:", error);
       setMessages(prev => [...prev, { 
         id: Date.now().toString() + "-error", 
         from: "bot", 
-        text: "Sorry, I encountered an error. Please try again." 
+        text: error instanceof Error ? error.message : "Sorry, I encountered an error. Please try again." 
       }]);
     }
   };
