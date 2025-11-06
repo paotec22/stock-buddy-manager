@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   id: string;
@@ -35,25 +34,13 @@ export const Chatbot: React.FC = () => {
     const allMessages = [...messages, { id: Date.now().toString(), from: "user" as const, text: userMessage }];
     
     try {
-      // Get the user's session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        setMessages(prev => [...prev, { 
-          id: Date.now().toString() + "-error", 
-          from: "bot", 
-          text: "Please log in to use the assistant. You need to be authenticated to access your data." 
-        }]);
-        return;
-      }
-
-      const CHAT_URL = `https://itycbazttpidqlgmmrot.supabase.co/functions/v1/chat-agent`;
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-agent`;
       
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ 
           messages: allMessages.map(m => ({ 
@@ -63,13 +50,8 @@ export const Chatbot: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || `Request failed with status ${response.status}`);
-      }
-
-      if (!response.body) {
-        throw new Error("No response body");
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to start stream: ${response.status}`);
       }
 
       const reader = response.body.getReader();
@@ -119,10 +101,11 @@ export const Chatbot: React.FC = () => {
         }
       }
     } catch (error) {
+      console.error("Chat error:", error);
       setMessages(prev => [...prev, { 
         id: Date.now().toString() + "-error", 
         from: "bot", 
-        text: error instanceof Error ? error.message : "Sorry, I encountered an error. Please try again." 
+        text: "Sorry, I encountered an error. Please try again." 
       }]);
     }
   };

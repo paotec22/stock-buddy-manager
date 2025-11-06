@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { UserAssignmentModal } from "@/components/inventory/UserAssignmentModal";
-import { signupSchema } from "@/lib/validationSchemas";
 
 export const UserManagementSection = () => {
   const [signupData, setSignupData] = useState({
@@ -19,34 +18,30 @@ export const UserManagementSection = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (signupData.password !== signupData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
     try {
-      // Validate input
-      const validatedData = signupSchema.parse({
+      const { data, error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
-        confirmPassword: signupData.confirmPassword
       });
 
-      const { error } = await supabase.auth.signUp({
-        email: validatedData.email,
-        password: validatedData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success("User account created successfully! They will receive an email to confirm their account.");
-      setSignupData({ email: "", password: "", confirmPassword: "" });
-    } catch (error: any) {
-      if (error.errors) {
-        // Zod validation error
-        toast.error(error.errors[0]?.message || "Invalid input");
-      } else {
-        toast.error(error.message || "Failed to create user account");
+      if (error) {
+        console.error("Signup error:", error);
+        toast.error(error.message || "Failed to create account");
+        return;
       }
+
+      if (data.user) {
+        toast.success("User account created successfully!");
+        setSignupData({ email: "", password: "", confirmPassword: "" });
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast.error("An unexpected error occurred during signup");
     }
   };
 

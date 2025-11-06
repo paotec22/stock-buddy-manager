@@ -22,22 +22,27 @@ const Settings = () => {
   const { data: isAdmin, isLoading, error } = useQuery({
     queryKey: ['isAdmin'],
     queryFn: async () => {
+      console.log("Checking admin status...");
+      
       if (!session?.user?.id) {
+        console.log("No authenticated session found, redirecting to login");
         navigate("/");
         return false;
       }
       
-      const { data: role, error: roleError } = await supabase
-        .from('user_roles')
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
         .select('role')
-        .eq('user_id', session.user.id)
+        .eq('id', session.user.id)
         .maybeSingle();
       
-      if (roleError) {
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
         return false;
       }
       
-      return role?.role === 'admin';
+      console.log("Admin check result:", profile?.role === 'admin');
+      return profile?.role === 'admin';
     },
     enabled: !!session // Only run query when session exists
   });
@@ -66,8 +71,9 @@ const Settings = () => {
       }
 
       toast.success(`${resetType.charAt(0).toUpperCase() + resetType.slice(1)} reset successfully`);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to reset data");
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      toast.error("Failed to reset data");
     } finally {
       setIsResetting(false);
       setPassword("");
@@ -75,6 +81,7 @@ const Settings = () => {
   };
 
   if (!session) {
+    console.log("No session found, redirecting to login");
     navigate("/");
     return null;
   }

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import Papa from "papaparse";
-import { salesArraySchema } from "@/lib/validationSchemas";
 
 interface BulkSaleUploadModalProps {
   open: boolean;
@@ -32,69 +31,43 @@ export function BulkSaleUploadModal({ open, onOpenChange, onDataUpload }: BulkSa
               return;
             }
 
-            // Validate CSV data
-            const validatedData = salesArraySchema.parse(results.data);
-
-            // Verify all item IDs exist and check inventory
-            const itemIds = validatedData.map(row => row.item_id);
-            const { data: items, error: itemsError } = await supabase
-              .from('inventory list')
-              .select('id, Quantity')
-              .in('id', itemIds);
-
-            if (itemsError) throw itemsError;
-            
-            if (!items || items.length !== itemIds.length) {
-              throw new Error('Some item IDs do not exist in inventory');
-            }
-
-            // Check sufficient inventory for each sale
-            const inventoryMap = new Map(items.map(i => [i.id, Number(i.Quantity)]));
-            for (const sale of validatedData) {
-              const available = inventoryMap.get(sale.item_id) || 0;
-              if (sale.quantity > available) {
-                throw new Error(`Insufficient inventory for item ${sale.item_id}. Available: ${available}, Requested: ${sale.quantity}`);
-              }
-            }
-
-            // Prepare sales data
-            const salesData = validatedData.map((row) => ({
+            const sales = results.data.map((row: any) => ({
               item_id: row.item_id,
-              quantity: row.quantity,
-              sale_price: row.sale_price,
-              total_amount: row.quantity * row.sale_price,
-              actual_purchase_price: null,
+              quantity: parseInt(row.quantity),
+              sale_price: parseFloat(row.sale_price),
+              total_amount: parseInt(row.quantity) * parseFloat(row.sale_price),
               user_id: user.id,
               sale_date: new Date().toISOString(),
             }));
 
             // Insert sales records
-            const { error: salesError } = await supabase
+            const { error: saleError } = await supabase
               .from('sales')
-              .insert(salesData);
+              .insert(sales);
 
-            if (salesError) throw salesError;
+            if (saleError) throw saleError;
 
             // Update inventory quantities
-            for (const sale of salesData) {
-              const { error: updateError } = await supabase.rpc('decrement_quantity', {
-                item_id: sale.item_id,
-                decrement_by: sale.quantity
-              });
+            for (const sale of sales) {
+              const { error: updateError } = await supabase
+                .from('inventory list')
+                .update({ 
+                  Quantity: supabase.rpc('decrement_quantity', { 
+                    row_id: sale.item_id, 
+                    amount: sale.quantity 
+                  })
+                })
+                .eq('id', sale.item_id);
 
               if (updateError) throw updateError;
             }
 
-            toast.success(`Successfully uploaded ${salesData.length} sales`);
+            toast.success("Sales recorded successfully");
             onDataUpload();
             onOpenChange(false);
-          } catch (error: any) {
-            if (error.errors) {
-              // Zod validation error
-              toast.error(`Validation failed: ${error.errors[0]?.message || 'Invalid CSV data'}`);
-            } else {
-              toast.error(`Failed to upload sales: ${error.message}`);
-            }
+          } catch (error) {
+            console.error('Error recording sales:', error);
+            toast.error("Failed to record sales");
           }
         },
         error: (error) => {

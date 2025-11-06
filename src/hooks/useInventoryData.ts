@@ -28,8 +28,8 @@ export function useInventoryData(selectedLocation: string) {
         throw error;
       }
     },
-    staleTime: 0, // Always fetch fresh data
-    refetchOnWindowFocus: true // Refetch when window regains focus
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false
   });
 
   return {
