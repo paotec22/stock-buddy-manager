@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -24,6 +24,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const { session } = useAuth();
+  const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -90,6 +91,9 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         selectedItem
       );
 
+      // Invalidate inventory queries to trigger refresh
+      await queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      
       toast.success("Sale recorded successfully");
       form.reset();
       onSuccess?.();

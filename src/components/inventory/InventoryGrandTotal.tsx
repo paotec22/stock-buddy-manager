@@ -12,7 +12,8 @@ interface InventoryGrandTotalProps {
 export function InventoryGrandTotal({ items, selectedLocation }: InventoryGrandTotalProps) {
   const calculateGrandTotal = () => {
     return items.reduce((sum, item) => {
-      const itemTotal = item.Price * item.Quantity;
+      // Use the stored Total field if available, otherwise calculate it
+      const itemTotal = item.Total ?? (item.Price * item.Quantity);
       return sum + itemTotal;
     }, 0);
   };

@@ -2,6 +2,7 @@
 import { InventoryLayout } from "@/components/inventory/InventoryLayout";
 import { InventoryContentContainer } from "@/components/inventory/InventoryContentContainer";
 import { useInventoryData } from "@/hooks/useInventoryData";
+import { useInventoryRealtime } from "@/hooks/useInventoryRealtime";
 import { useState } from "react";
 import { InventoryErrorState } from "@/components/inventory/InventoryErrorState";
 import { InventoryLoadingState } from "@/components/inventory/InventoryLoadingState";
@@ -11,6 +12,9 @@ import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 const Inventory = () => {
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
   const { inventoryItems, isLoading, error, refetch } = useInventoryData(selectedLocation);
+  
+  // Enable realtime updates for inventory
+  useInventoryRealtime(refetch);
 
   if (isLoading) return <InventoryLayout><InventoryLoadingState /></InventoryLayout>;
   if (error) return <InventoryLayout><InventoryErrorState /></InventoryLayout>;

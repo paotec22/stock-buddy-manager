@@ -1,5 +1,6 @@
 
 import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ValidationParams {
   itemId: string;
@@ -58,28 +59,16 @@ export const recordSale = async (
     sale_date: new Date().toISOString(),
   };
 
-  // Record the sale first
+  // Record the sale - inventory will be updated automatically by database trigger
   const { error: saleError } = await supabase
     .from('sales')
     .insert([sale]);
 
   if (saleError) {
     console.error('Error recording sale:', saleError);
-    throw new Error("Failed to record sale");
+    throw new Error(`Failed to record sale: ${saleError.message}`);
   }
 
-  // Update inventory quantity regardless of sale price
-  const { error: updateError } = await supabase
-    .from('inventory list')
-    .update({ 
-      Quantity: selectedItem.Quantity - quantity,
-      Total: (selectedItem.Quantity - quantity) * selectedItem.Price // Update total based on original price
-    })
-    .eq('id', selectedItem.id);
-
-  if (updateError) {
-    console.error('Error updating inventory:', updateError);
-    throw new Error("Failed to update inventory");
-  }
+  console.log('Sale recorded successfully - inventory updated automatically by trigger');
 };
 
