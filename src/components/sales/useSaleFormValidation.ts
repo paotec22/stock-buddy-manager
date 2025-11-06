@@ -62,7 +62,11 @@ export const recordSale = async (
   // Record the sale - inventory will be updated automatically by database trigger
   const { error: saleError } = await supabase
     .from('sales')
-    .insert([sale]);
+    .insert([{
+      ...sale,
+      // ensure item_id is stored as an integer (not a string)
+      item_id: parseInt(sale.item_id as unknown as string, 10)
+    }]);
 
   if (saleError) {
     console.error('Error recording sale:', saleError);

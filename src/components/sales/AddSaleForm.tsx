@@ -91,8 +91,9 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         selectedItem
       );
 
-      // Invalidate inventory queries to trigger refresh
-      await queryClient.invalidateQueries({ queryKey: ['inventory'] });
+  // Invalidate inventory queries for the selected location to trigger refresh
+  // This matches the queryKey used when fetching inventory: ['inventory', selectedLocation]
+  await queryClient.invalidateQueries({ queryKey: ['inventory', selectedLocation] });
       
       toast.success("Sale recorded successfully");
       form.reset();
