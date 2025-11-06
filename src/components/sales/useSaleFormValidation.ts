@@ -1,5 +1,6 @@
 
 import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ValidationParams {
   itemId: string;
