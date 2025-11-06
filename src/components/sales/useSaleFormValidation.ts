@@ -66,8 +66,10 @@ export const recordSale = async (
 
   if (saleError) {
     console.error('Error recording sale:', saleError);
-    throw new Error("Failed to record sale");
+    throw new Error(`Failed to record sale: ${saleError.message}`);
   }
+
+  console.log('Sale recorded successfully, now updating inventory...');
 
   // Update inventory quantity regardless of sale price
   const { error: updateError } = await supabase
@@ -80,7 +82,9 @@ export const recordSale = async (
 
   if (updateError) {
     console.error('Error updating inventory:', updateError);
-    throw new Error("Failed to update inventory");
+    throw new Error(`Failed to update inventory: ${updateError.message}. You may not have permission to update inventory.`);
   }
+
+  console.log('Inventory updated successfully');
 };
 
