@@ -86,7 +86,7 @@ export type Database = {
           expense_date: string
           id: number
           location: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           amount: number
@@ -96,7 +96,7 @@ export type Database = {
           expense_date?: string
           id?: never
           location: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           amount?: number
@@ -106,7 +106,7 @@ export type Database = {
           expense_date?: string
           id?: never
           location?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -117,7 +117,7 @@ export type Database = {
           description: string
           id: number
           installation_date: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           amount: number
@@ -125,7 +125,7 @@ export type Database = {
           description: string
           id?: number
           installation_date?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           amount?: number
@@ -133,7 +133,7 @@ export type Database = {
           description?: string
           id?: number
           installation_date?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -227,7 +227,7 @@ export type Database = {
           tax_amount: number
           tax_rate: number | null
           total_amount: number
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -243,7 +243,7 @@ export type Database = {
           tax_amount?: number
           tax_rate?: number | null
           total_amount?: number
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -259,7 +259,7 @@ export type Database = {
           tax_amount?: number
           tax_rate?: number | null
           total_amount?: number
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -329,7 +329,7 @@ export type Database = {
           sale_date: string
           sale_price: number
           total_amount: number
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           actual_purchase_price?: number | null
@@ -339,7 +339,7 @@ export type Database = {
           sale_date?: string
           sale_price: number
           total_amount: number
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           actual_purchase_price?: number | null
@@ -349,7 +349,7 @@ export type Database = {
           sale_date?: string
           sale_price?: number
           total_amount?: number
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -361,6 +361,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -370,9 +391,13 @@ export type Database = {
         Args: { item_ids: number[] }
         Returns: undefined
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      get_current_user_role: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       upsert_inventory_item: {
         Args: {
@@ -385,7 +410,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "uploader" | "user" | "inventory_manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -512,6 +537,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "uploader", "user", "inventory_manager"],
+    },
   },
 } as const
