@@ -7,9 +7,8 @@ import { AddInventoryForm } from "@/components/inventory/AddInventoryForm";
 import { BulkUploadModal } from "@/components/inventory/BulkUploadModal";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryGrandTotal } from "./InventoryGrandTotal";
-
-
 import { useInventoryOperations } from "@/hooks/useInventoryOperations";
+import { getStockStatus, StockStatus } from "@/components/ui/status-badge";
 
 interface InventoryContentContainerProps {
   inventoryItems: InventoryItem[];
@@ -27,16 +26,27 @@ export function InventoryContentContainer({
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const [statusFilter, setStatusFilter] = useState<StockStatus | null>(null);
   
   const { handlePriceEdit, handleQuantityEdit, handleDelete } = useInventoryOperations(refetch);
 
-  // Filter items based on search term
-  const filteredItems = searchTerm.trim() 
-    ? inventoryItems.filter(item => 
-        item["Item Description"]?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : inventoryItems;
+  const handleStatusFilter = (status: StockStatus) => {
+    // Toggle filter: if same status is clicked, clear the filter
+    setStatusFilter(statusFilter === status ? null : status);
+  };
+
+  // Filter items based on search term and status
+  const filteredItems = inventoryItems.filter(item => {
+    const matchesSearch = searchTerm.trim() 
+      ? item["Item Description"]?.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+    
+    const matchesStatus = statusFilter 
+      ? getStockStatus(item.Quantity || 0) === statusFilter
+      : true;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-6 fade-in">
@@ -67,8 +77,10 @@ export function InventoryContentContainer({
 
       <div className="grid gap-6">
         <InventoryGrandTotal 
-          items={filteredItems}
+          items={inventoryItems}
           selectedLocation={selectedLocation}
+          onStatusClick={handleStatusFilter}
+          selectedStatus={statusFilter}
         />
 
         {filteredItems.length > 0 ? (

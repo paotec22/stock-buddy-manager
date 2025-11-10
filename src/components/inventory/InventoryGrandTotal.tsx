@@ -1,15 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
-import { StatusBadge, getStockStatus } from "@/components/ui/status-badge";
+import { StatusBadge, getStockStatus, StockStatus } from "@/components/ui/status-badge";
 import { Package, TrendingUp, AlertTriangle } from "lucide-react";
 
 interface InventoryGrandTotalProps {
   items: InventoryItem[];
   selectedLocation: string;
+  onStatusClick?: (status: StockStatus) => void;
+  selectedStatus?: StockStatus | null;
 }
 
-export function InventoryGrandTotal({ items, selectedLocation }: InventoryGrandTotalProps) {
+export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, selectedStatus }: InventoryGrandTotalProps) {
   const calculateGrandTotal = () => {
     return items.reduce((sum, item) => {
       const itemTotal = item.Price * item.Quantity;
@@ -71,18 +73,33 @@ export function InventoryGrandTotal({ items, selectedLocation }: InventoryGrandT
             </div>
             
             <div className="grid grid-cols-3 gap-3">
-              <div className="text-center space-y-1">
+              <button
+                onClick={() => onStatusClick?.("in-stock")}
+                className={`text-center space-y-1 p-2 rounded-lg transition-all cursor-pointer hover:bg-accent ${
+                  selectedStatus === "in-stock" ? "bg-accent ring-2 ring-primary" : ""
+                }`}
+              >
                 <StatusBadge status="in-stock" size="sm" showIcon={false} />
                 <p className="text-2xl font-bold text-success">{statusCounts.inStock}</p>
-              </div>
-              <div className="text-center space-y-1">
+              </button>
+              <button
+                onClick={() => onStatusClick?.("low-stock")}
+                className={`text-center space-y-1 p-2 rounded-lg transition-all cursor-pointer hover:bg-accent ${
+                  selectedStatus === "low-stock" ? "bg-accent ring-2 ring-primary" : ""
+                }`}
+              >
                 <StatusBadge status="low-stock" size="sm" showIcon={false} />
                 <p className="text-2xl font-bold text-warning">{statusCounts.lowStock}</p>
-              </div>
-              <div className="text-center space-y-1">
+              </button>
+              <button
+                onClick={() => onStatusClick?.("out-of-stock")}
+                className={`text-center space-y-1 p-2 rounded-lg transition-all cursor-pointer hover:bg-accent ${
+                  selectedStatus === "out-of-stock" ? "bg-accent ring-2 ring-primary" : ""
+                }`}
+              >
                 <StatusBadge status="out-of-stock" size="sm" showIcon={false} />
                 <p className="text-2xl font-bold text-destructive">{statusCounts.outOfStock}</p>
-              </div>
+              </button>
             </div>
 
             {statusCounts.lowStock > 0 && (
