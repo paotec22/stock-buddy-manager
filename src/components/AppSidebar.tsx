@@ -200,6 +200,7 @@ function SidebarContents() {
 export function AppSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { session } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   if (!session) {
     return null;
@@ -212,6 +213,21 @@ export function AppSidebar() {
         <SidebarContents />
       </Sidebar>
 
+      {/* Desktop Theme Toggle - Top Right */}
+      <div className="hidden md:block fixed top-4 right-4 z-40">
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="flex items-center justify-center h-10 w-10 rounded-lg bg-background shadow-md border hover:bg-muted transition-colors"
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )}
+        </button>
+      </div>
+
       {/* Mobile Sidebar */}
       <div className="block md:hidden">
         <Button 
@@ -223,6 +239,19 @@ export function AppSidebar() {
         >
           <Menu className="h-6 w-6" />
         </Button>
+        
+        {/* Mobile Theme Toggle - Top Right */}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="fixed top-4 right-4 z-40 flex items-center justify-center h-10 w-10 rounded-lg bg-background shadow-md border hover:bg-muted transition-colors"
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )}
+        </button>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetContent side="left" className="p-0 w-[260px]">
             <Sidebar>

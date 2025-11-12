@@ -43,6 +43,7 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
     --success-light: 142 76% 55%;
     --warning: 38 92% 50%;
     --warning-light: 38 92% 60%;
@@ -114,6 +115,7 @@
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
     --success: 142 76% 50%;
+    --success-foreground: 0 0% 100%;
     --success-light: 142 76% 60%;
     --warning: 38 92% 55%;
     --warning-light: 38 92% 65%;

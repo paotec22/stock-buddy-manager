@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Suspense, lazy } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PageLoader } from "@/components/PageLoader";
+import { ConnectionBanner } from "@/components/ConnectionBanner";
 
 // Import the Index page normally to avoid issues with the first page load
 import Index from "./pages/Index";
@@ -100,6 +101,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ConnectionBanner />
           <BrowserRouter>
             <AuthProvider>
               <div className="min-h-screen pb-20 md:pb-0">
