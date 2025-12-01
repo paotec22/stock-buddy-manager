@@ -5,10 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PageLoader } from "@/components/PageLoader";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
+import { initializeDB } from "@/lib/indexedDB";
 
 // Import the Index page normally to avoid issues with the first page load
 import Index from "./pages/Index";
@@ -95,6 +96,11 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  // Initialize IndexedDB on app startup
+  useEffect(() => {
+    initializeDB().catch(console.error);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="app-theme">
