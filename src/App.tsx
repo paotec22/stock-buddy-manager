@@ -5,26 +5,24 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { PageLoader } from "@/components/PageLoader";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { initializeDB } from "@/lib/indexedDB";
 
-// Import the Index page normally to avoid issues with the first page load
+// Import all pages directly to ensure they're bundled (needed for offline support)
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import Inventory from "./pages/Inventory";
+import Sales from "./pages/Sales";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import Expenses from "./pages/Expenses";
+import CreateInvoice from "./pages/CreateInvoice";
+import ProfitAnalysis from "./pages/ProfitAnalysis";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Chatbot from "@/components/chat/Chatbot";
-
-// Lazy load other pages for better initial load time
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Inventory = lazy(() => import("./pages/Inventory"));
-const Sales = lazy(() => import("./pages/Sales"));
-const Reports = lazy(() => import("./pages/Reports"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Expenses = lazy(() => import("./pages/Expenses"));
-const CreateInvoice = lazy(() => import("./pages/CreateInvoice"));
-const ProfitAnalysis = lazy(() => import("./pages/ProfitAnalysis"));
 
 // Animated Routes Component
 function AnimatedRoutes() {
@@ -33,50 +31,15 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Load the Index page without Suspense */}
         <Route path="/" element={<Index />} />
-        
-        {/* Wrap each lazy-loaded route with its own Suspense */}
-        <Route path="/dashboard" element={
-          <Suspense fallback={<PageLoader />}>
-            <Dashboard />
-          </Suspense>
-        } />
-        <Route path="/inventory" element={
-          <Suspense fallback={<PageLoader />}>
-            <Inventory />
-          </Suspense>
-        } />
-        <Route path="/sales" element={
-          <Suspense fallback={<PageLoader />}>
-            <Sales />
-          </Suspense>
-        } />
-        <Route path="/reports" element={
-          <Suspense fallback={<PageLoader />}>
-            <Reports />
-          </Suspense>
-        } />
-        <Route path="/settings" element={
-          <Suspense fallback={<PageLoader />}>
-            <Settings />
-          </Suspense>
-        } />
-        <Route path="/expenses" element={
-          <Suspense fallback={<PageLoader />}>
-            <Expenses />
-          </Suspense>
-        } />
-        <Route path="/create-invoice" element={
-          <Suspense fallback={<PageLoader />}>
-            <CreateInvoice />
-          </Suspense>
-        } />
-        <Route path="/profit-analysis" element={
-          <Suspense fallback={<PageLoader />}>
-            <ProfitAnalysis />
-          </Suspense>
-        } />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/sales" element={<Sales />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/expenses" element={<Expenses />} />
+        <Route path="/create-invoice" element={<CreateInvoice />} />
+        <Route path="/profit-analysis" element={<ProfitAnalysis />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
