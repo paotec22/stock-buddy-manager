@@ -1,8 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, WifiOff } from "lucide-react";
 import { SearchInput } from "@/components/ui/search-input";
+import { Badge } from "@/components/ui/badge";
 
 interface InventoryHeaderProps {
   selectedLocation: string;
@@ -11,6 +11,7 @@ interface InventoryHeaderProps {
   onBulkUpload: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  isOffline?: boolean;
 }
 
 const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
@@ -22,11 +23,18 @@ export function InventoryHeader({
   onBulkUpload,
   searchTerm,
   onSearchChange,
+  isOffline = false,
 }: InventoryHeaderProps) {
   return (
     <div className="bg-card shadow-sm border rounded-xl p-5 sm:p-6 glass-effect slide-up">
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          {isOffline && (
+            <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+              <WifiOff className="h-3 w-3" />
+              Offline Mode
+            </Badge>
+          )}
           <Select value={selectedLocation} onValueChange={onLocationChange}>
             <SelectTrigger className="w-[200px] bg-white/60 dark:bg-black/20 border-gray-200 dark:border-gray-700 rounded-lg">
               <SelectValue placeholder="Select location" />

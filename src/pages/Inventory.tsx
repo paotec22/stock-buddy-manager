@@ -11,7 +11,7 @@ import { useInventoryRealtime } from "@/hooks/useInventoryRealtime";
 // Fixed import issue - using InventoryContentContainer instead of deleted InventoryContent
 const Inventory = () => {
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
-  const { inventoryItems, isLoading, error, refetch } = useInventoryData(selectedLocation);
+  const { inventoryItems, isLoading, error, refetch, isOffline } = useInventoryData(selectedLocation);
   
   // Enable real-time updates for inventory
   useInventoryRealtime(refetch);
@@ -27,6 +27,7 @@ const Inventory = () => {
           selectedLocation={selectedLocation}
           setSelectedLocation={setSelectedLocation}
           refetch={refetch}
+          isOffline={isOffline}
         />
       </InventoryLayout>
     </RoleProtectedRoute>

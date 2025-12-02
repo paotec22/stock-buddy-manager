@@ -15,13 +15,15 @@ interface InventoryContentContainerProps {
   selectedLocation: string;
   setSelectedLocation: (location: string) => void;
   refetch: () => void;
+  isOffline?: boolean;
 }
 
 export function InventoryContentContainer({
   inventoryItems,
   selectedLocation,
   setSelectedLocation,
-  refetch
+  refetch,
+  isOffline = false,
 }: InventoryContentContainerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -57,6 +59,7 @@ export function InventoryContentContainer({
         onBulkUpload={() => setShowBulkUpload(true)}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        isOffline={isOffline}
       />
 
       
