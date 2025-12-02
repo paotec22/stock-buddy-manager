@@ -51,7 +51,7 @@ export async function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.INVENTORY)) {
         const inventoryStore = db.createObjectStore(STORES.INVENTORY, { keyPath: 'id' });
         inventoryStore.createIndex('location', 'location', { unique: false });
-        inventoryStore.createIndex('itemDescription', 'Item Description', { unique: false });
+        // Note: 'Item Description' has a space which is invalid for IndexedDB keyPath
       }
 
       // Sales store
