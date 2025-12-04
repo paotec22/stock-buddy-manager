@@ -7,7 +7,7 @@ import { AddInventoryForm } from "@/components/inventory/AddInventoryForm";
 import { BulkUploadModal } from "@/components/inventory/BulkUploadModal";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryGrandTotal } from "./InventoryGrandTotal";
-import { useInventoryOperations } from "@/hooks/useInventoryOperations";
+import { useOfflineInventoryOperations } from "@/hooks/useOfflineInventoryOperations";
 import { getStockStatus, StockStatus } from "@/components/ui/status-badge";
 
 interface InventoryContentContainerProps {
@@ -30,7 +30,7 @@ export function InventoryContentContainer({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StockStatus | null>(null);
   
-  const { handlePriceEdit, handleQuantityEdit, handleDelete } = useInventoryOperations(refetch);
+  const { handlePriceEdit, handleQuantityEdit, handleDelete, pendingCount } = useOfflineInventoryOperations(refetch);
 
   const handleStatusFilter = (status: StockStatus) => {
     // Toggle filter: if same status is clicked, clear the filter
@@ -60,6 +60,7 @@ export function InventoryContentContainer({
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         isOffline={isOffline}
+        pendingCount={pendingCount}
       />
 
       

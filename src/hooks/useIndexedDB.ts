@@ -7,8 +7,12 @@ import {
   putMany,
   deleteByKey,
   clearStore,
+  addToSyncQueue,
+  getSyncQueue,
+  removeSyncOperation,
   STORES,
-  type StoreName
+  type StoreName,
+  type SyncOperation
 } from '@/lib/indexedDB';
 
 export function useIndexedDB() {
@@ -70,6 +74,29 @@ export function useIndexedDB() {
     await put(STORES.EXPENSES, expense);
   }, []);
 
+  // Sync queue operations
+  const queueOperation = useCallback(async (
+    store: StoreName,
+    operation: 'create' | 'update' | 'delete',
+    data: Record<string, unknown>
+  ) => {
+    await addToSyncQueue({
+      store,
+      operation,
+      data,
+      timestamp: Date.now(),
+      retryCount: 0
+    });
+  }, []);
+
+  const getPendingOperations = useCallback(async (): Promise<SyncOperation[]> => {
+    return getSyncQueue();
+  }, []);
+
+  const removeOperation = useCallback(async (id: number) => {
+    await removeSyncOperation(id);
+  }, []);
+
   // Clear all cached data
   const clearAllData = useCallback(async () => {
     await Promise.all([
@@ -95,6 +122,10 @@ export function useIndexedDB() {
     getExpenses,
     saveExpenses,
     saveExpense,
+    // Sync queue
+    queueOperation,
+    getPendingOperations,
+    removeOperation,
     // Utility
     clearAllData,
   };

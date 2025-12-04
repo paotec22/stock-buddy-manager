@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, WifiOff } from "lucide-react";
+import { Plus, Upload, WifiOff, CloudOff } from "lucide-react";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 
@@ -12,6 +12,7 @@ interface InventoryHeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   isOffline?: boolean;
+  pendingCount?: number;
 }
 
 const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
@@ -24,6 +25,7 @@ export function InventoryHeader({
   searchTerm,
   onSearchChange,
   isOffline = false,
+  pendingCount = 0,
 }: InventoryHeaderProps) {
   return (
     <div className="bg-card shadow-sm border rounded-xl p-5 sm:p-6 glass-effect slide-up">
@@ -33,6 +35,12 @@ export function InventoryHeader({
             <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
               <WifiOff className="h-3 w-3" />
               Offline Mode
+            </Badge>
+          )}
+          {pendingCount > 0 && (
+            <Badge variant="outline" className="gap-1 bg-amber-500/10 text-amber-600 border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-400">
+              <CloudOff className="h-3 w-3" />
+              {pendingCount} pending
             </Badge>
           )}
           <Select value={selectedLocation} onValueChange={onLocationChange}>
