@@ -1,9 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 export function TotalSalesSummary() {
   const currentYear = new Date().getFullYear();
+  const [showValue, setShowValue] = useState(true);
 
   const { data: totalSales, isLoading, error } = useQuery({
     queryKey: ['totalSales', currentYear],
@@ -63,10 +66,23 @@ export function TotalSalesSummary() {
 
   return (
     <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-4">Current Year Sales Summary</h2>
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-lg font-semibold">Current Year Sales Summary</h2>
+        <button
+          onClick={() => setShowValue(!showValue)}
+          className="p-1 rounded-md hover:bg-accent transition-colors"
+          aria-label={showValue ? "Hide value" : "Show value"}
+        >
+          {showValue ? (
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <EyeOff className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+      </div>
       <div className="space-y-4">
         <div className="text-2xl font-bold">
-          Total Sales for {totalSales?.year}: {formatCurrency(totalSales?.totalAmount || 0)}
+          Total Sales for {totalSales?.year}: {showValue ? formatCurrency(totalSales?.totalAmount || 0) : "••••••••"}
         </div>
       </div>
     </Card>
