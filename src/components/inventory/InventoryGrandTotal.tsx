@@ -2,7 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
 import { StatusBadge, getStockStatus, StockStatus } from "@/components/ui/status-badge";
-import { Package, TrendingUp, AlertTriangle } from "lucide-react";
+import { Package, TrendingUp, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 interface InventoryGrandTotalProps {
   items: InventoryItem[];
@@ -12,6 +13,7 @@ interface InventoryGrandTotalProps {
 }
 
 export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, selectedStatus }: InventoryGrandTotalProps) {
+  const [showValue, setShowValue] = useState(true);
   const calculateGrandTotal = () => {
     return items.reduce((sum, item) => {
       const itemTotal = item.Price * item.Quantity;
@@ -48,9 +50,22 @@ export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, se
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground font-medium">Total Inventory Value</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground font-medium">Total Inventory Value</p>
+                <button
+                  onClick={() => setShowValue(!showValue)}
+                  className="p-1 rounded-md hover:bg-primary/10 transition-colors"
+                  aria-label={showValue ? "Hide value" : "Show value"}
+                >
+                  {showValue ? (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+              </div>
               <p className="text-3xl font-bold text-primary">
-                {formatCurrency(calculateGrandTotal())}
+                {showValue ? formatCurrency(calculateGrandTotal()) : "••••••••"}
               </p>
               <p className="text-xs text-muted-foreground">
                 {selectedLocation} • {totalItems} items
