@@ -23,7 +23,7 @@ export interface PendingOperation {
 export function useSyncQueue() {
   const [pendingOperations, setPendingOperations] = useState<PendingOperation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const isOnline = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
 
   // Load pending operations on mount
   const loadPendingOperations = useCallback(async () => {

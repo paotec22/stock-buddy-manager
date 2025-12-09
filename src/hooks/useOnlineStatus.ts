@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [wasOffline, setWasOffline] = useState(false);
 
+  const resetWasOffline = useCallback(() => {
+    setWasOffline(false);
+  }, []);
+
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      if (wasOffline) {
-        // User just came back online
-        console.log('Connection restored');
-      }
+      console.log('Connection restored');
     };
 
     const handleOffline = () => {
@@ -26,7 +27,7 @@ export function useOnlineStatus() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [wasOffline]);
+  }, []);
 
-  return { isOnline, wasOffline };
+  return { isOnline, wasOffline, resetWasOffline };
 }
