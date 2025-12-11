@@ -14,6 +14,7 @@ export function SalesTableHeader({ showActions = false }: SalesTableHeaderProps)
         <TableHead>Quantity</TableHead>
         <TableHead>Price</TableHead>
         <TableHead>Total</TableHead>
+        <TableHead>Notes</TableHead>
         {showActions && <TableHead className="w-16">Actions</TableHead>}
       </TableRow>
     </TableHeader>

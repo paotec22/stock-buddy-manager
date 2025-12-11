@@ -45,9 +45,10 @@ export const recordSale = async (
   itemId: string,
   quantity: number,
   salePrice: number,
-  selectedItem: any
+  selectedItem: any,
+  notes?: string
 ) => {
-  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem });
+  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem, notes });
   
   const sale = {
     item_id: itemId,
@@ -56,6 +57,7 @@ export const recordSale = async (
     total_amount: quantity * salePrice,
     user_id: userId,
     sale_date: new Date().toISOString(),
+    notes: notes || null,
   };
 
   // Record the sale - inventory will be updated automatically by database trigger

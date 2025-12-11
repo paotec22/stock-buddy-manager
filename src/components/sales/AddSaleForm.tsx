@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 import { useAuth } from "@/components/AuthProvider";
@@ -32,6 +33,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       quantity: "",
       salePrice: "",
       location: "Ikeja",
+      notes: "",
     },
   });
 
@@ -88,7 +90,8 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         data.itemId,
         parsedQuantity,
         parseFloat(data.salePrice),
-        selectedItem
+        selectedItem,
+        data.notes
       );
 
       // Invalidate inventory queries to refresh the data
@@ -166,6 +169,23 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Add any comments about this sale..."
+                      className="resize-none"
+                      {...field} 
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting}>
