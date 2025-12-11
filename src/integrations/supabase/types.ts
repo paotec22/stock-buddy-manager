@@ -325,6 +325,7 @@ export type Database = {
           actual_purchase_price: number | null
           id: number
           item_id: number | null
+          notes: string | null
           quantity: number
           sale_date: string
           sale_price: number
@@ -335,6 +336,7 @@ export type Database = {
           actual_purchase_price?: number | null
           id?: number
           item_id?: number | null
+          notes?: string | null
           quantity: number
           sale_date?: string
           sale_price: number
@@ -345,6 +347,7 @@ export type Database = {
           actual_purchase_price?: number | null
           id?: number
           item_id?: number | null
+          notes?: string | null
           quantity?: number
           sale_date?: string
           sale_price?: number

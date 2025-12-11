@@ -15,6 +15,7 @@ interface Sale {
   total_amount: number;
   sale_date: string;
   location: string;
+  notes?: string | null;
 }
 
 interface SalesTableProps {

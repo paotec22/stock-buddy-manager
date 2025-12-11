@@ -24,6 +24,7 @@ interface Sale {
   total_amount: number;
   sale_date: string;
   location: string;
+  notes?: string | null;
 }
 
 interface SalesTableRowProps {
@@ -74,6 +75,9 @@ export function SalesTableRow({
       </TableCell>
       <TableCell>
         <span className="currency-display">{formatCurrency(sale.total_amount)}</span>
+      </TableCell>
+      <TableCell className="max-w-[200px] truncate" title={sale.notes || ''}>
+        {sale.notes || '-'}
       </TableCell>
       {isAdmin && (
         <TableCell className="w-16">

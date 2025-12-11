@@ -3,6 +3,7 @@ export interface FormData {
   quantity: string;
   salePrice: string;
   location: string;
+  notes: string;
 }
 
 export interface InventoryItem {

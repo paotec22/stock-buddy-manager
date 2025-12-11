@@ -30,6 +30,7 @@ interface Sale {
   sale_date: string;
   item_name: string;
   location: string;
+  notes?: string | null;
 }
 
 const SalesHeader = ({ 
@@ -117,6 +118,7 @@ const Sales = () => {
           total_amount,
           sale_date,
           item_id,
+          notes,
           "inventory list" (
             "Item Description",
             location
@@ -138,7 +140,8 @@ const Sales = () => {
         total_amount: sale.total_amount,
         sale_date: sale.sale_date,
         item_name: sale["inventory list"]?.["Item Description"] || "Unknown Item",
-        location: sale["inventory list"]?.location || "Unknown Location"
+        location: sale["inventory list"]?.location || "Unknown Location",
+        notes: sale.notes
       })) as Sale[];
     },
     enabled: !!session
