@@ -193,7 +193,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                         <input
                           type="text"
                           defaultValue={item["Item Description"]}
-                          className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          className="w-full px-2 py-1 text-sm border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                           onBlur={(e) => {
                             const newDescription = e.target.value.trim();
                             if (newDescription && newDescription !== item["Item Description"]) {
@@ -236,7 +236,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                         min="0"
                         step="1"
                         defaultValue={item.Quantity?.toString() || "0"}
-                        className="w-20 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="w-20 px-2 py-1 text-sm border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                         onBlur={(e) => {
                           const newQuantity = parseInt(e.target.value) || 0;
                           if (newQuantity !== item.Quantity) {
@@ -270,7 +270,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                         min="0"
                         step="0.01"
                         defaultValue={item.Price?.toString() || "0"}
-                        className="w-24 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="w-24 px-2 py-1 text-sm border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                         onBlur={(e) => {
                           const newPrice = parseFloat(e.target.value) || 0;
                           if (newPrice !== item.Price) {
