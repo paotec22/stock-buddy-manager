@@ -30,7 +30,7 @@ export function InventoryContentContainer({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StockStatus | null>(null);
   
-  const { handlePriceEdit, handleQuantityEdit, handleDelete, pendingCount } = useOfflineInventoryOperations(refetch);
+  const { handlePriceEdit, handleQuantityEdit, handleDescriptionEdit, handleDelete, pendingCount } = useOfflineInventoryOperations(refetch);
 
   const handleStatusFilter = (status: StockStatus) => {
     // Toggle filter: if same status is clicked, clear the filter
@@ -94,6 +94,7 @@ export function InventoryContentContainer({
                 items={filteredItems}
                 onPriceEdit={handlePriceEdit}
                 onQuantityEdit={handleQuantityEdit}
+                onDescriptionEdit={handleDescriptionEdit}
                 onDelete={handleDelete}
               />
             </CardContent>

@@ -74,6 +74,34 @@ export function useInventoryOperations(refetch: () => void) {
     }
   };
 
+  const handleDescriptionEdit = async (item: InventoryItem, newDescription: string) => {
+    try {
+      if (!newDescription.trim()) {
+        throw new Error("Description cannot be empty");
+      }
+      
+      console.log('Updating description for item:', item.id);
+      
+      const { error } = await supabase
+        .from('inventory list')
+        .update({ "Item Description": newDescription.trim() })
+        .eq('id', item.id)
+        .eq('location', item.location);
+
+      if (error) throw error;
+      
+      toast.success("Description updated successfully");
+      refetch();
+    } catch (error) {
+      console.error('Error updating description:', error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to update description");
+      }
+    }
+  };
+
   const handleDelete = async (item: InventoryItem) => {
     try {
       console.log('Deleting item:', item.id);
@@ -96,6 +124,7 @@ export function useInventoryOperations(refetch: () => void) {
   return {
     handlePriceEdit,
     handleQuantityEdit,
+    handleDescriptionEdit,
     handleDelete
   };
 }
