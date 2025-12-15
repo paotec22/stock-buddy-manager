@@ -71,6 +71,35 @@ export function useOfflineInventoryOperations(refetch: () => void) {
     }
   };
 
+  const handleDescriptionEdit = async (item: InventoryItem, newDescription: string) => {
+    try {
+      if (!newDescription.trim()) {
+        throw new Error("Description cannot be empty");
+      }
+
+      const updatedItem = { ...item, "Item Description": newDescription.trim() };
+
+      if (isOnline) {
+        const { error } = await supabase
+          .from('inventory list')
+          .update({ "Item Description": newDescription.trim() })
+          .eq('id', item.id)
+          .eq('location', item.location);
+
+        if (error) throw error;
+        toast.success("Description updated successfully");
+      } else {
+        await queueOperation(STORES.INVENTORY, 'update', updatedItem);
+        toast.success("Description updated (will sync when online)");
+      }
+
+      refetch();
+    } catch (error) {
+      console.error('Error updating description:', error);
+      toast.error(error instanceof Error ? error.message : "Failed to update description");
+    }
+  };
+
   const handleDelete = async (item: InventoryItem) => {
     try {
       if (isOnline) {
@@ -97,6 +126,7 @@ export function useOfflineInventoryOperations(refetch: () => void) {
   return {
     handlePriceEdit,
     handleQuantityEdit,
+    handleDescriptionEdit,
     handleDelete,
     pendingCount: getPendingCount(STORES.INVENTORY),
     isOnline

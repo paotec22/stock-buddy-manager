@@ -13,13 +13,15 @@ export interface InventoryTableProps {
   items: InventoryItem[];
   onPriceEdit: (item: InventoryItem, newPrice: number) => Promise<void>;
   onQuantityEdit: (item: InventoryItem, newQuantity: number) => Promise<void>;
+  onDescriptionEdit: (item: InventoryItem, newDescription: string) => Promise<void>;
   onDelete: (item: InventoryItem) => Promise<void>;
 }
 
-export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }: InventoryTableProps) {
+export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescriptionEdit, onDelete }: InventoryTableProps) {
   const isMobile = useIsMobile();
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: boolean }>({});
   const [editingQuantity, setEditingQuantity] = useState<{ [key: string]: boolean }>({});
+  const [editingDescription, setEditingDescription] = useState<{ [key: string]: boolean }>({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -177,7 +179,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                   }`}
                   aria-pressed={isSelected}
                 >
-                  <TableCell className="relative">
+                  <TableCell className="relative" onClick={(e) => e.stopPropagation()}>
                     {isSelected && (
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -187,7 +189,35 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDelete }:
                     )}
 
                     <div className={`flex items-center gap-3 ${isSelected ? "pl-6" : ""}`}>
-                      <div className="font-medium">{item["Item Description"]}</div>
+                      {editingDescription[item.id] ? (
+                        <input
+                          type="text"
+                          defaultValue={item["Item Description"]}
+                          className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          onBlur={(e) => {
+                            const newDescription = e.target.value.trim();
+                            if (newDescription && newDescription !== item["Item Description"]) {
+                              onDescriptionEdit(item, newDescription);
+                            }
+                            setEditingDescription(prev => ({ ...prev, [item.id]: false }));
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            } else if (e.key === 'Escape') {
+                              setEditingDescription(prev => ({ ...prev, [item.id]: false }));
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <button
+                          onClick={() => setEditingDescription(prev => ({ ...prev, [item.id]: true }))}
+                          className="text-left font-medium hover:bg-muted/50 px-2 py-1 rounded transition-colors w-full"
+                        >
+                          {item["Item Description"]}
+                        </button>
+                      )}
                     </div>
                   </TableCell>
 
