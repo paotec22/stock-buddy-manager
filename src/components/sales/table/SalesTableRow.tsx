@@ -1,6 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { SalesDateCell } from "./SalesDateCell";
 import { SalesPriceCell } from "./SalesPriceCell";
 import {
@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Sale {
   id: string;
@@ -46,15 +47,19 @@ export function SalesTableRow({
   onPriceUpdate,
   onDelete
 }: SalesTableRowProps) {
-  const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   const handleConfirmDelete = () => {
     onDelete(sale.id);
-    setOpen(false);
+    setDeleteOpen(false);
   };
 
+  const hasLongNotes = sale.notes && sale.notes.length > 30;
+  const truncatedNotes = hasLongNotes ? `${sale.notes!.substring(0, 30)}...` : sale.notes;
+
   return (
-    <TableRow key={sale.id}>
+    <TableRow className="group hover:bg-muted/50 transition-colors">
       <TableCell>
         <SalesDateCell
           date={sale.sale_date}
@@ -62,7 +67,7 @@ export function SalesTableRow({
           onDateUpdate={(date) => onDateUpdate(sale.id, date)}
         />
       </TableCell>
-      <TableCell>{sale.item_name}</TableCell>
+      <TableCell className="font-medium">{sale.item_name}</TableCell>
       <TableCell>{sale.location}</TableCell>
       <TableCell>{sale.quantity}</TableCell>
       <TableCell>
@@ -74,19 +79,41 @@ export function SalesTableRow({
         />
       </TableCell>
       <TableCell>
-        <span className="currency-display">{formatCurrency(sale.total_amount)}</span>
+        <span className="font-semibold text-primary">{formatCurrency(sale.total_amount)}</span>
       </TableCell>
-      <TableCell className="max-w-[200px] truncate" title={sale.notes || ''}>
-        {sale.notes || '-'}
+      <TableCell className="max-w-[200px]">
+        {sale.notes ? (
+          hasLongNotes ? (
+            <Popover open={notesOpen} onOpenChange={setNotesOpen}>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-1 text-left text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <span className="truncate">{truncatedNotes}</span>
+                  {notesOpen ? (
+                    <ChevronUp className="h-3 w-3 shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 shrink-0" />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-3" align="start">
+                <p className="text-sm">{sale.notes}</p>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <span className="text-muted-foreground">{sale.notes}</span>
+          )
+        ) : (
+          <span className="text-muted-foreground/50">-</span>
+        )}
       </TableCell>
       {isAdmin && (
         <TableCell className="w-16">
-          <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
