@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { InventoryItem } from "@/utils/inventoryUtils";
@@ -7,8 +7,9 @@ import { useIndexedDB } from "./useIndexedDB";
 import { useEffect } from "react";
 
 export function useInventoryData(selectedLocation: string) {
-  const { isOnline } = useOnlineStatus();
+  const { isOnline, wasOffline } = useOnlineStatus();
   const { isReady, getInventory, saveInventory } = useIndexedDB();
+  const queryClient = useQueryClient();
 
   const { data: inventoryItems = [], isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', selectedLocation, isOnline],
@@ -87,6 +88,19 @@ export function useInventoryData(selectedLocation: string) {
         .catch((err) => console.error('Failed to cache inventory:', err));
     }
   }, [isOnline, isReady, inventoryItems, saveInventory]);
+
+  // Refetch when coming back online (after sync completes)
+  useEffect(() => {
+    if (isOnline && wasOffline) {
+      // Small delay to ensure pull sync has completed
+      const timer = setTimeout(() => {
+        console.log('Back online - refreshing inventory data');
+        queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      }, 5000); // Wait for sync to complete
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isOnline, wasOffline, queryClient]);
 
   return {
     inventoryItems,

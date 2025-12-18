@@ -3,8 +3,9 @@ import { useOnlineStatus } from './useOnlineStatus';
 import { getSyncQueue, removeSyncOperation, SyncOperation, STORES } from '@/lib/indexedDB';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { usePullSync } from './usePullSync';
 
-export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
+export type SyncStatus = 'idle' | 'syncing' | 'pulling' | 'success' | 'error';
 
 export interface SyncProgress {
   total: number;
@@ -14,12 +15,13 @@ export interface SyncProgress {
 
 export function useBackgroundSync() {
   const { isOnline, wasOffline, resetWasOffline } = useOnlineStatus();
+  const { pullAllData } = usePullSync();
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [syncProgress, setSyncProgress] = useState<SyncProgress>({ total: 0, completed: 0, failed: 0 });
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(false);
 
-  // Process a single sync operation
+  // Process a single sync operation (push to server)
   const processOperation = async (operation: SyncOperation): Promise<boolean> => {
     try {
       const { store, operation: opType, data } = operation;
@@ -70,28 +72,16 @@ export function useBackgroundSync() {
     }
   };
 
-  // Process all pending operations
-  const syncPendingOperations = useCallback(async () => {
+  // Push pending local changes to server
+  const pushPendingOperations = useCallback(async (): Promise<{ completed: number; failed: number }> => {
     const queue = await getSyncQueue();
     
     if (queue.length === 0) {
-      console.log('No pending operations to sync');
-      setShowBanner(true);
-      setSyncStatus('success');
-      setSyncProgress({ total: 0, completed: 0, failed: 0 });
-      
-      // Hide banner after delay
-      setTimeout(() => {
-        setShowBanner(false);
-        setSyncStatus('idle');
-        resetWasOffline();
-      }, 3000);
-      return;
+      console.log('No pending operations to push');
+      return { completed: 0, failed: 0 };
     }
 
-    console.log(`Starting sync of ${queue.length} pending operations`);
-    setShowBanner(true);
-    setSyncStatus('syncing');
+    console.log(`Pushing ${queue.length} pending operations to server`);
     setSyncProgress({ total: queue.length, completed: 0, failed: 0 });
 
     let completed = 0;
@@ -110,17 +100,57 @@ export function useBackgroundSync() {
       setSyncProgress({ total: queue.length, completed, failed });
     }
 
-    setLastSyncTime(new Date());
+    return { completed, failed };
+  }, []);
 
-    if (failed === 0) {
-      setSyncStatus('success');
-      toast.success(`Synced ${completed} change${completed > 1 ? 's' : ''} successfully`);
-    } else if (completed > 0) {
+  // Full sync: push local changes, then pull server data
+  const syncAll = useCallback(async () => {
+    console.log('Starting full sync (push + pull)...');
+    setShowBanner(true);
+    setSyncStatus('syncing');
+
+    try {
+      // Step 1: Push any pending local changes first
+      const { completed: pushCompleted, failed: pushFailed } = await pushPendingOperations();
+      
+      if (pushCompleted > 0) {
+        console.log(`Pushed ${pushCompleted} local changes`);
+      }
+      if (pushFailed > 0) {
+        console.warn(`Failed to push ${pushFailed} local changes`);
+      }
+
+      // Step 2: Pull latest data from server
+      setSyncStatus('pulling');
+      const pullResult = await pullAllData(false); // Don't show individual toast
+
+      setLastSyncTime(new Date());
+
+      // Show combined result
+      if (pullResult.success && pushFailed === 0) {
+        setSyncStatus('success');
+        const totalPulled = pullResult.inventoryCount + pullResult.salesCount + pullResult.expensesCount;
+        
+        if (pushCompleted > 0 || totalPulled > 0) {
+          toast.success(
+            pushCompleted > 0 
+              ? `Synced: ${pushCompleted} changes pushed, ${totalPulled} records updated`
+              : `Synced ${totalPulled} records from server`
+          );
+        } else {
+          toast.success('Data is up to date');
+        }
+      } else if (pushFailed > 0) {
+        setSyncStatus('error');
+        toast.warning(`Sync completed with ${pushFailed} failed operations`);
+      } else {
+        setSyncStatus('error');
+        toast.error('Failed to sync data from server');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
       setSyncStatus('error');
-      toast.warning(`Synced ${completed} changes, ${failed} failed`);
-    } else {
-      setSyncStatus('error');
-      toast.error(`Failed to sync ${failed} changes`);
+      toast.error('Sync failed');
     }
 
     // Hide banner after delay
@@ -129,15 +159,15 @@ export function useBackgroundSync() {
       setSyncStatus('idle');
       resetWasOffline();
     }, 4000);
-  }, [resetWasOffline]);
+  }, [pushPendingOperations, pullAllData, resetWasOffline]);
 
   // Trigger sync when coming back online
   useEffect(() => {
     if (isOnline && wasOffline) {
-      console.log('Back online - triggering background sync');
-      syncPendingOperations();
+      console.log('Back online - triggering full sync');
+      syncAll();
     }
-  }, [isOnline, wasOffline, syncPendingOperations]);
+  }, [isOnline, wasOffline, syncAll]);
 
   // Manual sync trigger
   const triggerSync = useCallback(async () => {
@@ -145,8 +175,29 @@ export function useBackgroundSync() {
       toast.error('Cannot sync while offline');
       return;
     }
-    await syncPendingOperations();
-  }, [isOnline, syncPendingOperations]);
+    await syncAll();
+  }, [isOnline, syncAll]);
+
+  // Pull only (no push)
+  const triggerPullOnly = useCallback(async () => {
+    if (!isOnline) {
+      toast.error('Cannot sync while offline');
+      return;
+    }
+    
+    setShowBanner(true);
+    setSyncStatus('pulling');
+    
+    const result = await pullAllData();
+    
+    setLastSyncTime(new Date());
+    setSyncStatus(result.success ? 'success' : 'error');
+    
+    setTimeout(() => {
+      setShowBanner(false);
+      setSyncStatus('idle');
+    }, 3000);
+  }, [isOnline, pullAllData]);
 
   return {
     syncStatus,
@@ -155,6 +206,7 @@ export function useBackgroundSync() {
     isOnline,
     wasOffline,
     showBanner,
-    triggerSync
+    triggerSync,
+    triggerPullOnly
   };
 }
