@@ -110,6 +110,59 @@ export type Database = {
         }
         Relationships: []
       }
+      installation_requests: {
+        Row: {
+          created_at: string
+          expenses: number
+          id: number
+          installation_cost: number
+          installed_at: string | null
+          location: string
+          notes: string | null
+          price: number
+          product_name: string
+          sale_id: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expenses?: number
+          id?: never
+          installation_cost?: number
+          installed_at?: string | null
+          location?: string
+          notes?: string | null
+          price?: number
+          product_name: string
+          sale_id?: number | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expenses?: number
+          id?: never
+          installation_cost?: number
+          installed_at?: string | null
+          location?: string
+          notes?: string | null
+          price?: number
+          product_name?: string
+          sale_id?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_requests_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installations: {
         Row: {
           amount: number
