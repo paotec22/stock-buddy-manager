@@ -17,7 +17,8 @@ import {
   FileSpreadsheet,
   LogOut,
   Moon,
-  Sun
+  Sun,
+  ClipboardList
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -142,6 +143,9 @@ function SidebarContents() {
           <>
             <SidebarItem to="/sales" icon={TrendingUp}>
               Sales
+            </SidebarItem>
+            <SidebarItem to="/request" icon={ClipboardList}>
+              Request
             </SidebarItem>
             <SidebarItem to="/expenses" icon={DollarSign}>
               Expenses

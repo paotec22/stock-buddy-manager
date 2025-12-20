@@ -21,9 +21,9 @@ import Settings from "./pages/Settings";
 import Expenses from "./pages/Expenses";
 import CreateInvoice from "./pages/CreateInvoice";
 import ProfitAnalysis from "./pages/ProfitAnalysis";
+import Request from "./pages/Request";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Chatbot from "@/components/chat/Chatbot";
-
 // Animated Routes Component
 function AnimatedRoutes() {
   const location = useLocation();
@@ -40,6 +40,7 @@ function AnimatedRoutes() {
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/create-invoice" element={<CreateInvoice />} />
         <Route path="/profit-analysis" element={<ProfitAnalysis />} />
+        <Route path="/request" element={<Request />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
