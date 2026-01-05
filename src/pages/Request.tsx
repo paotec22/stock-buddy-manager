@@ -75,7 +75,7 @@ interface FormData {
   product_name: string;
   price: string;
   installation_cost: string;
-  expenses: string;
+  quantity: string;
   location: string;
   notes: string;
   selected_item_id: number | null;
@@ -85,7 +85,7 @@ const initialFormData: FormData = {
   product_name: "",
   price: "",
   installation_cost: "",
-  expenses: "",
+  quantity: "1",
   location: "",
   notes: "",
   selected_item_id: null,
@@ -136,7 +136,7 @@ function RequestContent() {
         product_name: data.product_name,
         price: parseFloat(data.price) || 0,
         installation_cost: parseFloat(data.installation_cost) || 0,
-        expenses: parseFloat(data.expenses) || 0,
+        expenses: parseInt(data.quantity) || 1, // Using expenses column for quantity
         location: data.location,
         notes: data.notes || null,
         user_id: session!.user.id,
@@ -347,17 +347,17 @@ function RequestContent() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="expenses">Expenses (₦)</Label>
+                      <Label htmlFor="quantity">Quantity</Label>
                       <Input
-                        id="expenses"
+                        id="quantity"
                         type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.expenses}
+                        min="1"
+                        step="1"
+                        value={formData.quantity}
                         onChange={(e) =>
-                          setFormData({ ...formData, expenses: e.target.value })
+                          setFormData({ ...formData, quantity: e.target.value })
                         }
-                        placeholder="0"
+                        placeholder="1"
                       />
                     </div>
                     <div className="space-y-2">
@@ -478,7 +478,7 @@ function RequestContent() {
                         <TableHead>Product Name</TableHead>
                         <TableHead className="text-right">Price</TableHead>
                         <TableHead className="text-right">Installation Cost</TableHead>
-                        <TableHead className="text-right">Expenses</TableHead>
+                        <TableHead className="text-right">Quantity</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -502,7 +502,7 @@ function RequestContent() {
                             {formatCurrency(request.installation_cost)}
                           </TableCell>
                           <TableCell className="text-right">
-                            {formatCurrency(request.expenses)}
+                            {request.expenses}
                           </TableCell>
                           <TableCell>{request.location}</TableCell>
                           <TableCell>
