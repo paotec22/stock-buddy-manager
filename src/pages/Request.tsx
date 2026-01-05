@@ -159,10 +159,10 @@ function RequestContent() {
   // Mark as installed mutation
   const markInstalled = useMutation({
     mutationFn: async (request: InstallationRequest) => {
-      // Calculate total amount for sale
+      // Calculate total amount for sale (price + installation cost)
       const totalAmount = request.price + request.installation_cost;
 
-      // Create a sale record
+      // Create a sale record for the total cost
       const { data: sale, error: saleError } = await supabase
         .from("sales")
         .insert({
@@ -177,6 +177,17 @@ function RequestContent() {
         .single();
 
       if (saleError) throw saleError;
+
+      // Record installation in installations table for reports
+      const { error: installError } = await supabase
+        .from("installations")
+        .insert({
+          description: `${request.product_name} - ${request.location}`,
+          amount: request.installation_cost,
+          user_id: session!.user.id,
+        });
+
+      if (installError) throw installError;
 
       // Update installation request status
       const { error: updateError } = await supabase
@@ -316,8 +327,6 @@ function RequestContent() {
                           setFormData({ ...formData, price: e.target.value })
                         }
                         placeholder="0"
-                        readOnly
-                        className="bg-muted"
                       />
                     </div>
                     <div className="space-y-2">
