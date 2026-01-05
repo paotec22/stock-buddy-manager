@@ -64,6 +64,13 @@ interface InstallationRequest {
   sale_id: number | null;
 }
 
+interface InventoryItem {
+  id: number;
+  "Item Description": string;
+  Price: number | null;
+  location: string;
+}
+
 interface FormData {
   product_name: string;
   price: string;
@@ -71,6 +78,7 @@ interface FormData {
   expenses: string;
   location: string;
   notes: string;
+  selected_item_id: number | null;
 }
 
 const initialFormData: FormData = {
@@ -78,8 +86,9 @@ const initialFormData: FormData = {
   price: "",
   installation_cost: "",
   expenses: "",
-  location: "Main Store",
+  location: "",
   notes: "",
+  selected_item_id: null,
 };
 
 function RequestContent() {
@@ -90,6 +99,21 @@ function RequestContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmInstall, setConfirmInstall] = useState<InstallationRequest | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<InstallationRequest | null>(null);
+
+  // Fetch inventory items for product selection
+  const { data: inventoryItems = [] } = useQuery({
+    queryKey: ["inventory-items-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("inventory list")
+        .select("id, \"Item Description\", Price, location")
+        .order("Item Description");
+
+      if (error) throw error;
+      return data as InventoryItem[];
+    },
+    enabled: !!session?.user?.id,
+  });
 
   // Fetch installation requests
   const { data: requests, isLoading } = useQuery({
@@ -105,7 +129,6 @@ function RequestContent() {
     },
     enabled: !!session?.user?.id,
   });
-
   // Add new request mutation
   const addRequest = useMutation({
     mutationFn: async (data: FormData) => {
@@ -253,15 +276,31 @@ function RequestContent() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="product_name">Product Name *</Label>
-                    <Input
-                      id="product_name"
-                      value={formData.product_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, product_name: e.target.value })
-                      }
-                      placeholder="Enter product name"
-                      required
-                    />
+                    <Select
+                      value={formData.selected_item_id?.toString() || ""}
+                      onValueChange={(value) => {
+                        const item = inventoryItems.find((i) => i.id.toString() === value);
+                        if (item) {
+                          setFormData({
+                            ...formData,
+                            product_name: item["Item Description"],
+                            price: item.Price?.toString() || "",
+                            selected_item_id: item.id,
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a product from inventory" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {inventoryItems.map((item) => (
+                          <SelectItem key={item.id} value={item.id.toString()}>
+                            {item["Item Description"]} - ₦{(item.Price || 0).toLocaleString()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -277,6 +316,8 @@ function RequestContent() {
                           setFormData({ ...formData, price: e.target.value })
                         }
                         placeholder="0"
+                        readOnly
+                        className="bg-muted"
                       />
                     </div>
                     <div className="space-y-2">
@@ -312,22 +353,14 @@ function RequestContent() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="location">Location</Label>
-                      <Select
+                      <Input
+                        id="location"
                         value={formData.location}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, location: value })
+                        onChange={(e) =>
+                          setFormData({ ...formData, location: e.target.value })
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Main Store">Main Store</SelectItem>
-                          <SelectItem value="Branch 1">Branch 1</SelectItem>
-                          <SelectItem value="Branch 2">Branch 2</SelectItem>
-                          <SelectItem value="Warehouse">Warehouse</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        placeholder="Enter location"
+                      />
                     </div>
                   </div>
 
