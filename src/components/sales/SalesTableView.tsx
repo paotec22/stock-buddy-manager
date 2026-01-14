@@ -3,9 +3,12 @@ import { SalesTable } from "./SalesTable";
 import { SalesSummaryTable } from "./SalesSummaryTable";
 import { TotalSalesSummary } from "./TotalSalesSummary";
 import { SalesDateRangeFilter } from "./SalesDateRangeFilter";
+import { SalesExportModal } from "./SalesExportModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { DateRange } from "react-day-picker";
 import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
+import { FileSpreadsheet } from "lucide-react";
 
 interface Sale {
   id: string;
@@ -24,6 +27,7 @@ interface SalesTableViewProps {
 
 export function SalesTableView({ sales }: SalesTableViewProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [showExport, setShowExport] = useState(false);
 
   const filteredSales = useMemo(() => {
     if (!dateRange?.from) return sales;
@@ -74,12 +78,29 @@ export function SalesTableView({ sales }: SalesTableViewProps) {
       {/* Detailed Sales Table */}
       <Card className="card-hover">
         <CardHeader>
-          <CardTitle>Sales Details</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Sales Details</span>
+            <Button 
+              onClick={() => setShowExport(true)} 
+              variant="outline" 
+              size="sm"
+              className="btn-with-icon"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Export</span>
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <SalesTable sales={filteredSales} hasFilters={hasFilters} />
         </CardContent>
       </Card>
+
+      <SalesExportModal
+        open={showExport}
+        onOpenChange={setShowExport}
+        sales={filteredSales}
+      />
     </div>
   );
 }
