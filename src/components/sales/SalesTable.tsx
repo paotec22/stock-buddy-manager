@@ -171,8 +171,11 @@ export function SalesTable({ sales, hasFilters = false }: SalesTableProps) {
             key={sale.id}
             sale={sale}
             isAdmin={isAdmin}
+            canEditDates={canEditDates}
             formatCurrency={formatCurrency}
             onDelete={handleDelete}
+            onDateUpdate={handleDateUpdate}
+            onPriceUpdate={handlePriceUpdate}
           />
         ))}
       </div>
