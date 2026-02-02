@@ -23,6 +23,8 @@ const CreateInvoice = () => {
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]); // Default to NGN
   const [amountPaid, setAmountPaid] = useState(0);
+  const [includeVat, setIncludeVat] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
@@ -38,7 +40,7 @@ const CreateInvoice = () => {
     handleDownload,
     handleShowSavedInvoices,
     handlePrintSavedInvoice
-  } = useInvoiceOperations(customerName, customerPhone, items, session?.user.id);
+  } = useInvoiceOperations(customerName, customerPhone, items, session?.user.id, includeVat, discountPercent);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -89,6 +91,10 @@ const CreateInvoice = () => {
             currency={selectedCurrency}
             amountPaid={amountPaid}
             onAmountPaidChange={setAmountPaid}
+            includeVat={includeVat}
+            onVatChange={setIncludeVat}
+            discountPercent={discountPercent}
+            onDiscountChange={setDiscountPercent}
           />
           
           <BankDetails />

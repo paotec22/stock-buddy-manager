@@ -8,11 +8,15 @@ import type { Database } from "@/integrations/supabase/types";
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type NewInvoiceItem = Omit<Database['public']['Tables']['invoice_items']['Row'], 'id' | 'created_at' | 'invoice_id' | 'item_id'>;
 
+const VAT_RATE = 7.5; // Nigerian VAT rate
+
 export const useInvoiceOperations = (
   customerName: string,
   customerPhone: string,
   items: NewInvoiceItem[],
-  userId: string | undefined
+  userId: string | undefined,
+  includeVat: boolean = false,
+  discountPercent: number = 0
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedInvoices, setSavedInvoices] = useState<Invoice[]>([]);
@@ -25,11 +29,18 @@ export const useInvoiceOperations = (
 
   const calculateTotals = () => {
     const subtotal = validItems.reduce((sum, item) => sum + Number(item.amount), 0);
+    const discountAmount = (subtotal * discountPercent) / 100;
+    const afterDiscount = subtotal - discountAmount;
+    const taxAmount = includeVat ? (afterDiscount * VAT_RATE) / 100 : 0;
+    const totalAmount = afterDiscount + taxAmount;
+    
     return {
       subtotal,
-      tax_rate: 0,
-      tax_amount: 0,
-      total_amount: subtotal,
+      tax_rate: includeVat ? VAT_RATE : 0,
+      tax_amount: taxAmount,
+      discount_percent: discountPercent,
+      discount_amount: discountAmount,
+      total_amount: totalAmount,
       total: subtotal,
       invoice_number: `INV-${Date.now()}`
     };

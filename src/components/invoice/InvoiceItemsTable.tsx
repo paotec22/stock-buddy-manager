@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ItemDescriptionAutocomplete } from "./ItemDescriptionAutocomplete";
@@ -26,7 +27,13 @@ interface InvoiceItemsTableProps {
   currency: Currency;
   amountPaid: number;
   onAmountPaidChange: (amount: number) => void;
+  includeVat: boolean;
+  onVatChange: (include: boolean) => void;
+  discountPercent: number;
+  onDiscountChange: (percent: number) => void;
 }
+
+const VAT_RATE = 7.5; // Nigerian VAT rate
 
 export const InvoiceItemsTable = ({ 
   items, 
@@ -34,7 +41,11 @@ export const InvoiceItemsTable = ({
   totals, 
   currency, 
   amountPaid, 
-  onAmountPaidChange 
+  onAmountPaidChange,
+  includeVat,
+  onVatChange,
+  discountPercent,
+  onDiscountChange
 }: InvoiceItemsTableProps) => {
   const [newItem, setNewItem] = useState<InvoiceItem>({
     description: "",
@@ -81,7 +92,12 @@ export const InvoiceItemsTable = ({
     }));
   };
 
-  const balance = totals.total - amountPaid;
+  // Calculate amounts
+  const discountAmount = (totals.subtotal * discountPercent) / 100;
+  const afterDiscount = totals.subtotal - discountAmount;
+  const vatAmount = includeVat ? (afterDiscount * VAT_RATE) / 100 : 0;
+  const grandTotal = afterDiscount + vatAmount;
+  const balance = grandTotal - amountPaid;
 
   return (
     <div className="space-y-4">
@@ -246,13 +262,66 @@ export const InvoiceItemsTable = ({
         </div>
       </div>
 
+      {/* VAT and Discount Controls */}
+      <div className="rounded-lg border bg-muted/30 p-4 space-y-4 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* VAT Toggle */}
+          <div className="flex items-center gap-3">
+            <Switch
+              id="vat-toggle"
+              checked={includeVat}
+              onCheckedChange={onVatChange}
+            />
+            <Label htmlFor="vat-toggle" className="cursor-pointer">
+              Include VAT ({VAT_RATE}%)
+            </Label>
+          </div>
+          
+          {/* Discount Input */}
+          <div className="flex items-center gap-2">
+            <Label htmlFor="discount" className="whitespace-nowrap">Discount (%):</Label>
+            <Input
+              id="discount"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="0.5"
+              value={discountPercent || ""}
+              onChange={(e) => onDiscountChange(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
+              className="w-20"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Totals/Payments */}
       <div className="flex flex-col gap-2 items-end">
-        <div className="flex justify-between w-full md:w-64">
-          <span>Total:</span>
-          <span>{formatCurrency(totals.total, currency)}</span>
+        <div className="flex justify-between w-full md:w-72">
+          <span>Subtotal:</span>
+          <span>{formatCurrency(totals.subtotal, currency)}</span>
         </div>
-        <div className="flex justify-between w-full md:w-64">
+        
+        {discountPercent > 0 && (
+          <div className="flex justify-between w-full md:w-72 text-success">
+            <span>Discount ({discountPercent}%):</span>
+            <span>-{formatCurrency(discountAmount, currency)}</span>
+          </div>
+        )}
+        
+        {includeVat && (
+          <div className="flex justify-between w-full md:w-72">
+            <span>VAT ({VAT_RATE}%):</span>
+            <span>{formatCurrency(vatAmount, currency)}</span>
+          </div>
+        )}
+        
+        <div className="flex justify-between w-full md:w-72 font-semibold border-t pt-2">
+          <span>Total:</span>
+          <span>{formatCurrency(grandTotal, currency)}</span>
+        </div>
+        
+        <div className="flex justify-between w-full md:w-72">
           <span className="print:hidden">
             <Label htmlFor="amountPaid">Amount Paid:</Label>
           </span>
@@ -271,9 +340,10 @@ export const InvoiceItemsTable = ({
           </span>
           <span className="print:block hidden">{formatCurrency(amountPaid, currency)}</span>
         </div>
-        <div className="flex justify-between w-full md:w-64 font-bold text-lg border-t pt-2">
+        
+        <div className="flex justify-between w-full md:w-72 font-bold text-lg border-t pt-2">
           <span>Balance:</span>
-          <span>{formatCurrency(balance, currency)}</span>
+          <span className={balance < 0 ? "text-success" : ""}>{formatCurrency(balance, currency)}</span>
         </div>
       </div>
     </div>
