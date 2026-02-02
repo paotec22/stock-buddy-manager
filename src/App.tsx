@@ -23,7 +23,7 @@ import CreateInvoice from "./pages/CreateInvoice";
 import ProfitAnalysis from "./pages/ProfitAnalysis";
 import Request from "./pages/Request";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import Chatbot from "@/components/chat/Chatbot";
+
 // Animated Routes Component
 function AnimatedRoutes() {
   const location = useLocation();
@@ -78,7 +78,6 @@ const App = () => {
                 <AnimatedRoutes />
               </div>
               <MobileBottomNav />
-              <Chatbot />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
