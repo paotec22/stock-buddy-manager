@@ -99,6 +99,7 @@ function RequestContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmInstall, setConfirmInstall] = useState<InstallationRequest | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<InstallationRequest | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"Not installed" | "Installed">("Not installed");
 
   // Fetch inventory items for product selection
   const { data: inventoryItems = [] } = useQuery({
@@ -258,6 +259,9 @@ function RequestContent() {
     }).format(amount);
   };
 
+  // Filter requests based on status
+  const filteredRequests = requests?.filter((r) => r.status === statusFilter) ?? [];
+
   return (
     <div className="flex min-h-screen bg-background">
       <AppSidebar />
@@ -273,14 +277,36 @@ function RequestContent() {
                 Track product installations and log completed work
               </p>
             </div>
-            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  New Request
+            <div className="flex items-center gap-3">
+              {/* Status Filter Toggle */}
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                <Button
+                  variant={statusFilter === "Not installed" ? "default" : "ghost"}
+                  size="sm"
+                  className="rounded-none"
+                  onClick={() => setStatusFilter("Not installed")}
+                >
+                  <Clock className="h-4 w-4 mr-1" />
+                  Pending
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+                <Button
+                  variant={statusFilter === "Installed" ? "default" : "ghost"}
+                  size="sm"
+                  className="rounded-none"
+                  onClick={() => setStatusFilter("Installed")}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                  Installed
+                </Button>
+              </div>
+              <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    New Request
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Add Installation Request</DialogTitle>
                 </DialogHeader>
@@ -404,6 +430,7 @@ function RequestContent() {
                 </form>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
 
           {/* Stats Cards */}
@@ -421,8 +448,8 @@ function RequestContent() {
             </Card>
             <Card>
               <CardContent className="flex items-center gap-4 p-4">
-                <div className="p-3 rounded-full bg-amber-500/10">
-                  <Clock className="h-5 w-5 text-amber-500" />
+                <div className="p-3 rounded-full bg-warning/10">
+                  <Clock className="h-5 w-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
@@ -434,8 +461,8 @@ function RequestContent() {
             </Card>
             <Card>
               <CardContent className="flex items-center gap-4 p-4">
-                <div className="p-3 rounded-full bg-green-500/10">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <div className="p-3 rounded-full bg-primary/10">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Installed</p>
@@ -462,12 +489,18 @@ function RequestContent() {
                     <Skeleton key={i} className="h-12 w-full" />
                   ))}
                 </div>
-              ) : !requests?.length ? (
+              ) : !filteredRequests.length ? (
                 <div className="text-center py-12">
                   <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">No installation requests yet</p>
+                  <p className="text-muted-foreground">
+                    {statusFilter === "Not installed" 
+                      ? "No pending installation requests" 
+                      : "No completed installations yet"}
+                  </p>
                   <p className="text-sm text-muted-foreground/70">
-                    Click "New Request" to add one
+                    {statusFilter === "Not installed" 
+                      ? "Click \"New Request\" to add one" 
+                      : "Mark requests as installed to see them here"}
                   </p>
                 </div>
               ) : (
@@ -485,7 +518,7 @@ function RequestContent() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {requests.map((request) => (
+                      {filteredRequests.map((request) => (
                         <TableRow key={request.id}>
                           <TableCell className="font-medium">
                             {request.product_name}
@@ -514,8 +547,8 @@ function RequestContent() {
                               }
                               className={
                                 request.status === "Installed"
-                                  ? "bg-green-500/10 text-green-600 hover:bg-green-500/20"
-                                  : "bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
+                                  ? "bg-primary/10 text-primary hover:bg-primary/20"
+                                  : "bg-muted text-muted-foreground hover:bg-muted/80"
                               }
                             >
                               {request.status === "Installed" ? (
