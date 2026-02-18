@@ -20,6 +20,7 @@ import {
   Sun,
   ClipboardList
 } from "lucide-react";
+import puidoLogo from "/Puido_Smart_Solutions.svg";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
@@ -122,15 +123,13 @@ function SidebarContents() {
   return (
     <div className="flex flex-col h-full">
       {/* Header with branding */}
-      <div className="px-3 py-6 border-b">
-        <div className="flex items-center gap-3 px-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Package className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight">SI Manager</h2>
-            <p className="text-xs text-muted-foreground">Inventory System</p>
-          </div>
+      <div className="px-3 py-5 border-b">
+        <div className="flex items-center gap-3 px-2">
+          <img
+            src={puidoLogo}
+            alt="Puido Smart Solutions"
+            className="h-8 w-auto dark:invert"
+          />
         </div>
       </div>
 
