@@ -55,6 +55,7 @@ export function SalesTableHeader({ showActions = false, sortField, sortDirection
         <SortableHeader field="quantity" label="Quantity" currentField={sortField} direction={sortDirection} onSort={onSort} />
         <SortableHeader field="sale_price" label="Price" currentField={sortField} direction={sortDirection} onSort={onSort} />
         <SortableHeader field="total_amount" label="Total" currentField={sortField} direction={sortDirection} onSort={onSort} />
+        <SortableHeader field="payment_status" label="Payment" currentField={sortField} direction={sortDirection} onSort={onSort} />
         <TableHead>Notes</TableHead>
         {showActions && <TableHead className="w-16">Actions</TableHead>}
       </TableRow>
