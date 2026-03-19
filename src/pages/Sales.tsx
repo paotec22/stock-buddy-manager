@@ -22,16 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { SearchInput } from "@/components/ui/search-input";
 
-interface Sale {
-  id: string;
-  quantity: number;
-  sale_price: number;
-  total_amount: number;
-  sale_date: string;
-  item_name: string;
-  location: string;
-  notes?: string | null;
-}
+import { Sale } from "@/components/sales/types";
 
 const SalesHeader = ({ 
   onAddSale, 
