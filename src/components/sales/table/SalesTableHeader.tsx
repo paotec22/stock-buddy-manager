@@ -2,7 +2,7 @@ import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type SortField = 'sale_date' | 'item_name' | 'location' | 'quantity' | 'sale_price' | 'total_amount';
+export type SortField = 'sale_date' | 'item_name' | 'location' | 'quantity' | 'sale_price' | 'total_amount' | 'payment_status';
 export type SortDirection = 'asc' | 'desc';
 
 interface SalesTableHeaderProps {
