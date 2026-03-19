@@ -7,18 +7,9 @@ import { SalesTableHeader, SortField, SortDirection } from "./table/SalesTableHe
 import { SalesTableRow } from "./table/SalesTableRow";
 import { SalesEmptyState } from "./SalesEmptyState";
 import { MobileSaleCard } from "./MobileSaleCard";
+import { UpdatePaymentModal } from "./UpdatePaymentModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-interface Sale {
-  id: string;
-  item_name: string;
-  quantity: number;
-  sale_price: number;
-  total_amount: number;
-  sale_date: string;
-  location: string;
-  notes?: string | null;
-}
+import { Sale } from "./types";
 
 interface SalesTableProps {
   sales: Sale[];
@@ -28,6 +19,7 @@ interface SalesTableProps {
 export function SalesTable({ sales, hasFilters = false }: SalesTableProps) {
   const [sortField, setSortField] = useState<SortField>('sale_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [paymentSale, setPaymentSale] = useState<Sale | null>(null);
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
@@ -81,6 +73,9 @@ export function SalesTable({ sales, hasFilters = false }: SalesTableProps) {
           break;
         case 'total_amount':
           comparison = a.total_amount - b.total_amount;
+          break;
+        case 'payment_status':
+          comparison = a.payment_status.localeCompare(b.payment_status);
           break;
       }
       
@@ -157,61 +152,74 @@ export function SalesTable({ sales, hasFilters = false }: SalesTableProps) {
     }).format(amount);
   };
 
-  // Empty state
   if (sales.length === 0) {
     return <SalesEmptyState hasFilters={hasFilters} />;
   }
 
-  // Mobile card layout
   if (isMobile) {
     return (
-      <div className="space-y-3 animate-fade-in">
-        {sortedSales.map((sale) => (
-          <MobileSaleCard
-            key={sale.id}
-            sale={sale}
-            isAdmin={isAdmin}
-            canEditDates={canEditDates}
-            formatCurrency={formatCurrency}
-            onDelete={handleDelete}
-            onDateUpdate={handleDateUpdate}
-            onPriceUpdate={handlePriceUpdate}
-          />
-        ))}
-      </div>
+      <>
+        <div className="space-y-3 animate-fade-in">
+          {sortedSales.map((sale) => (
+            <MobileSaleCard
+              key={sale.id}
+              sale={sale}
+              isAdmin={isAdmin}
+              canEditDates={canEditDates}
+              formatCurrency={formatCurrency}
+              onDelete={handleDelete}
+              onDateUpdate={handleDateUpdate}
+              onPriceUpdate={handlePriceUpdate}
+              onUpdatePayment={setPaymentSale}
+            />
+          ))}
+        </div>
+        <UpdatePaymentModal
+          open={!!paymentSale}
+          onOpenChange={(open) => !open && setPaymentSale(null)}
+          sale={paymentSale}
+        />
+      </>
     );
   }
 
-  // Desktop table layout
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="max-h-[calc(100vh-400px)] overflow-auto rounded-md border">
-        <Table>
-          <SalesTableHeader 
-            showActions={isAdmin} 
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-          />
-          <TableBody>
-            {sortedSales.map((sale) => (
-              <SalesTableRow
-                key={sale.id}
-                sale={sale}
-                canEditDates={canEditDates}
-                isAdmin={isAdmin}
-                formatCurrency={formatCurrency}
-                onDateUpdate={handleDateUpdate}
-                onPriceUpdate={handlePriceUpdate}
-                onDelete={handleDelete}
-              />
-            ))}
-          </TableBody>
-        </Table>
+    <>
+      <div className="space-y-4 animate-fade-in">
+        <div className="max-h-[calc(100vh-400px)] overflow-auto rounded-md border">
+          <Table>
+            <SalesTableHeader 
+              showActions={isAdmin} 
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+            <TableBody>
+              {sortedSales.map((sale) => (
+                <SalesTableRow
+                  key={sale.id}
+                  sale={sale}
+                  canEditDates={canEditDates}
+                  isAdmin={isAdmin}
+                  formatCurrency={formatCurrency}
+                  onDateUpdate={handleDateUpdate}
+                  onPriceUpdate={handlePriceUpdate}
+                  onDelete={handleDelete}
+                  onUpdatePayment={setPaymentSale}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Showing {sortedSales.length} sale{sortedSales.length !== 1 ? 's' : ''}
+        </p>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Showing {sortedSales.length} sale{sortedSales.length !== 1 ? 's' : ''}
-      </p>
-    </div>
+      <UpdatePaymentModal
+        open={!!paymentSale}
+        onOpenChange={(open) => !open && setPaymentSale(null)}
+        sale={paymentSale}
+      />
+    </>
   );
 }

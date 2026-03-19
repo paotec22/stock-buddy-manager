@@ -1,8 +1,10 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
 import { SalesDateCell } from "./SalesDateCell";
 import { SalesPriceCell } from "./SalesPriceCell";
+import { PaymentStatusBadge } from "../PaymentStatusBadge";
+import { Sale } from "../types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,17 +19,6 @@ import {
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-interface Sale {
-  id: string;
-  item_name: string;
-  quantity: number;
-  sale_price: number;
-  total_amount: number;
-  sale_date: string;
-  location: string;
-  notes?: string | null;
-}
-
 interface SalesTableRowProps {
   sale: Sale;
   canEditDates: boolean;
@@ -36,6 +27,7 @@ interface SalesTableRowProps {
   onDateUpdate: (saleId: string, date: Date) => void;
   onPriceUpdate: (saleId: string, price: number) => void;
   onDelete: (saleId: string) => void;
+  onUpdatePayment?: (sale: Sale) => void;
 }
 
 export function SalesTableRow({ 
@@ -45,7 +37,8 @@ export function SalesTableRow({
   formatCurrency, 
   onDateUpdate, 
   onPriceUpdate,
-  onDelete
+  onDelete,
+  onUpdatePayment
 }: SalesTableRowProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -80,6 +73,22 @@ export function SalesTableRow({
       </TableCell>
       <TableCell>
         <span className="font-semibold text-primary">{formatCurrency(sale.total_amount)}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <PaymentStatusBadge status={sale.payment_status} />
+          {sale.payment_status !== 'paid' && canEditDates && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => onUpdatePayment?.(sale)}
+              title="Update payment"
+            >
+              <CreditCard className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
       </TableCell>
       <TableCell className="max-w-[200px]">
         {sale.notes ? (
