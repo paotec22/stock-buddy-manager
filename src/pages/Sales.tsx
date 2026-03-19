@@ -110,6 +110,8 @@ const Sales = () => {
           sale_date,
           item_id,
           notes,
+          payment_status,
+          amount_paid,
           "inventory list" (
             "Item Description",
             location
@@ -132,7 +134,9 @@ const Sales = () => {
         sale_date: sale.sale_date,
         item_name: sale["inventory list"]?.["Item Description"] || "Unknown Item",
         location: sale["inventory list"]?.location || "Unknown Location",
-        notes: sale.notes
+        notes: sale.notes,
+        payment_status: sale.payment_status || 'paid',
+        amount_paid: sale.amount_paid || 0,
       })) as Sale[];
     },
     enabled: !!session
