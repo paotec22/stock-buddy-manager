@@ -4,10 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, ChevronDown, ChevronUp, MapPin, Package, Calendar as CalendarIcon, Pencil, Check, X } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, MapPin, Package, Calendar as CalendarIcon, Pencil, Check, X, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { PaymentStatusBadge } from "./PaymentStatusBadge";
+import { Sale } from "./types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,17 +22,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface Sale {
-  id: string;
-  item_name: string;
-  quantity: number;
-  sale_price: number;
-  total_amount: number;
-  sale_date: string;
-  location: string;
-  notes?: string | null;
-}
-
 interface MobileSaleCardProps {
   sale: Sale;
   isAdmin: boolean;
@@ -39,6 +30,7 @@ interface MobileSaleCardProps {
   onDelete: (saleId: string) => void;
   onDateUpdate?: (saleId: string, newDate: Date) => void;
   onPriceUpdate?: (saleId: string, newPrice: number) => void;
+  onUpdatePayment?: (sale: Sale) => void;
 }
 
 export function MobileSaleCard({ 
@@ -48,7 +40,8 @@ export function MobileSaleCard({
   formatCurrency, 
   onDelete,
   onDateUpdate,
-  onPriceUpdate
+  onPriceUpdate,
+  onUpdatePayment
 }: MobileSaleCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -112,9 +105,12 @@ export function MobileSaleCard({
               )}
             </div>
           </div>
-          <Badge variant="secondary" className="ml-2 shrink-0">
-            {formatCurrency(sale.total_amount)}
-          </Badge>
+          <div className="flex flex-col items-end gap-1 ml-2">
+            <Badge variant="secondary" className="shrink-0">
+              {formatCurrency(sale.total_amount)}
+            </Badge>
+            <PaymentStatusBadge status={sale.payment_status} />
+          </div>
         </div>
 
         {/* Quick Info */}
@@ -162,6 +158,13 @@ export function MobileSaleCard({
           </div>
         </div>
 
+        {/* Payment info for part-paid */}
+        {sale.payment_status === 'part_paid' && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            Paid: {formatCurrency(sale.amount_paid)} · Balance: {formatCurrency(sale.total_amount - sale.amount_paid)}
+          </div>
+        )}
+
         {/* Expandable Notes Section */}
         {sale.notes && (
           <div className="mt-3 pt-3 border-t border-border">
@@ -180,37 +183,49 @@ export function MobileSaleCard({
           </div>
         )}
 
-        {/* Admin Actions */}
-        {isAdmin && (
-          <div className="mt-3 pt-3 border-t border-border flex justify-end">
-            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Sale</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this sale record for {sale.item_name}? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+        {/* Actions */}
+        <div className="mt-3 pt-3 border-t border-border flex justify-between items-center">
+          {sale.payment_status !== 'paid' && canEditDates && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onUpdatePayment?.(sale)}
+            >
+              <CreditCard className="h-4 w-4 mr-1" />
+              Update Payment
+            </Button>
+          )}
+          {isAdmin && (
+            <div className="ml-auto">
+              <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
                     Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Sale</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this sale record for {sale.item_name}? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

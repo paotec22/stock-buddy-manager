@@ -1,12 +1,13 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 import { useAuth } from "@/components/AuthProvider";
@@ -34,13 +35,16 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       salePrice: "",
       location: "Ikeja",
       notes: "",
+      paymentStatus: "paid",
+      amountPaid: "",
     },
   });
+
+  const paymentStatus = useWatch({ control: form.control, name: "paymentStatus" });
 
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
-      console.log('Fetching inventory for location:', selectedLocation);
       const { data, error } = await supabase
         .from('inventory list')
         .select('*')
@@ -49,13 +53,11 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       if (error) throw error;
       return data || [];
     },
-    enabled: !!session, // Only fetch when session exists
+    enabled: !!session,
   });
 
   const handleItemSelect = (itemId: string) => {
     if (!itemId) return;
-    
-    console.log('Selected item ID:', itemId);
     const selectedItem = inventoryItems?.find(item => item.id.toString() === itemId.toString());
     if (selectedItem) {
       form.setValue('salePrice', selectedItem.Price.toString());
@@ -91,11 +93,13 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         parsedQuantity,
         parseFloat(data.salePrice),
         selectedItem,
-        data.notes
+        data.notes,
+        data.paymentStatus,
+        data.paymentStatus === 'part_paid' ? parseFloat(data.amountPaid) : undefined
       );
 
-      // Invalidate inventory queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
       
       toast.success("Sale recorded successfully");
       form.reset();
@@ -109,7 +113,6 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
     }
   };
 
-  // Show loading state if session is not yet determined
   if (!session) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -169,6 +172,43 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="paymentStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="paid">Fully Paid</SelectItem>
+                      <SelectItem value="part_paid">Part Paid</SelectItem>
+                      <SelectItem value="unpaid">Not Paid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            {paymentStatus === 'part_paid' && (
+              <FormField
+                control={form.control}
+                name="amountPaid"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount Paid</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Enter amount paid so far" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

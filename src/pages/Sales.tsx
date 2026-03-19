@@ -22,16 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { SearchInput } from "@/components/ui/search-input";
 
-interface Sale {
-  id: string;
-  quantity: number;
-  sale_price: number;
-  total_amount: number;
-  sale_date: string;
-  item_name: string;
-  location: string;
-  notes?: string | null;
-}
+import { Sale } from "@/components/sales/types";
 
 const SalesHeader = ({ 
   onAddSale, 
@@ -119,6 +110,8 @@ const Sales = () => {
           sale_date,
           item_id,
           notes,
+          payment_status,
+          amount_paid,
           "inventory list" (
             "Item Description",
             location
@@ -141,7 +134,9 @@ const Sales = () => {
         sale_date: sale.sale_date,
         item_name: sale["inventory list"]?.["Item Description"] || "Unknown Item",
         location: sale["inventory list"]?.location || "Unknown Location",
-        notes: sale.notes
+        notes: sale.notes,
+        payment_status: sale.payment_status || 'paid',
+        amount_paid: sale.amount_paid || 0,
       })) as Sale[];
     },
     enabled: !!session

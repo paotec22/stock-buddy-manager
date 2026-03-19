@@ -376,9 +376,11 @@ export type Database = {
       sales: {
         Row: {
           actual_purchase_price: number | null
+          amount_paid: number
           id: number
           item_id: number | null
           notes: string | null
+          payment_status: string
           quantity: number
           sale_date: string
           sale_price: number
@@ -387,9 +389,11 @@ export type Database = {
         }
         Insert: {
           actual_purchase_price?: number | null
+          amount_paid?: number
           id?: number
           item_id?: number | null
           notes?: string | null
+          payment_status?: string
           quantity: number
           sale_date?: string
           sale_price: number
@@ -398,9 +402,11 @@ export type Database = {
         }
         Update: {
           actual_purchase_price?: number | null
+          amount_paid?: number
           id?: number
           item_id?: number | null
           notes?: string | null
+          payment_status?: string
           quantity?: number
           sale_date?: string
           sale_price?: number

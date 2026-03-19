@@ -46,18 +46,25 @@ export const recordSale = async (
   quantity: number,
   salePrice: number,
   selectedItem: any,
-  notes?: string
+  notes?: string,
+  paymentStatus: string = 'paid',
+  amountPaid?: number
 ) => {
-  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem, notes });
+  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem, notes, paymentStatus, amountPaid });
+  
+  const totalAmount = quantity * salePrice;
+  const finalAmountPaid = paymentStatus === 'paid' ? totalAmount : (paymentStatus === 'unpaid' ? 0 : (amountPaid ?? 0));
   
   const sale = {
     item_id: itemId,
     quantity: quantity,
     sale_price: salePrice,
-    total_amount: quantity * salePrice,
+    total_amount: totalAmount,
     user_id: userId,
     sale_date: new Date().toISOString(),
     notes: notes || null,
+    payment_status: paymentStatus,
+    amount_paid: finalAmountPaid,
   };
 
   // Record the sale - inventory will be updated automatically by database trigger

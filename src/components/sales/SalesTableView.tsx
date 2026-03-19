@@ -9,17 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DateRange } from "react-day-picker";
 import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
 import { FileSpreadsheet } from "lucide-react";
-
-interface Sale {
-  id: string;
-  quantity: number;
-  sale_price: number;
-  total_amount: number;
-  sale_date: string;
-  item_name: string;
-  location: string;
-  notes?: string | null;
-}
+import { Sale } from "./types";
 
 interface SalesTableViewProps {
   sales: Sale[];

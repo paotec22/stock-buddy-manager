@@ -2,7 +2,7 @@ import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type SortField = 'sale_date' | 'item_name' | 'location' | 'quantity' | 'sale_price' | 'total_amount';
+export type SortField = 'sale_date' | 'item_name' | 'location' | 'quantity' | 'sale_price' | 'total_amount' | 'payment_status';
 export type SortDirection = 'asc' | 'desc';
 
 interface SalesTableHeaderProps {
@@ -55,6 +55,7 @@ export function SalesTableHeader({ showActions = false, sortField, sortDirection
         <SortableHeader field="quantity" label="Quantity" currentField={sortField} direction={sortDirection} onSort={onSort} />
         <SortableHeader field="sale_price" label="Price" currentField={sortField} direction={sortDirection} onSort={onSort} />
         <SortableHeader field="total_amount" label="Total" currentField={sortField} direction={sortDirection} onSort={onSort} />
+        <SortableHeader field="payment_status" label="Payment" currentField={sortField} direction={sortDirection} onSort={onSort} />
         <TableHead>Notes</TableHead>
         {showActions && <TableHead className="w-16">Actions</TableHead>}
       </TableRow>
