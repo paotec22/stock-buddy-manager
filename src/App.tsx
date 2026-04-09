@@ -5,10 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import { PageLoader } from "@/components/PageLoader";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
+import { AppLayout } from "@/components/AppLayout";
 import { initializeDB } from "@/lib/indexedDB";
 
 // Import all pages directly to ensure they're bundled (needed for offline support)
@@ -22,7 +22,6 @@ import Expenses from "./pages/Expenses";
 import CreateInvoice from "./pages/CreateInvoice";
 import ProfitAnalysis from "./pages/ProfitAnalysis";
 import Request from "./pages/Request";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 // Animated Routes Component
 function AnimatedRoutes() {
@@ -32,15 +31,15 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Index />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/sales" element={<Sales />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/expenses" element={<Expenses />} />
-        <Route path="/create-invoice" element={<CreateInvoice />} />
-        <Route path="/profit-analysis" element={<ProfitAnalysis />} />
-        <Route path="/request" element={<Request />} />
+        <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+        <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
+        <Route path="/sales" element={<AppLayout><Sales /></AppLayout>} />
+        <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
+        <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+        <Route path="/expenses" element={<AppLayout><Expenses /></AppLayout>} />
+        <Route path="/create-invoice" element={<AppLayout><CreateInvoice /></AppLayout>} />
+        <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
+        <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
@@ -74,10 +73,7 @@ const App = () => {
           <ConnectionBanner />
           <BrowserRouter>
             <AuthProvider>
-              <div className="min-h-screen pb-20 md:pb-0">
-                <AnimatedRoutes />
-              </div>
-              <MobileBottomNav />
+              <AnimatedRoutes />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
