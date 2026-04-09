@@ -647,7 +647,6 @@ function RequestContent() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
     </PageTransition>
   );
 }
