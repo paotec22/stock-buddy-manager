@@ -649,7 +649,7 @@ function RequestContent() {
         </AlertDialog>
       </div>
     </PageTransition>
-}
+  );
 
 export default function Request() {
   return (
