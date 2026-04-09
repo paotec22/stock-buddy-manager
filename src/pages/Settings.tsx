@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { UserManagementSection } from "@/components/settings/UserManagementSection";
 import { DatabaseManagementSection } from "@/components/settings/DatabaseManagementSection";
@@ -104,11 +102,8 @@ const Settings = () => {
 
   return (
     <RoleProtectedRoute allowedRoles={['admin']}>
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AppSidebar />
-          <main className="flex-1 p-6">
-            <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <div>
+        <h1 className="text-2xl font-bold mb-6">Settings</h1>
             
             <Accordion type="single" collapsible className="w-full max-w-md space-y-4">
               <AccordionItem value="user-management">
@@ -168,9 +163,7 @@ const Settings = () => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </main>
-        </div>
-      </SidebarProvider>
+      </div>
     </RoleProtectedRoute>
   );
 };

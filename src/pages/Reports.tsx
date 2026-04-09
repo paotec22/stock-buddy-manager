@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
 import { MonthlyExpensesTable } from "@/components/reports/MonthlyExpensesTable";
 import { InstallationsTable } from "@/components/reports/InstallationsTable";
 import { LocationPerformanceTable } from "@/components/reports/LocationPerformanceTable";
@@ -53,11 +51,8 @@ const Reports = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        {!isMobile && <AppSidebar />}
-        <main className={`flex-1 ${isMobile ? 'pb-20' : 'p-4 md:p-6'}`}>
-          <div className={`${isMobile ? 'sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b p-4' : 'flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'}`}>
+    <div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <h1 className="text-2xl font-bold">Reports</h1>
             <div className={`flex items-center gap-2 ${isMobile ? 'w-full mt-3' : 'w-full md:w-auto'}`}>
               {isMobile ? (
@@ -200,9 +195,7 @@ const Reports = () => {
               </Card>
             </TabsContent>
           </Tabs>
-        </main>
-      </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
