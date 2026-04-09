@@ -650,7 +650,7 @@ function RequestContent() {
       </div>
     </PageTransition>
   );
-
+}
 export default function Request() {
   return (
     <RoleProtectedRoute allowedRoles={["admin", "uploader"]}>
