@@ -97,17 +97,16 @@ const CreateInvoice = () => {
           />
           
           <BankDetails />
-        </div>
-
-        <SavedInvoicesModal
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          invoices={savedInvoices}
-          onPrintInvoice={handlePrintSavedInvoice}
-        />
-
-        <InvoiceFooter />
       </div>
+
+      <SavedInvoicesModal
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        invoices={savedInvoices}
+        onPrintInvoice={handlePrintSavedInvoice}
+      />
+
+      <InvoiceFooter />
     </div>
   );
 };
