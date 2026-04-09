@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
-import { AppSidebar } from "@/components/AppSidebar";
 import { PageTransition } from "@/components/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -263,10 +262,8 @@ function RequestContent() {
   const filteredRequests = requests?.filter((r) => r.status === statusFilter) ?? [];
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <AppSidebar />
-      <PageTransition className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <PageTransition className="space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -650,9 +647,8 @@ function RequestContent() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </PageTransition>
-    </div>
-  );
+      </div>
+    </PageTransition>
 }
 
 export default function Request() {

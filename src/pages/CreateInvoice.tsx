@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { SidebarProvider } from "@/components/ui/sidebar/SidebarContext";
+
 import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
@@ -59,9 +59,8 @@ const CreateInvoice = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="container mx-auto p-6 space-y-8 min-h-screen">
-        <div className="pb-20">
+    <div className="space-y-8">
+      <div className="pb-20">
           <InvoiceHeader 
             onPrint={handlePrint} 
             onDownload={handleDownload} 
@@ -109,7 +108,7 @@ const CreateInvoice = () => {
 
         <InvoiceFooter />
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 

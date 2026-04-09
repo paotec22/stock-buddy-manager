@@ -1,11 +1,6 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { AddSaleForm } from "@/components/sales/AddSaleForm";
 import { BulkSaleUploadModal } from "@/components/sales/BulkSaleUploadModal";
-import { SalesTable } from "@/components/sales/SalesTable";
-import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
-import { TotalSalesSummary } from "@/components/sales/TotalSalesSummary";
 import { SalesExportModal } from "@/components/sales/SalesExportModal";
 import { SalesViewToggle } from "@/components/sales/SalesViewToggle";
 import { SalesGraphicalView } from "@/components/sales/SalesGraphicalView";
@@ -18,10 +13,8 @@ import { supabase } from "@/lib/supabase";
 import { Plus, Upload, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { SearchInput } from "@/components/ui/search-input";
-
 import { Sale } from "@/components/sales/types";
 
 const SalesHeader = ({ 
@@ -46,8 +39,6 @@ const SalesHeader = ({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
           <h1 className="section-title">Sales Management</h1>
-          
-          {/* Search input - visible on all devices */}
           <div className="w-full md:w-[250px]">
             <SearchInput 
               value={searchTerm}
@@ -73,7 +64,6 @@ const SalesHeader = ({
         </div>
       </div>
 
-      {/* View Toggle */}
       <div className="flex justify-center md:justify-start">
         <SalesViewToggle currentView={currentView} onViewChange={onViewChange} />
       </div>
@@ -94,12 +84,10 @@ const Sales = () => {
   });
   const { session, loading } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const { data: sales = [], isLoading, refetch } = useQuery({
     queryKey: ['sales'],
     queryFn: async () => {
-      console.log('Fetching sales data...');
       const { data: salesData, error } = await supabase
         .from('sales')
         .select(`
@@ -119,12 +107,7 @@ const Sales = () => {
         `)
         .order('sale_date', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching sales:', error);
-        throw error;
-      }
-
-      console.log('Sales data received:', salesData);
+      if (error) throw error;
 
       return (salesData || []).map((sale: any) => ({
         id: sale.id,
@@ -142,151 +125,63 @@ const Sales = () => {
     enabled: !!session
   });
 
-  // Filter sales based on search term
   const filteredSales = searchTerm.trim()
     ? sales.filter(sale => sale.item_name.toLowerCase().includes(searchTerm.toLowerCase()))
     : sales;
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   if (!session) {
-    console.log("No session found, redirecting to home");
     navigate("/");
     return null;
   }
 
-  if (isLoading) {
-    return isMobile ? (
-      <div className="min-h-screen bg-background pb-16">
-        <SalesLoadingState />
-      </div>
-    ) : (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <main className="flex-1">
-            <SalesLoadingState />
-          </main>
-        </div>
-      </SidebarProvider>
-    );
-  }
+  if (isLoading) return <SalesLoadingState />;
 
-  // Mobile layout
-  if (isMobile) {
-    return (
-      <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
-        <div className="min-h-screen bg-background pb-16 page-transition">
-          <main className="p-4">
-            <SalesHeader 
-              onAddSale={() => setShowAddSale(true)}
-              onBulkUpload={() => setShowBulkUpload(true)}
-              onExport={() => setShowExport(true)}
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              currentView={currentView}
-              onViewChange={setCurrentView}
-            />
-
-            {/* Content based on view */}
-            {currentView === 'chart' ? (
-              <SalesGraphicalView
-                sales={filteredSales}
-                filters={chartFilters}
-                onFiltersChange={setChartFilters}
-              />
-            ) : (
-              <SalesTableView sales={filteredSales} />
-            )}
-
-            {/* Floating Action Button for mobile */}
-            <button 
-              onClick={() => setShowAddSale(true)}
-              className="fab"
-              aria-label="Add new sale"
-            >
-              <Plus className="h-6 w-6" />
-            </button>
-
-            <AddSaleForm
-              open={showAddSale}
-              onOpenChange={setShowAddSale}
-              onSuccess={() => {
-                refetch();
-                setShowAddSale(false);
-              }}
-            />
-
-            <BulkSaleUploadModal
-              open={showBulkUpload}
-              onOpenChange={setShowBulkUpload}
-              onDataUpload={refetch}
-            />
-
-            <SalesExportModal
-              open={showExport}
-              onOpenChange={setShowExport}
-              sales={sales}
-            />
-          </main>
-        </div>
-      </RoleProtectedRoute>
-    );
-  }
-
-  // Desktop layout
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full page-transition">
-          <AppSidebar />
-          <main className="flex-1 p-6">
-            <SalesHeader 
-              onAddSale={() => setShowAddSale(true)}
-              onBulkUpload={() => setShowBulkUpload(true)}
-              onExport={() => setShowExport(true)}
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              currentView={currentView}
-              onViewChange={setCurrentView}
-            />
+      <div>
+        <SalesHeader 
+          onAddSale={() => setShowAddSale(true)}
+          onBulkUpload={() => setShowBulkUpload(true)}
+          onExport={() => setShowExport(true)}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          currentView={currentView}
+          onViewChange={setCurrentView}
+        />
 
-            {/* Content based on view */}
-            {currentView === 'chart' ? (
-              <SalesGraphicalView
-                sales={filteredSales}
-                filters={chartFilters}
-                onFiltersChange={setChartFilters}
-              />
-            ) : (
-              <SalesTableView sales={filteredSales} />
-            )}
+        {currentView === 'chart' ? (
+          <SalesGraphicalView
+            sales={filteredSales}
+            filters={chartFilters}
+            onFiltersChange={setChartFilters}
+          />
+        ) : (
+          <SalesTableView sales={filteredSales} />
+        )}
 
-            <AddSaleForm
-              open={showAddSale}
-              onOpenChange={setShowAddSale}
-              onSuccess={() => {
-                refetch();
-                setShowAddSale(false);
-              }}
-            />
+        <AddSaleForm
+          open={showAddSale}
+          onOpenChange={setShowAddSale}
+          onSuccess={() => {
+            refetch();
+            setShowAddSale(false);
+          }}
+        />
 
-            <BulkSaleUploadModal
-              open={showBulkUpload}
-              onOpenChange={setShowBulkUpload}
-              onDataUpload={refetch}
-            />
+        <BulkSaleUploadModal
+          open={showBulkUpload}
+          onOpenChange={setShowBulkUpload}
+          onDataUpload={refetch}
+        />
 
-            <SalesExportModal
-              open={showExport}
-              onOpenChange={setShowExport}
-              sales={sales}
-            />
-          </main>
-        </div>
-      </SidebarProvider>
+        <SalesExportModal
+          open={showExport}
+          onOpenChange={setShowExport}
+          sales={sales}
+        />
+      </div>
     </RoleProtectedRoute>
   );
 };
