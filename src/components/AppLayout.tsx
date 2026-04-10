@@ -18,8 +18,8 @@ export function AppLayout({ children, className, fullWidth }: AppLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <TopNavbar />
-      <main className={fullWidth ? "flex-1" : "flex-1"}>
-        <div className={fullWidth ? "" : "container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl"}>
+      <main className="flex-1">
+        <div className={fullWidth ? "" : "px-4 md:px-6 lg:px-8 py-4 md:py-6"}>
           {children}
         </div>
       </main>
