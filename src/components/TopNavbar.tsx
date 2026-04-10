@@ -118,12 +118,7 @@ export function TopNavbar() {
       <div className="flex h-14 items-center px-4 md:px-8 lg:px-12 w-full">
         {/* Logo */}
         <NavLink to="/inventory" className="flex items-center gap-2 mr-6">
-          <img
-            src="/Puido_Smart_Solutions.svg"
-            alt="SI Manager"
-            className="h-8 w-8"
-          />
-          <span className="font-bold text-lg hidden sm:inline">SI Manager</span>
+          <span className="font-bold text-lg">SI Manager</span>
         </NavLink>
 
         {/* Desktop Navigation */}
