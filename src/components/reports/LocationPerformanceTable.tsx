@@ -86,7 +86,7 @@ export function LocationPerformanceTable({ searchTerm = "" }: LocationPerformanc
         {isLoading ? (
           <p>Loading sales data...</p>
         ) : filteredLocationSales?.length ? (
-          <div className="max-h-[calc(100vh-400px)] overflow-auto rounded-md border">
+          <div className="overflow-auto rounded-md border">
             <Table>
             <TableHeader>
               <TableRow>
