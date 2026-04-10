@@ -108,7 +108,7 @@ export function SalesSummaryTable({ sales }: SalesSummaryTableProps) {
   }
 
   return (
-    <div className="max-h-[calc(100vh-400px)] min-h-[300px] overflow-auto rounded-md border">
+    <div className="min-h-[300px] overflow-auto rounded-md border">
       <Accordion 
         type="multiple" 
         defaultValue={[currentYear.toString()]}

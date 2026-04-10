@@ -186,7 +186,7 @@ export function SalesTable({ sales, hasFilters = false }: SalesTableProps) {
   return (
     <>
       <div className="space-y-4 animate-fade-in">
-        <div className="max-h-[calc(100vh-400px)] overflow-auto rounded-md border">
+        <div className="overflow-auto rounded-md border">
           <Table>
             <SalesTableHeader 
               showActions={isAdmin} 

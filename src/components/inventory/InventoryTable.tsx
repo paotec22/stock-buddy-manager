@@ -142,7 +142,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
         </div>
       )}
 
-      <div className="rounded-xl border shadow-sm bg-card glass-effect max-h-[calc(100vh-300px)] overflow-auto">
+      <div className="rounded-xl border shadow-sm bg-card glass-effect overflow-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
