@@ -122,7 +122,7 @@ export function TopNavbar() {
         </NavLink>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 flex-1">
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
           <NavItem to="/inventory" icon={Package}>
             Inventory
           </NavItem>
