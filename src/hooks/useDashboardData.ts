@@ -80,7 +80,9 @@ export const useDashboardData = () => {
         }
         
         // Calculate Profit (Sale price - Purchase cost)
-        const purchaseCost = Number(sale.actual_purchase_price || sale["inventory list"]?.Price || 0) * Number(sale.quantity || 1);
+        const inventoryData = sale["inventory list"] as any;
+        const inventoryPrice = Array.isArray(inventoryData) ? inventoryData[0]?.Price : inventoryData?.Price;
+        const purchaseCost = Number(sale.actual_purchase_price || inventoryPrice || 0) * Number(sale.quantity || 1);
         netProfit30Days += (amount - purchaseCost);
       });
 
