@@ -38,10 +38,10 @@ function NavItem({ to, icon: Icon, children, onClick }: NavItemProps) {
       onClick={onClick}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
           isActive
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+            ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-md shadow-primary/30"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:scale-[1.03]"
         )
       }
     >
