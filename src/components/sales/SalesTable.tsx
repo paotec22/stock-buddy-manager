@@ -187,7 +187,7 @@ export function SalesTable({ sales, hasFilters = false }: SalesTableProps) {
     <>
       <div className="space-y-4 animate-fade-in">
         <div className="overflow-auto rounded-md border">
-          <Table>
+          <Table className="stagger-rows">
             <SalesTableHeader 
               showActions={isAdmin} 
               sortField={sortField}

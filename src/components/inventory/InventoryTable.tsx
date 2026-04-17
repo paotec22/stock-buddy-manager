@@ -142,8 +142,8 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
         </div>
       )}
 
-      <div className="rounded-xl border shadow-sm bg-card glass-effect overflow-auto">
-        <Table>
+      <div className="rounded-xl border shadow-sm bg-card glass-effect overflow-auto animate-fade-in">
+        <Table className="stagger-rows">
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
