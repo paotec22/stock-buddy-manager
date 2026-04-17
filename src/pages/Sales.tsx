@@ -140,7 +140,7 @@ const Sales = () => {
 
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
-      <div>
+      <div className="animate-fade-in">
         <SalesHeader 
           onAddSale={() => setShowAddSale(true)}
           onBulkUpload={() => setShowBulkUpload(true)}
