@@ -23,9 +23,13 @@ const Dashboard = () => {
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'inventory_manager', 'user']}>
       <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back. Here's what's happening with your store today.</p>
+        <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-6 md:p-8 shadow-sm">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
+          <div className="relative">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back. Here's what's happening with your store today.</p>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -164,7 +168,7 @@ const Dashboard = () => {
                 <div className="space-y-6">
                   {data?.pendingInstallationsCount && data.pendingInstallationsCount > 0 ? (
                     <div className="flex items-start gap-4">
-                      <div className="p-2 bg-orange-100 text-orange-600 rounded-full dark:bg-orange-900/20 dark:text-orange-400">
+                      <div className="p-2 bg-warning/15 text-warning rounded-full">
                         <Wrench className="h-4 w-4" />
                       </div>
                       <div>
@@ -174,7 +178,7 @@ const Dashboard = () => {
                     </div>
                   ) : null}
                   <div className="flex items-start gap-4">
-                    <div className="p-2 bg-green-100 text-green-600 rounded-full dark:bg-green-900/20 dark:text-green-400">
+                    <div className="p-2 bg-success/15 text-success rounded-full">
                       <Activity className="h-4 w-4" />
                     </div>
                     <div>
