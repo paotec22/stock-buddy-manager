@@ -285,12 +285,12 @@
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:border-primary/30 hover:-translate-y-0.5;
+    @apply transition-all duration-300 hover:border-primary/40 hover:-translate-y-1;
     box-shadow: 0 4px 20px -8px hsl(var(--primary) / 0.1);
   }
   
   .card-hover:hover {
-    box-shadow: 0 12px 40px -12px hsl(var(--primary) / 0.25);
+    box-shadow: 0 16px 48px -16px hsl(var(--primary) / 0.3), 0 0 0 1px hsl(var(--primary) / 0.1);
   }
   
   .card-hover-subtle {
@@ -298,11 +298,11 @@
   }
   
   .glass-effect {
-    @apply bg-white/50 backdrop-blur-sm border border-white/20;
+    @apply bg-white/60 backdrop-blur-xl border border-white/30 shadow-lg;
   }
   
   .dark .glass-effect {
-    @apply bg-black/20 backdrop-blur-sm border border-white/10;
+    @apply bg-card/40 backdrop-blur-xl border border-white/10 shadow-xl;
   }
   
   .hover-scale {
