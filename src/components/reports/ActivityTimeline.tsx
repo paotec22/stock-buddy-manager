@@ -1,9 +1,18 @@
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
-import { ShoppingCart, Package, DollarSign, TrendingDown, Clock } from "lucide-react";
+import { ShoppingCart, Package, DollarSign, TrendingDown, Clock, Filter } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ActivityLog {
   id: string;
@@ -20,7 +29,25 @@ interface ActivityTimelineProps {
   searchTerm?: string;
 }
 
+const TABLE_OPTIONS = [
+  { value: "all", label: "All activities" },
+  { value: "sales", label: "Sales" },
+  { value: "inventory list", label: "Inventory" },
+  { value: "installations", label: "Installations" },
+  { value: "expenses", label: "Expenses" },
+];
+
+const ACTION_OPTIONS = [
+  { value: "all", label: "All actions" },
+  { value: "INSERT", label: "Added" },
+  { value: "UPDATE", label: "Updated" },
+  { value: "DELETE", label: "Deleted" },
+];
+
 export function ActivityTimeline({ searchTerm = "" }: ActivityTimelineProps) {
+  const [tableFilter, setTableFilter] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+
   const { data: logs, isLoading } = useQuery({
     queryKey: ['activity-logs'],
     queryFn: async () => {
@@ -35,13 +62,30 @@ export function ActivityTimeline({ searchTerm = "" }: ActivityTimelineProps) {
     }
   });
 
-  const filteredLogs = searchTerm.trim()
-    ? logs?.filter(log =>
-        log.item_description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.action_type?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : logs;
+  const filteredLogs = useMemo(() => {
+    let result = logs ?? [];
+
+    if (tableFilter !== "all") {
+      result = result.filter(log => log.table_name === tableFilter);
+    }
+
+    if (actionFilter !== "all") {
+      result = result.filter(log => log.action_type === actionFilter);
+    }
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(log =>
+        log.item_description?.toLowerCase().includes(term) ||
+        log.location?.toLowerCase().includes(term) ||
+        log.action_type?.toLowerCase().includes(term)
+      );
+    }
+
+    return result;
+  }, [logs, tableFilter, actionFilter, searchTerm]);
+
+  const hasActiveFilters = tableFilter !== "all" || actionFilter !== "all";
 
   const getActionIcon = (tableName: string) => {
     switch (tableName) {
@@ -77,69 +121,112 @@ export function ActivityTimeline({ searchTerm = "" }: ActivityTimelineProps) {
     return `${action} ${table}`;
   };
 
-  if (isLoading) {
-    return <div className="py-8 text-center text-muted-foreground">Loading activity...</div>;
-  }
-
-  if (!filteredLogs?.length) {
-    return <div className="py-8 text-center text-muted-foreground">No recent activity found</div>;
-  }
-
   return (
     <div className="space-y-4">
-      {filteredLogs.map((log, index) => (
-        <div key={log.id} className="relative">
-          {/* Timeline line */}
-          {index < filteredLogs.length - 1 && (
-            <div className="absolute left-6 top-12 w-0.5 h-full bg-border" />
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pb-2 border-b">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Filter className="h-4 w-4" />
+          <span>Filter activity</span>
+          {hasActiveFilters && (
+            <Badge variant="secondary" className="ml-1">
+              {(tableFilter !== "all" ? 1 : 0) + (actionFilter !== "all" ? 1 : 0)} active
+            </Badge>
           )}
-          
-          <div className="flex gap-4 pb-4">
-            {/* Icon */}
-            <div className={`flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center ${getActionColor(log.action_type)}`}>
-              {getActionIcon(log.table_name)}
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 min-w-0 bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between gap-4 mb-2">
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">
-                    {log.item_description}
-                  </h4>
-                  <Badge variant="outline" className={getActionColor(log.action_type)}>
-                    {getActionLabel(log.action_type, log.table_name)}
-                  </Badge>
-                </div>
-                <time className="text-xs text-muted-foreground whitespace-nowrap">
-                  {format(new Date(log.created_at), 'MMM dd, h:mm a')}
-                </time>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
-                {log.location && (
-                  <div>
-                    <span className="text-muted-foreground">Location:</span>
-                    <p className="font-medium">{log.location}</p>
-                  </div>
-                )}
-                {log.quantity !== null && (
-                  <div>
-                    <span className="text-muted-foreground">Quantity:</span>
-                    <p className="font-medium">{log.quantity}</p>
-                  </div>
-                )}
-                {log.amount !== null && (
-                  <div>
-                    <span className="text-muted-foreground">Amount:</span>
-                    <p className="font-medium text-primary">{formatCurrency(log.amount)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
-      ))}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Select value={tableFilter} onValueChange={setTableFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {TABLE_OPTIONS.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={actionFilter} onValueChange={setActionFilter}>
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder="Action" />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTION_OPTIONS.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setTableFilter("all");
+                setActionFilter("all");
+              }}
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="py-8 text-center text-muted-foreground">Loading activity...</div>
+      ) : !filteredLogs.length ? (
+        <div className="py-8 text-center text-muted-foreground">No activity found</div>
+      ) : (
+        <div className="space-y-4">
+          {filteredLogs.map((log, index) => (
+            <div key={log.id} className="relative">
+              {index < filteredLogs.length - 1 && (
+                <div className="absolute left-6 top-12 w-0.5 h-full bg-border" />
+              )}
+
+              <div className="flex gap-4 pb-4">
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center ${getActionColor(log.action_type)}`}>
+                  {getActionIcon(log.table_name)}
+                </div>
+
+                <div className="flex-1 min-w-0 bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-1">
+                        {log.item_description}
+                      </h4>
+                      <Badge variant="outline" className={getActionColor(log.action_type)}>
+                        {getActionLabel(log.action_type, log.table_name)}
+                      </Badge>
+                    </div>
+                    <time className="text-xs text-muted-foreground whitespace-nowrap">
+                      {format(new Date(log.created_at), 'MMM dd, h:mm a')}
+                    </time>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
+                    {log.location && (
+                      <div>
+                        <span className="text-muted-foreground">Location:</span>
+                        <p className="font-medium">{log.location}</p>
+                      </div>
+                    )}
+                    {log.quantity !== null && (
+                      <div>
+                        <span className="text-muted-foreground">Quantity:</span>
+                        <p className="font-medium">{log.quantity}</p>
+                      </div>
+                    )}
+                    {log.amount !== null && (
+                      <div>
+                        <span className="text-muted-foreground">Amount:</span>
+                        <p className="font-medium text-primary">{formatCurrency(log.amount)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
