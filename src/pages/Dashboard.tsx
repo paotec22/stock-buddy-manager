@@ -35,10 +35,12 @@ const Dashboard = () => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger-children">
-          <Card className="card-hover">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <DollarSign className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-24" /> : (
@@ -50,10 +52,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          <Card className="card-hover">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">30-Day Net Profit</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Activity className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-24" /> : (
@@ -70,10 +74,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="card-hover">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">30-Day Expenses</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <CreditCard className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-24" /> : (
@@ -85,10 +91,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="card-hover bg-primary/5 border-primary/20">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Installations</CardTitle>
-              <Wrench className="h-4 w-4 text-primary" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Wrench className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-16" /> : (
@@ -102,7 +110,7 @@ const Dashboard = () => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-7 mt-4">
-          <Card className="col-span-4 md:col-span-7 lg:col-span-5 card-hover">
+          <Card className="col-span-4 md:col-span-7 lg:col-span-5 card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader>
               <CardTitle>Revenue Trend (30 Days)</CardTitle>
             </CardHeader>
