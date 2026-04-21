@@ -23,20 +23,24 @@ const Dashboard = () => {
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'inventory_manager', 'user']}>
       <div className="flex flex-col gap-6 animate-fade-in">
-        <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-6 md:p-8 shadow-sm">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
-          <div className="relative">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back. Here's what's happening with your store today.</p>
+        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 md:p-8 shadow-sm">
+          <div className="absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="relative flex items-center gap-3">
+            <span className="h-8 w-1.5 rounded-full bg-primary" />
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground mt-1">Welcome back. Here's what's happening with your store today.</p>
+            </div>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger-children">
-          <Card className="card-hover">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <DollarSign className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-24" /> : (
@@ -48,10 +52,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          <Card className="card-hover">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">30-Day Net Profit</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Activity className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-24" /> : (
@@ -68,10 +74,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="card-hover">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">30-Day Expenses</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <CreditCard className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-24" /> : (
@@ -83,10 +91,12 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="card-hover bg-primary/5 border-primary/20">
+          <Card className="card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Installations</CardTitle>
-              <Wrench className="h-4 w-4 text-primary" />
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Wrench className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-8 w-16" /> : (
@@ -100,7 +110,7 @@ const Dashboard = () => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-7 mt-4">
-          <Card className="col-span-4 md:col-span-7 lg:col-span-5 card-hover">
+          <Card className="col-span-4 md:col-span-7 lg:col-span-5 card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader>
               <CardTitle>Revenue Trend (30 Days)</CardTitle>
             </CardHeader>
@@ -154,7 +164,7 @@ const Dashboard = () => {
           </Card>
           
           {/* We'll add the recent activity logic in the next iteration if needed, for now a nice aesthetic placeholder for visual balance */}
-          <Card className="col-span-3 md:col-span-7 lg:col-span-2 card-hover">
+          <Card className="col-span-3 md:col-span-7 lg:col-span-2 card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader>
               <CardTitle>System Alerts</CardTitle>
             </CardHeader>
