@@ -36,31 +36,37 @@ const SalesHeader = ({
 }) => {
   return (
     <div className="flex flex-col gap-4 mb-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:gap-4">
-          <h1 className="section-title">Sales Management</h1>
-          <div className="w-full md:w-[250px]">
-            <SearchInput 
-              value={searchTerm}
-              onChange={onSearchChange}
-              placeholder="Search sales..."
-            />
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 md:p-6 shadow-sm">
+        <div className="absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-3">
+              <span className="h-8 w-1.5 rounded-full bg-primary" />
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Sales Management</h1>
+            </div>
+            <div className="w-full md:w-[260px]">
+              <SearchInput 
+                value={searchTerm}
+                onChange={onSearchChange}
+                placeholder="Search sales..."
+              />
+            </div>
           </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button onClick={onExport} variant="outline" className="btn-with-icon">
-            <FileSpreadsheet className="h-4 w-4" />
-            <span>Export</span>
-          </Button>
-          <Button onClick={onBulkUpload} variant="outline" className="btn-with-icon">
-            <Upload className="h-4 w-4" />
-            <span>Bulk Upload</span>
-          </Button>
-          <Button onClick={onAddSale} className="btn-with-icon">
-            <Plus className="h-4 w-4" />
-            <span>Record Sale</span>
-          </Button>
+
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={onExport} variant="outline" size="sm" className="btn-with-icon bg-card/70 backdrop-blur-sm">
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Export</span>
+            </Button>
+            <Button onClick={onBulkUpload} variant="outline" size="sm" className="btn-with-icon bg-card/70 backdrop-blur-sm">
+              <Upload className="h-4 w-4" />
+              <span>Bulk Upload</span>
+            </Button>
+            <Button onClick={onAddSale} size="sm" className="btn-with-icon btn-primary">
+              <Plus className="h-4 w-4" />
+              <span>Record Sale</span>
+            </Button>
+          </div>
         </div>
       </div>
 
