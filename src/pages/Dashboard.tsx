@@ -164,7 +164,7 @@ const Dashboard = () => {
           </Card>
           
           {/* We'll add the recent activity logic in the next iteration if needed, for now a nice aesthetic placeholder for visual balance */}
-          <Card className="col-span-3 md:col-span-7 lg:col-span-2 card-hover">
+          <Card className="col-span-3 md:col-span-7 lg:col-span-2 card-hover bg-card/70 backdrop-blur-sm border-border/60">
             <CardHeader>
               <CardTitle>System Alerts</CardTitle>
             </CardHeader>
