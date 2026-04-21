@@ -23,12 +23,14 @@ const Dashboard = () => {
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'inventory_manager', 'user']}>
       <div className="flex flex-col gap-6 animate-fade-in">
-        <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-6 md:p-8 shadow-sm">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
-          <div className="relative">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back. Here's what's happening with your store today.</p>
+        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 md:p-8 shadow-sm">
+          <div className="absolute -right-24 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="relative flex items-center gap-3">
+            <span className="h-8 w-1.5 rounded-full bg-primary" />
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground mt-1">Welcome back. Here's what's happening with your store today.</p>
+            </div>
           </div>
         </div>
 
