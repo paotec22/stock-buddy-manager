@@ -9,6 +9,8 @@ import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryGrandTotal } from "./InventoryGrandTotal";
 import { useOfflineInventoryOperations } from "@/hooks/useOfflineInventoryOperations";
 import { getStockStatus, StockStatus } from "@/components/ui/status-badge";
+import { exportInventoryReport } from "@/utils/inventoryExport";
+import { toast } from "sonner";
 
 interface InventoryContentContainerProps {
   inventoryItems: InventoryItem[];
