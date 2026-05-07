@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Upload, WifiOff, CloudOff } from "lucide-react";
+import { Plus, Upload, WifiOff, CloudOff, Download } from "lucide-react";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
 
@@ -9,6 +9,7 @@ interface InventoryHeaderProps {
   onLocationChange: (location: string) => void;
   onAddItem: () => void;
   onBulkUpload: () => void;
+  onExport?: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
   isOffline?: boolean;
@@ -22,6 +23,7 @@ export function InventoryHeader({
   onLocationChange,
   onAddItem,
   onBulkUpload,
+  onExport,
   searchTerm,
   onSearchChange,
   isOffline = false,
@@ -74,6 +76,12 @@ export function InventoryHeader({
             <Upload className="mr-2 h-4 w-4" />
             Bulk Upload
           </Button>
+          {onExport && (
+            <Button variant="outline" onClick={onExport} className="hover-scale bg-white/60 dark:bg-black/20 border-gray-200 dark:border-gray-700">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          )}
         </div>
       </div>
     </div>

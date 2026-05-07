@@ -9,6 +9,8 @@ import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { InventoryGrandTotal } from "./InventoryGrandTotal";
 import { useOfflineInventoryOperations } from "@/hooks/useOfflineInventoryOperations";
 import { getStockStatus, StockStatus } from "@/components/ui/status-badge";
+import { exportInventoryReport } from "@/utils/inventoryExport";
+import { toast } from "sonner";
 
 interface InventoryContentContainerProps {
   inventoryItems: InventoryItem[];
@@ -57,6 +59,15 @@ export function InventoryContentContainer({
         onLocationChange={setSelectedLocation}
         onAddItem={() => setShowAddForm(true)}
         onBulkUpload={() => setShowBulkUpload(true)}
+        onExport={async () => {
+          try {
+            await exportInventoryReport(filteredItems, selectedLocation);
+            toast.success("Inventory report exported");
+          } catch (e) {
+            console.error(e);
+            toast.error("Failed to export inventory");
+          }
+        }}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         isOffline={isOffline}
