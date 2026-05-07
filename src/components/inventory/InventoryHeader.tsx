@@ -9,6 +9,7 @@ interface InventoryHeaderProps {
   onLocationChange: (location: string) => void;
   onAddItem: () => void;
   onBulkUpload: () => void;
+  onExport?: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
   isOffline?: boolean;
