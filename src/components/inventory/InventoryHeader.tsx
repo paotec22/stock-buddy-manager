@@ -23,6 +23,7 @@ export function InventoryHeader({
   onLocationChange,
   onAddItem,
   onBulkUpload,
+  onExport,
   searchTerm,
   onSearchChange,
   isOffline = false,
