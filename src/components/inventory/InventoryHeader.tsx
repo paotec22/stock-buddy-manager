@@ -76,6 +76,12 @@ export function InventoryHeader({
             <Upload className="mr-2 h-4 w-4" />
             Bulk Upload
           </Button>
+          {onExport && (
+            <Button variant="outline" onClick={onExport} className="hover-scale bg-white/60 dark:bg-black/20 border-gray-200 dark:border-gray-700">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          )}
         </div>
       </div>
     </div>
