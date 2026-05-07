@@ -59,6 +59,15 @@ export function InventoryContentContainer({
         onLocationChange={setSelectedLocation}
         onAddItem={() => setShowAddForm(true)}
         onBulkUpload={() => setShowBulkUpload(true)}
+        onExport={async () => {
+          try {
+            await exportInventoryReport(filteredItems, selectedLocation);
+            toast.success("Inventory report exported");
+          } catch (e) {
+            console.error(e);
+            toast.error("Failed to export inventory");
+          }
+        }}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         isOffline={isOffline}
