@@ -10,6 +10,7 @@ import { InventoryGrandTotal } from "./InventoryGrandTotal";
 import { useOfflineInventoryOperations } from "@/hooks/useOfflineInventoryOperations";
 import { getStockStatus, StockStatus } from "@/components/ui/status-badge";
 import { exportInventoryReport } from "@/utils/inventoryExport";
+import { InventoryExportModal } from "@/components/inventory/InventoryExportModal";
 import { toast } from "sonner";
 
 interface InventoryContentContainerProps {
@@ -29,6 +30,7 @@ export function InventoryContentContainer({
 }: InventoryContentContainerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StockStatus | null>(null);
   
@@ -59,15 +61,7 @@ export function InventoryContentContainer({
         onLocationChange={setSelectedLocation}
         onAddItem={() => setShowAddForm(true)}
         onBulkUpload={() => setShowBulkUpload(true)}
-        onExport={async () => {
-          try {
-            await exportInventoryReport(filteredItems, selectedLocation);
-            toast.success("Inventory report exported");
-          } catch (e) {
-            console.error(e);
-            toast.error("Failed to export inventory");
-          }
-        }}
+        onExport={() => setShowExportModal(true)}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         isOffline={isOffline}
@@ -75,6 +69,20 @@ export function InventoryContentContainer({
       />
 
       
+
+      <InventoryExportModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        onExport={async (range) => {
+          try {
+            const count = await exportInventoryReport(filteredItems, selectedLocation, range);
+            toast.success(`Exported ${count} item${count === 1 ? "" : "s"}`);
+          } catch (e) {
+            console.error(e);
+            toast.error("Failed to export inventory");
+          }
+        }}
+      />
 
       <AddInventoryForm 
         open={showAddForm} 
