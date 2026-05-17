@@ -119,7 +119,7 @@ export function TopNavbar() {
         {/* Logo */}
         <NavLink to="/inventory" className="flex items-center gap-2 mr-6 group">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/30 group-hover:shadow-primary/50 transition-shadow duration-300 text-[#095ef1]">
-            <span className="font-bold text-primary-foreground text-sm text-[#095ef1]">SI</span>
+            <span className="font-bold text-primary-foreground text-sm">SI</span>
           </div>
           <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">SI Manager</span>
         </NavLink>
