@@ -40,7 +40,7 @@ function NavItem({ to, icon: Icon, children, onClick }: NavItemProps) {
         cn(
           "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
           isActive
-            ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-md shadow-primary/30"
+            ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:scale-[1.03]"
         )
       }
@@ -118,10 +118,10 @@ export function TopNavbar() {
       <div className="flex h-16 items-center px-4 md:px-8 lg:px-12 w-full">
         {/* Logo */}
         <NavLink to="/inventory" className="flex items-center gap-2 mr-6 group">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/30 group-hover:shadow-primary/50 transition-shadow duration-300 text-[#095ef1]">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/30 group-hover:shadow-primary/50 transition-shadow duration-300 text-[#095ef1]">
             <span className="font-bold text-primary-foreground text-sm">SI</span>
           </div>
-          <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">SI Manager</span>
+          <span className="font-bold text-lg text-primary">SI Manager</span>
         </NavLink>
 
         {/* Desktop Navigation */}
