@@ -13,15 +13,19 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+
+export type InventoryExportMode = "snapshot" | "added";
 
 interface InventoryExportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onExport: (range: { from?: Date; to?: Date }) => Promise<void> | void;
+  onExport: (range: { from?: Date; to?: Date; mode: InventoryExportMode }) => Promise<void> | void;
 }
 
 export function InventoryExportModal({ open, onOpenChange, onExport }: InventoryExportModalProps) {
+  const [mode, setMode] = useState<InventoryExportMode>("snapshot");
   const [from, setFrom] = useState<Date | undefined>(undefined);
   const [to, setTo] = useState<Date | undefined>(new Date());
   const [isExporting, setIsExporting] = useState(false);
@@ -29,7 +33,7 @@ export function InventoryExportModal({ open, onOpenChange, onExport }: Inventory
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      await onExport({ from, to });
+      await onExport({ from, to, mode });
       onOpenChange(false);
     } finally {
       setIsExporting(false);
@@ -77,26 +81,58 @@ export function InventoryExportModal({ open, onOpenChange, onExport }: Inventory
     </div>
   );
 
+  const requireFrom = mode === "added";
+  const canExport = !!to && (!requireFrom || !!from);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Export Inventory Report</DialogTitle>
           <DialogDescription>
-            Choose a period. Quantities will reflect each item's stock as of the "To" date.
+            Choose what to export and the time period.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-2">
-          <DateField label="From (optional)" value={from} onChange={setFrom} placeholder="Earliest date" />
-          <DateField label="To" value={to} onChange={setTo} placeholder="As of date" />
+          <div className="space-y-2">
+            <Label>Export type</Label>
+            <RadioGroup value={mode} onValueChange={(v) => setMode(v as InventoryExportMode)} className="gap-2">
+              <div className="flex items-start space-x-2 rounded-md border p-3">
+                <RadioGroupItem value="snapshot" id="mode-snapshot" className="mt-1" />
+                <Label htmlFor="mode-snapshot" className="font-normal cursor-pointer">
+                  <div className="font-medium">Inventory status (snapshot)</div>
+                  <div className="text-xs text-muted-foreground">
+                    Exact stock each item had as of the "To" date.
+                  </div>
+                </Label>
+              </div>
+              <div className="flex items-start space-x-2 rounded-md border p-3">
+                <RadioGroupItem value="added" id="mode-added" className="mt-1" />
+                <Label htmlFor="mode-added" className="font-normal cursor-pointer">
+                  <div className="font-medium">Inventory added in period</div>
+                  <div className="text-xs text-muted-foreground">
+                    Only items added between From and To, with quantities added.
+                  </div>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <DateField
+            label={mode === "added" ? "From" : "From (optional)"}
+            value={from}
+            onChange={setFrom}
+            placeholder="Start date"
+          />
+          <DateField label="To" value={to} onChange={setTo} placeholder="End date" />
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isExporting}>
             Cancel
           </Button>
-          <Button onClick={handleExport} disabled={isExporting || !to}>
+          <Button onClick={handleExport} disabled={isExporting || !canExport}>
             <Download className="mr-2 h-4 w-4" />
             {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
