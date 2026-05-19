@@ -9,11 +9,35 @@ export interface ExportDateRange {
   mode?: InventoryExportMode;
 }
 
+// Supabase caps responses at 1000 rows by default — paginate to get everything.
+async function fetchAllInventoryLogs(toCutoffIso: string) {
+  const pageSize = 1000;
+  let from = 0;
+  const all: any[] = [];
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { data, error } = await supabase
+      .from("activity_logs")
+      .select("item_description, location, created_at, action_type, quantity")
+      .eq("table_name", "inventory list")
+      .lte("created_at", toCutoffIso)
+      .order("created_at", { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
+
 /**
  * Export inventory in one of two modes:
  *
  * - "snapshot" (default): exports each item with the exact quantity it had as
- *   of the end of the "to" date, reconstructed from `activity_logs`.
+ *   of the end of the "to" date, reconstructed from `activity_logs`. If no
+ *   log history exists for an item, falls back to its current quantity.
  * - "added": exports only items that were added (INSERT) during the period
  *   [from, to], showing the quantity that was added in that window.
  */
@@ -29,17 +53,7 @@ export async function exportInventoryReport(
   const fromCutoff = range.from ? new Date(range.from) : undefined;
   if (fromCutoff) fromCutoff.setHours(0, 0, 0, 0);
 
-  // For "snapshot" we need all logs up to toCutoff to reconstruct quantity.
-  // For "added" we need INSERT logs within [from, to] (and any earlier INSERT
-  // to determine the "first added" date).
-  const { data: logs, error } = await supabase
-    .from("activity_logs")
-    .select("item_description, location, created_at, action_type, quantity")
-    .eq("table_name", "inventory list")
-    .lte("created_at", toCutoff.toISOString())
-    .order("created_at", { ascending: true });
-
-  if (error) throw error;
+  const logs = await fetchAllInventoryLogs(toCutoff.toISOString());
 
   const escape = (v: any) => {
     const s = v === null || v === undefined ? "" : String(v);
@@ -54,11 +68,10 @@ export async function exportInventoryReport(
   let exportedCount = 0;
 
   if (mode === "snapshot") {
-    // Reconstruct first-added date + last-known quantity at/before toCutoff
     const firstAdded = new Map<string, string>();
     const lastQty = new Map<string, number>();
 
-    (logs || []).forEach((l: any) => {
+    logs.forEach((l: any) => {
       const key = `${l.item_description}||${l.location}`;
       if (l.action_type === "INSERT" && !firstAdded.has(key)) {
         firstAdded.set(key, l.created_at);
@@ -73,11 +86,15 @@ export async function exportInventoryReport(
     items.forEach((item) => {
       const key = `${item["Item Description"]}||${item.location}`;
       const addedRaw = firstAdded.get(key);
-      if (!addedRaw) return;
+      const addedDate = addedRaw ? new Date(addedRaw) : undefined;
 
-      const addedDate = new Date(addedRaw);
-      if (addedDate > toCutoff) return;
-      if (fromCutoff && addedDate < fromCutoff) return;
+      // If a from-date is set, only include items first added on/after it
+      // (items with no recorded INSERT can't be date-filtered, so skip).
+      if (fromCutoff) {
+        if (!addedDate) return;
+        if (addedDate < fromCutoff) return;
+        if (addedDate > toCutoff) return;
+      }
 
       const qty = lastQty.has(key) ? lastQty.get(key)! : Number(item.Quantity ?? 0);
       const price = Number(item.Price ?? 0);
@@ -86,26 +103,33 @@ export async function exportInventoryReport(
       exportedCount += 1;
 
       rows.push(
-        [item["Item Description"], item.location, qty, price, total, addedDate.toLocaleDateString()]
+        [
+          item["Item Description"],
+          item.location,
+          qty,
+          price,
+          total,
+          addedDate ? addedDate.toLocaleDateString() : "—",
+        ]
           .map(escape)
           .join(",")
       );
     });
   } else {
-    // "added" mode: include INSERT events within [from, to]
     headers = ["Item Description", "Location", "Quantity Added", "Price", "Total", "Date Added"];
 
-    // Price lookup from current inventory
     const priceLookup = new Map<string, number>();
     items.forEach((item) => {
       priceLookup.set(`${item["Item Description"]}||${item.location}`, Number(item.Price ?? 0));
     });
 
-    (logs || []).forEach((l: any) => {
+    logs.forEach((l: any) => {
       if (l.action_type !== "INSERT") return;
       const addedDate = new Date(l.created_at);
       if (fromCutoff && addedDate < fromCutoff) return;
       if (addedDate > toCutoff) return;
+      // Respect location selection if items are filtered to one location
+      if (location && l.location && l.location !== location) return;
 
       const key = `${l.item_description}||${l.location}`;
       const qty = Number(l.quantity ?? 0);
