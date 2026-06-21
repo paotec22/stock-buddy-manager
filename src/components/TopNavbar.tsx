@@ -14,6 +14,7 @@ import {
   Moon,
   Sun,
   ClipboardList,
+  Users,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -133,6 +134,9 @@ export function TopNavbar() {
             <>
               <NavItem to="/sales" icon={TrendingUp}>
                 Sales
+              </NavItem>
+              <NavItem to="/customers" icon={Users}>
+                Customers
               </NavItem>
               <NavItem to="/request" icon={ClipboardList}>
                 Request
