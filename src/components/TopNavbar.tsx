@@ -229,6 +229,9 @@ export function TopNavbar() {
                       <MobileNavItem to="/sales" icon={TrendingUp} onClick={closeMobile}>
                         Sales
                       </MobileNavItem>
+                      <MobileNavItem to="/customers" icon={Users} onClick={closeMobile}>
+                        Customers
+                      </MobileNavItem>
                       <MobileNavItem to="/request" icon={ClipboardList} onClick={closeMobile}>
                         Request
                       </MobileNavItem>
