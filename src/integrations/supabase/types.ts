@@ -77,6 +77,42 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number
@@ -269,6 +305,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_address: string | null
+          customer_id: string | null
           customer_name: string
           customer_phone: string | null
           due_date: string | null
@@ -285,6 +322,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_address?: string | null
+          customer_id?: string | null
           customer_name: string
           customer_phone?: string | null
           due_date?: string | null
@@ -301,6 +339,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_address?: string | null
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string | null
           due_date?: string | null
@@ -314,7 +353,15 @@ export type Database = {
           total_amount?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_assignments: {
         Row: {
@@ -377,6 +424,7 @@ export type Database = {
         Row: {
           actual_purchase_price: number | null
           amount_paid: number
+          customer_id: string | null
           id: number
           item_id: number | null
           notes: string | null
@@ -390,6 +438,7 @@ export type Database = {
         Insert: {
           actual_purchase_price?: number | null
           amount_paid?: number
+          customer_id?: string | null
           id?: number
           item_id?: number | null
           notes?: string | null
@@ -403,6 +452,7 @@ export type Database = {
         Update: {
           actual_purchase_price?: number | null
           amount_paid?: number
+          customer_id?: string | null
           id?: number
           item_id?: number | null
           notes?: string | null
@@ -414,6 +464,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_item_id_fkey"
             columns: ["item_id"]
