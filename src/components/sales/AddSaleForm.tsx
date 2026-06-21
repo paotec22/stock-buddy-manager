@@ -15,6 +15,8 @@ import { LocationSelect } from "./form/LocationSelect";
 import { ItemSelect } from "./form/ItemSelect";
 import { FormData } from "./types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CustomerSelector, type CustomerLite } from "@/components/customers/CustomerSelector";
+import { Label } from "@/components/ui/label";
 
 interface AddSaleFormProps {
   open: boolean;
@@ -25,6 +27,7 @@ interface AddSaleFormProps {
 export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Ikeja");
+  const [customer, setCustomer] = useState<CustomerLite | null>(null);
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
@@ -95,7 +98,8 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         selectedItem,
         data.notes,
         data.paymentStatus,
-        data.paymentStatus === 'part_paid' ? parseFloat(data.amountPaid) : undefined
+        data.paymentStatus === 'part_paid' ? parseFloat(data.amountPaid) : undefined,
+        customer?.id ?? null
       );
 
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
@@ -103,6 +107,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
       
       toast.success("Sale recorded successfully");
       form.reset();
+      setCustomer(null);
       onSuccess?.();
       onOpenChange(false);
     } catch (error: any) {
@@ -134,6 +139,10 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+            <div>
+              <Label className="mb-1.5 block">Customer (optional)</Label>
+              <CustomerSelector value={customer?.id ?? null} onChange={setCustomer} />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <LocationSelect
                 form={form}
