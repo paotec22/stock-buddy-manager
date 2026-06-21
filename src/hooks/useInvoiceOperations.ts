@@ -16,7 +16,8 @@ export const useInvoiceOperations = (
   items: NewInvoiceItem[],
   userId: string | undefined,
   includeVat: boolean = false,
-  discountPercent: number = 0
+  discountPercent: number = 0,
+  customerId: string | null = null
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedInvoices, setSavedInvoices] = useState<Invoice[]>([]);
@@ -65,6 +66,7 @@ export const useInvoiceOperations = (
         .insert({ 
           customer_name: customerName, 
           customer_phone: customerPhone,
+          customer_id: customerId,
           user_id: userId,
           invoice_number: totals.invoice_number,
           subtotal: totals.subtotal,

@@ -20,6 +20,7 @@ type NewInvoiceItem = Omit<Database['public']['Tables']['invoice_items']['Row'],
 const CreateInvoice = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [items, setItems] = useState<NewInvoiceItem[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]); // Default to NGN
   const [amountPaid, setAmountPaid] = useState(0);
@@ -40,7 +41,7 @@ const CreateInvoice = () => {
     handleDownload,
     handleShowSavedInvoices,
     handlePrintSavedInvoice
-  } = useInvoiceOperations(customerName, customerPhone, items, session?.user.id, includeVat, discountPercent);
+  } = useInvoiceOperations(customerName, customerPhone, items, session?.user.id, includeVat, discountPercent, selectedCustomerId);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -74,6 +75,8 @@ const CreateInvoice = () => {
             onNameChange={setCustomerName}
             customerPhone={customerPhone}
             onPhoneChange={setCustomerPhone}
+            selectedCustomerId={selectedCustomerId}
+            onCustomerSelect={(c) => setSelectedCustomerId(c?.id ?? null)}
           />
           
           <div className="flex justify-end mb-6">
