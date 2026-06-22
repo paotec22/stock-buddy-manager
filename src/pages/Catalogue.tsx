@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
@@ -106,7 +105,6 @@ export default function Catalogue() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((item) => {
             const url = item.image_url ? signed[item.image_url] : null;
-            const inStock = (item.Quantity || 0) > 0;
             return (
               <Card key={`${item.location}-${item.id}`} className="overflow-hidden group hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-muted relative overflow-hidden">
@@ -122,12 +120,6 @@ export default function Catalogue() {
                       <ImageOff className="h-10 w-10" />
                     </div>
                   )}
-                  <Badge
-                    variant={inStock ? "default" : "destructive"}
-                    className="absolute top-2 right-2"
-                  >
-                    {inStock ? `${item.Quantity} in stock` : "Out of stock"}
-                  </Badge>
                 </div>
                 <CardContent className="p-4 space-y-1">
                   <h3 className="font-semibold leading-tight line-clamp-2">
