@@ -189,6 +189,19 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2">
+              <FormLabel>Item Image (optional)</FormLabel>
+              <div className="flex items-center gap-3">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="h-16 w-16 rounded-md object-cover border" />
+                ) : (
+                  <div className="h-16 w-16 rounded-md border bg-muted" />
+                )}
+                <Input type="file" accept="image/*" onChange={handleImageChange} className="flex-1" />
+              </div>
+            </div>
+
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Adding..." : "Add Item"}
             </Button>
