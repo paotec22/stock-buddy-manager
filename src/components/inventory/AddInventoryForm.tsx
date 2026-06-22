@@ -37,6 +37,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -47,6 +49,12 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
       location: "Ikeja",
     },
   });
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    setImagePreview(file ? URL.createObjectURL(file) : null);
+  };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -63,8 +71,29 @@ export function AddInventoryForm({ open, onOpenChange }: AddInventoryFormProps) 
 
       if (error) throw error;
 
+      if (imageFile) {
+        const { data: row, error: lookupError } = await supabase
+          .from('inventory list')
+          .select('id')
+          .eq('Item Description', data.itemDescription)
+          .eq('location', data.location)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        if (row?.id) {
+          const { uploadInventoryImage } = await import('@/lib/inventoryImages');
+          const path = await uploadInventoryImage(imageFile, row.id);
+          await supabase
+            .from('inventory list')
+            .update({ image_url: path } as never)
+            .eq('id', row.id)
+            .eq('location', data.location);
+        }
+      }
+
       toast.success("Item added to inventory");
       form.reset();
+      setImageFile(null);
+      setImagePreview(null);
       onOpenChange(false);
     } catch (error) {
       if (error instanceof Error) {
