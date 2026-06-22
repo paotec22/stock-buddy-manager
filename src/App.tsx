@@ -23,6 +23,7 @@ import CreateInvoice from "./pages/CreateInvoice";
 import ProfitAnalysis from "./pages/ProfitAnalysis";
 import Request from "./pages/Request";
 import Customers from "./pages/Customers";
+import Catalogue from "./pages/Catalogue";
 
 // Animated Routes Component
 function AnimatedRoutes() {
@@ -42,6 +43,7 @@ function AnimatedRoutes() {
         <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
         <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
         <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
+        <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>

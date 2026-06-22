@@ -15,6 +15,7 @@ import {
   Sun,
   ClipboardList,
   Users,
+  ImageIcon,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -130,6 +131,9 @@ export function TopNavbar() {
           <NavItem to="/inventory" icon={Package}>
             Inventory
           </NavItem>
+          <NavItem to="/catalogue" icon={ImageIcon}>
+            Catalogue
+          </NavItem>
           {!isInventoryManager && (
             <>
               <NavItem to="/sales" icon={TrendingUp}>
@@ -223,6 +227,9 @@ export function TopNavbar() {
                 <nav className="flex-1 flex flex-col gap-1 p-3 overflow-y-auto">
                   <MobileNavItem to="/inventory" icon={Package} onClick={closeMobile}>
                     Inventory
+                  </MobileNavItem>
+                  <MobileNavItem to="/catalogue" icon={ImageIcon} onClick={closeMobile}>
+                    Catalogue
                   </MobileNavItem>
                   {!isInventoryManager && (
                     <>
