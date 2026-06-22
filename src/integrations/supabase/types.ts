@@ -229,6 +229,7 @@ export type Database = {
       "inventory list": {
         Row: {
           id: number
+          image_url: string | null
           "Item Description": string
           location: string
           Price: number | null
@@ -237,6 +238,7 @@ export type Database = {
         }
         Insert: {
           id?: number
+          image_url?: string | null
           "Item Description": string
           location?: string
           Price?: number | null
@@ -245,6 +247,7 @@ export type Database = {
         }
         Update: {
           id?: number
+          image_url?: string | null
           "Item Description"?: string
           location?: string
           Price?: number | null

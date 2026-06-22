@@ -1,0 +1,1 @@
+ALTER TABLE "public"."inventory list" ADD COLUMN IF NOT EXISTS image_url text;
