@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
 import { StatusBadge, getStockStatus } from "@/components/ui/status-badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { InventoryImageCell } from "./InventoryImageCell";
 
 export interface InventoryTableProps {
   items: InventoryItem[];
@@ -189,6 +190,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     )}
 
                     <div className={`flex items-center gap-3 ${isSelected ? "pl-6" : ""}`}>
+                      <InventoryImageCell item={item} />
                       {editingDescription[item.id] ? (
                         <input
                           type="text"
