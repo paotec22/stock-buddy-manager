@@ -83,6 +83,44 @@ export async function uploadInventoryImage(file: File, itemId: number | string):
   return path;
 }
 
+/**
+ * Re-compress and re-upload an existing inventory image already stored in the bucket.
+ * Returns the new storage path (or null if the image was already small enough / not found).
+ */
+export async function optimizeExistingInventoryImage(
+  path: string,
+  itemId: number | string
+): Promise<{ newPath: string; oldSize: number; newSize: number } | null> {
+  if (!path || /^https?:\/\//.test(path)) return null;
+
+  const { data: blob, error: dlError } = await supabase.storage
+    .from(INVENTORY_IMAGES_BUCKET)
+    .download(path);
+  if (dlError || !blob) return null;
+
+  const oldSize = blob.size;
+  // Skip already-small WebP files (< 150KB) to avoid needless work.
+  if (blob.type === "image/webp" && oldSize < 150 * 1024) return null;
+
+  const file = new File([blob], path.split("/").pop() || "image", { type: blob.type || "image/jpeg" });
+  const { blob: compressed, ext, contentType } = await compressImage(file);
+
+  // If the new blob isn't meaningfully smaller, skip.
+  if (compressed.size >= oldSize * 0.9) return null;
+
+  const newPath = `${itemId}/${Date.now()}.${ext}`;
+  const { error: upError } = await supabase.storage
+    .from(INVENTORY_IMAGES_BUCKET)
+    .upload(newPath, compressed, { upsert: true, contentType });
+  if (upError) return null;
+
+  // Best-effort remove the old file
+  await supabase.storage.from(INVENTORY_IMAGES_BUCKET).remove([path]).catch(() => {});
+  urlCache.delete(path);
+
+  return { newPath, oldSize, newSize: compressed.size };
+
+
 // Simple in-memory cache for signed URLs to avoid re-signing on every render.
 const urlCache = new Map<string, { url: string; expires: number }>();
 const SIGN_TTL = 60 * 60; // 1 hour
