@@ -19,6 +19,9 @@ export default function Catalogue() {
   const [search, setSearch] = useState("");
   const [onlyWithImages, setOnlyWithImages] = useState(false);
   const [signed, setSigned] = useState<Record<string, string>>({});
+  const [optimizing, setOptimizing] = useState(false);
+  const [optimizeProgress, setOptimizeProgress] = useState({ done: 0, total: 0 });
+
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["catalogue", location],
