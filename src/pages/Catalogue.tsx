@@ -52,6 +52,46 @@ export default function Catalogue() {
     });
   }, [items, search, onlyWithImages]);
 
+  const handleOptimizeImages = async () => {
+    const targets = items.filter((i) => i.image_url) as (InventoryItem & { image_url: string })[];
+    if (targets.length === 0) {
+      toast.info("No images to optimize");
+      return;
+    }
+    if (!window.confirm(`Optimize ${targets.length} existing image(s)? This may take a minute.`)) return;
+
+    setOptimizing(true);
+    setOptimizeProgress({ done: 0, total: targets.length });
+    let saved = 0;
+    let optimized = 0;
+    for (let i = 0; i < targets.length; i++) {
+      const item = targets[i];
+      try {
+        const result = await optimizeExistingInventoryImage(item.image_url, item.id);
+        if (result) {
+          const { error } = await supabase
+            .from("inventory list")
+            .update({ image_url: result.newPath } as never)
+            .eq("id", item.id)
+            .eq("location", item.location);
+          if (!error) {
+            optimized++;
+            saved += result.oldSize - result.newSize;
+          }
+        }
+      } catch (e) {
+        console.error("optimize failed for", item.id, e);
+      }
+      setOptimizeProgress({ done: i + 1, total: targets.length });
+    }
+    setOptimizing(false);
+    const kb = Math.round(saved / 1024);
+    toast.success(`Optimized ${optimized} image(s). Saved ~${kb} KB.`);
+    // Refresh signed URLs
+    const paths = items.map((i) => i.image_url).filter(Boolean) as string[];
+    setSigned(await getInventoryImageUrls(paths));
+  };
+
   return (
     <div className="space-y-6 fade-in">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -62,11 +102,24 @@ export default function Catalogue() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleOptimizeImages} disabled={optimizing}>
+            {optimizing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Optimizing {optimizeProgress.done}/{optimizeProgress.total}
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" /> Optimize images
+              </>
+            )}
+          </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-2" /> Print / PDF
           </Button>
         </div>
       </div>
+
 
       <Card>
         <CardContent className="p-4 flex flex-col md:flex-row gap-3 md:items-center">
