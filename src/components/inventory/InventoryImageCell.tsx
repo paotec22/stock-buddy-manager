@@ -62,7 +62,7 @@ export function InventoryImageCell({ item, onUpdated }: Props) {
         {busy ? (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         ) : url ? (
-          <img src={url} alt={item["Item Description"]} className="h-full w-full object-cover" />
+          <img src={url} alt={item["Item Description"]} className="h-full w-full object-cover" loading="lazy" decoding="async" width={40} height={40} />
         ) : (
           <ImagePlus className="h-4 w-4 text-muted-foreground" />
         )}
