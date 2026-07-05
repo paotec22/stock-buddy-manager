@@ -6,9 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
-import { getInventoryImageUrls } from "@/lib/inventoryImages";
+import { getInventoryImageUrls, optimizeExistingInventoryImage } from "@/lib/inventoryImages";
 import { formatCurrency } from "@/utils/formatters";
-import { ImageOff, Printer, Search } from "lucide-react";
+import { ImageOff, Printer, Search, Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
 
 const LOCATIONS = ["All", "Ikeja", "Cement", "Uyo"];
 
