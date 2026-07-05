@@ -96,6 +96,42 @@ function cacheSet(path: string, url: string) {
   urlCache.set(path, { url, expires: Date.now() + SIGN_TTL * 1000 });
 }
 
+/**
+ * Re-compress and re-upload an existing inventory image already stored in the bucket.
+ * Returns the new storage path (or null if the image was already small enough / not found).
+ */
+export async function optimizeExistingInventoryImage(
+  path: string,
+  itemId: number | string
+): Promise<{ newPath: string; oldSize: number; newSize: number } | null> {
+  if (!path || /^https?:\/\//.test(path)) return null;
+
+  const { data: blob, error: dlError } = await supabase.storage
+    .from(INVENTORY_IMAGES_BUCKET)
+    .download(path);
+  if (dlError || !blob) return null;
+
+  const oldSize = blob.size;
+  if (blob.type === "image/webp" && oldSize < 150 * 1024) return null;
+
+  const file = new File([blob], path.split("/").pop() || "image", { type: blob.type || "image/jpeg" });
+  const { blob: compressed, ext, contentType } = await compressImage(file);
+
+  if (compressed.size >= oldSize * 0.9) return null;
+
+  const newPath = `${itemId}/${Date.now()}.${ext}`;
+  const { error: upError } = await supabase.storage
+    .from(INVENTORY_IMAGES_BUCKET)
+    .upload(newPath, compressed, { upsert: true, contentType });
+  if (upError) return null;
+
+  await supabase.storage.from(INVENTORY_IMAGES_BUCKET).remove([path]).catch(() => {});
+  urlCache.delete(path);
+
+  return { newPath, oldSize, newSize: compressed.size };
+}
+
+
 export async function getInventoryImageUrl(path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
   if (/^https?:\/\//.test(path)) return path;
