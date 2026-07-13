@@ -27,10 +27,16 @@ export default function Catalogue() {
     queryKey: ["catalogue", location],
     queryFn: async () => {
       let query = supabase.from("inventory list").select("*");
-      if (location !== "All") query = query.eq("location", location);
+      if (location !== "All") {
+        query = query.eq("location", location);
+      } else {
+        query = query.neq("location", "Not to carry");
+      }
       const { data, error } = await query.order("Item Description", { ascending: true });
       if (error) throw error;
-      return (data as InventoryItem[]) || [];
+      const fetchedItems = (data as InventoryItem[]) || [];
+      // Additional safety filter to handle any case-insensitive variations of "Not to carry"
+      return fetchedItems.filter(item => item.location?.toLowerCase() !== "not to carry");
     },
   });
 

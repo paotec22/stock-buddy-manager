@@ -23,12 +23,20 @@ Deno.serve(async (req) => {
       .select('id, "Item Description", Price, Quantity, location, image_url')
       .order('Item Description', { ascending: true })
 
-    if (location && location !== 'All') q = q.eq('location', location)
+    if (location && location !== 'All') {
+      q = q.eq('location', location)
+    } else {
+      q = q.neq('location', 'Not to carry')
+    }
 
     const { data, error } = await q
     if (error) throw error
 
-    const paths = (data ?? [])
+    const filteredData = (data ?? []).filter(
+      (i: any) => i.location?.toLowerCase() !== 'not to carry'
+    )
+
+    const paths = filteredData
       .map((i: any) => i.image_url)
       .filter((p: any): p is string => typeof p === 'string' && p.length > 0 && !/^https?:\/\//.test(p))
 
@@ -43,7 +51,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const items = (data ?? []).map((i: any) => ({
+    const items = filteredData.map((i: any) => ({
       id: i.id,
       description: i['Item Description'],
       price: i.Price,
