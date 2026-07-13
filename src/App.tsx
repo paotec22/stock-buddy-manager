@@ -24,6 +24,7 @@ import ProfitAnalysis from "./pages/ProfitAnalysis";
 import Request from "./pages/Request";
 import Customers from "./pages/Customers";
 import Catalogue from "./pages/Catalogue";
+import PublicCatalogue from "./pages/PublicCatalogue";
 
 // Animated Routes Component
 function AnimatedRoutes() {
@@ -44,6 +45,7 @@ function AnimatedRoutes() {
         <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
         <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
         <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
+        <Route path="/share/catalogue" element={<PublicCatalogue />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>

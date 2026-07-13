@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { getInventoryImageUrls, optimizeExistingInventoryImage } from "@/lib/inventoryImages";
 import { formatCurrency } from "@/utils/formatters";
-import { ImageOff, Printer, Search, Sparkles, Loader2 } from "lucide-react";
+import { ImageOff, Printer, Search, Sparkles, Loader2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -113,6 +113,25 @@ export default function Catalogue() {
                 <Sparkles className="h-4 w-4 mr-2" /> Optimize images
               </>
             )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const link = `${window.location.origin}/share/catalogue`;
+              try {
+                if (navigator.share) {
+                  await navigator.share({ title: "Product Catalogue", url: link });
+                } else {
+                  await navigator.clipboard.writeText(link);
+                  toast.success("Share link copied to clipboard");
+                }
+              } catch {
+                await navigator.clipboard.writeText(link);
+                toast.success("Share link copied to clipboard");
+              }
+            }}
+          >
+            <Share2 className="h-4 w-4 mr-2" /> Share catalogue
           </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-2" /> Print / PDF

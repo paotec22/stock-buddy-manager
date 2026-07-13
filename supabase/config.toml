@@ -2,3 +2,6 @@ project_id = "itycbazttpidqlgmmrot"
 
 [functions.chat-agent]
 verify_jwt = false
+
+[functions.public-catalogue]
+verify_jwt = false
