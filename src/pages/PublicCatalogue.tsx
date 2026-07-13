@@ -4,7 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/utils/formatters";
 import { ImageOff, Search } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
+const SUPABASE_URL = "https://itycbazttpidqlgmmrot.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNiYXp0dHBpZHFsZ21tcm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwNTU3MDEsImV4cCI6MjA1MDYzMTcwMX0.S5Pa5PcYBQiOdJbDvTR_cAHKIfM8uGq-OVONyhpws9o";
 
 const LOCATIONS = ["All", "Ikeja", "Cement", "Uyo"];
 
@@ -27,22 +30,25 @@ export default function PublicCatalogue() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    supabase.functions
-      .invoke("public-catalogue", {
-        method: "GET",
-        headers: {},
-        body: undefined,
-        // @ts-expect-error - query is supported at runtime
-        query: location !== "All" ? { location } : undefined,
-      })
-      .then(({ data, error }) => {
+    const qs = location !== "All" ? `?location=${encodeURIComponent(location)}` : "";
+    fetch(`${SUPABASE_URL}/functions/v1/public-catalogue${qs}`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    })
+      .then(async (res) => {
+        const json = await res.json().catch(() => ({}));
         if (cancelled) return;
-        if (error) {
-          setError(error.message);
+        if (!res.ok) {
+          setError(json?.error || `Request failed (${res.status})`);
           setItems([]);
         } else {
-          setItems((data?.items as PublicItem[]) ?? []);
+          setItems((json.items as PublicItem[]) ?? []);
         }
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e.message);
       })
       .finally(() => !cancelled && setLoading(false));
     return () => {
