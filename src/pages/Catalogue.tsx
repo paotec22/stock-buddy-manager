@@ -12,10 +12,10 @@ import { ImageOff, Printer, Search, Sparkles, Loader2, Share2 } from "lucide-rea
 import { toast } from "sonner";
 
 
-const LOCATIONS = ["All", "Ikeja", "Cement", "Uyo"];
+const LOCATIONS = ["Ikeja"];
 
 export default function Catalogue() {
-  const [location, setLocation] = useState("All");
+  const [location, setLocation] = useState("Ikeja");
   const [search, setSearch] = useState("");
   const [onlyWithImages, setOnlyWithImages] = useState(false);
   const [signed, setSigned] = useState<Record<string, string>>({});
