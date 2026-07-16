@@ -20,7 +20,7 @@ interface PublicItem {
 }
 
 export default function PublicCatalogue() {
-  const [location, setLocation] = useState("All");
+  const [location, setLocation] = useState("Ikeja");
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<PublicItem[]>([]);
   const [loading, setLoading] = useState(true);
