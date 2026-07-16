@@ -9,7 +9,7 @@ const SUPABASE_URL = "https://itycbazttpidqlgmmrot.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNiYXp0dHBpZHFsZ21tcm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwNTU3MDEsImV4cCI6MjA1MDYzMTcwMX0.S5Pa5PcYBQiOdJbDvTR_cAHKIfM8uGq-OVONyhpws9o";
 
-const LOCATIONS = ["All", "Ikeja", "Cement", "Uyo"];
+const LOCATIONS = ["Ikeja"];
 
 interface PublicItem {
   id: number;
@@ -20,7 +20,7 @@ interface PublicItem {
 }
 
 export default function PublicCatalogue() {
-  const [location, setLocation] = useState("All");
+  const [location, setLocation] = useState("Ikeja");
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<PublicItem[]>([]);
   const [loading, setLoading] = useState(true);
