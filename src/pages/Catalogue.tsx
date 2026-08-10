@@ -135,41 +135,41 @@ function GridCard({
               height={400}
             />
             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/90 text-slate-900 shadow-md backdrop-blur-sm">
-                <Eye className="h-3.5 w-3.5" /> Quick View
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/90 text-slate-900 shadow-md backdrop-blur-sm">
+                <Eye className="h-3 w-3" /> Quick View
               </span>
             </div>
           </>
         ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-gradient-to-br from-muted to-muted/50">
-            <ImageOff className="h-9 w-9 opacity-30" />
-            <span className="text-xs text-muted-foreground/60">No image available</span>
+          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-1 bg-gradient-to-br from-muted to-muted/50">
+            <ImageOff className="h-7 w-7 opacity-30" />
+            <span className="text-[10px] text-muted-foreground/60">No image</span>
           </div>
         )}
 
         {/* Stock status pill */}
         <div
-          className={`absolute top-2.5 right-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-sm backdrop-blur-md ${stock.badgeColor}`}
+          className={`absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-xs backdrop-blur-md ${stock.badgeColor}`}
         >
           <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
           {stock.label}
         </div>
       </div>
 
-      <CardContent className="p-3.5 space-y-2">
-        <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.4rem] group-hover:text-primary transition-colors">
+      <CardContent className="p-2.5 space-y-1.5">
+        <h3 className="font-semibold text-xs leading-snug line-clamp-2 min-h-[2rem] group-hover:text-primary transition-colors">
           {item["Item Description"]}
         </h3>
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
-          <span className="font-mono bg-muted/60 px-1.5 py-0.5 rounded">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <span className="font-mono bg-muted/60 px-1 py-0.2 rounded">
             SKU #{item.id}
           </span>
           <span>
             Qty: <strong className="text-foreground font-semibold">{item.Quantity ?? 0}</strong>
           </span>
         </div>
-        <div className="pt-1 flex items-center justify-between">
-          <span className="text-base font-bold text-primary tracking-tight">
+        <div className="pt-0.5 flex items-center justify-between">
+          <span className="text-sm font-bold text-primary tracking-tight">
             {formatCurrency(item.Price || 0)}
           </span>
         </div>
@@ -192,9 +192,9 @@ function ListRow({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-3.5 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-all cursor-pointer group hover:border-primary/30"
+      className="flex items-center gap-3 p-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-all cursor-pointer group hover:border-primary/30"
     >
-      <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
+      <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
         {url ? (
           <img
             src={url}
@@ -202,36 +202,36 @@ function ListRow({
             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             decoding="async"
-            width={64}
-            height={64}
+            width={48}
+            height={48}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-            <ImageOff className="h-5 w-5 opacity-30" />
+            <ImageOff className="h-4 w-4 opacity-30" />
           </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+        <p className="font-semibold text-xs text-foreground truncate group-hover:text-primary transition-colors">
           {item["Item Description"]}
         </p>
-        <div className="flex items-center gap-3 mt-1 text-xs">
+        <div className="flex items-center gap-2 mt-0.5 text-[10px]">
           <span className="text-muted-foreground font-mono">SKU #{item.id}</span>
           <span
-            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stock.badgeColor}`}
+            className={`inline-flex items-center gap-1 font-semibold px-1.5 py-0.2 rounded-full border ${stock.badgeColor}`}
           >
-            <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
+            <span className={`h-1 w-1 rounded-full ${stock.dotColor}`} />
             {stock.label}
           </span>
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-right">
-        <span className="font-bold text-base text-primary">
+      <div className="flex flex-col items-end gap-0.5 flex-shrink-0 text-right">
+        <span className="font-bold text-sm text-primary">
           {formatCurrency(item.Price || 0)}
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-[10px] text-muted-foreground">
           Qty: <strong className="text-foreground">{item.Quantity ?? 0}</strong>
         </span>
       </div>
@@ -239,7 +239,7 @@ function ListRow({
   );
 }
 
-// ─── Print-Only Card Component (Clean, High-End Print Layout) ───────────────
+// ─── Print-Only Card Component (Clean, High-End Compact Print Layout) ────────
 function PrintCard({
   item,
   url,
@@ -260,19 +260,19 @@ function PrintCard({
               decoding="sync"
             />
           ) : (
-            <div className="flex flex-col items-center gap-1 text-slate-400">
-              <ImageOff className="h-8 w-8" />
-              <span className="text-[10px]">No image</span>
+            <div className="flex flex-col items-center gap-0.5 text-slate-400">
+              <ImageOff className="h-6 w-6" />
+              <span className="text-[9px]">No image</span>
             </div>
           )}
         </div>
 
         {/* Text Details */}
-        <div className="p-3 space-y-1.5">
-          <h4 className="font-bold text-xs leading-snug line-clamp-2 text-slate-900">
+        <div className="p-2 space-y-1">
+          <h4 className="font-bold text-[11px] leading-tight line-clamp-2 text-slate-900">
             {item["Item Description"]}
           </h4>
-          <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+          <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono">
             <span>SKU: #{item.id}</span>
             <span>Qty: {item.Quantity ?? 0}</span>
           </div>
@@ -280,9 +280,9 @@ function PrintCard({
       </div>
 
       {/* Price Footer */}
-      <div className="px-3 pb-3 pt-1 border-t border-slate-100 flex items-center justify-between mt-auto">
-        <span className="text-[10px] uppercase font-bold text-slate-400">Price</span>
-        <span className="text-sm font-extrabold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+      <div className="px-2 pb-2 pt-1 border-t border-slate-100 flex items-center justify-between mt-auto">
+        <span className="text-[9px] uppercase font-bold text-slate-400">Price</span>
+        <span className="text-xs font-extrabold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
           {formatCurrency(item.Price || 0)}
         </span>
       </div>
@@ -836,8 +836,8 @@ export default function Catalogue() {
       {/* ── ON-SCREEN CONTENT AREA ────────────────────────────────────────── */}
       {isLoading ? (
         view === "grid" ? (
-          <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 print:hidden">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className="grid gap-2.5 sm:gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 print:hidden">
+            {Array.from({ length: 10 }).map((_, i) => (
               <SkeletonCard key={i} view="grid" />
             ))}
           </div>
@@ -872,7 +872,7 @@ export default function Catalogue() {
         <>
           {/* On-screen Paginated Grid/List (Hidden when printing) */}
           {view === "grid" ? (
-            <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 stagger-children print:hidden">
+            <div className="grid gap-2.5 sm:gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 stagger-children print:hidden">
               {paginated.map((item) => {
                 const url = item.image_url ? signed[item.image_url] : null;
                 return (
@@ -902,7 +902,7 @@ export default function Catalogue() {
           )}
 
           {/* ── PRINT-ONLY CATALOGUE GRID (Renders all filtered items cleanly) ── */}
-          <div className="hidden print:grid print:grid-cols-3 print:gap-4">
+          <div className="hidden print:grid print:grid-cols-4 print:gap-2.5">
             {filtered.map((item) => {
               const url = item.image_url ? signed[item.image_url] : null;
               return (
