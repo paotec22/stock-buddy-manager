@@ -42,7 +42,6 @@ import {
   Copy,
   Check,
   Building2,
-  Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -365,15 +364,10 @@ export default function Catalogue() {
   const stats = useMemo(() => {
     if (items.length === 0) return null;
     const prices = items.map((i) => i.Price || 0).filter((p) => p > 0);
-    const totalInventoryValue = items.reduce(
-      (sum, item) => sum + (item.Price || 0) * (item.Quantity || 0),
-      0
-    );
     return {
       total: items.length,
       withImages: items.filter((i) => i.image_url).length,
       maxPrice: prices.length ? Math.max(...prices) : 0,
-      totalValue: totalInventoryValue,
     };
   }, [items]);
 
@@ -653,17 +647,6 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
-            <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-              <Boxes className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none font-medium">Total Stock Value</p>
-              <p className="text-sm font-bold mt-1 truncate text-emerald-600 dark:text-emerald-400">
-                {formatCurrency(stats.totalValue)}
-              </p>
-            </div>
-          </div>
         </div>
       )}
 
@@ -1000,12 +983,6 @@ export default function Catalogue() {
                   <strong className="text-base text-foreground font-bold">
                     {selectedItem.Quantity ?? 0} units
                   </strong>
-                </div>
-                <div className="col-span-2 pt-2 border-t border-border/40 flex justify-between items-center">
-                  <span className="text-muted-foreground">Total Inventory Value:</span>
-                  <span className="font-bold text-foreground">
-                    {formatCurrency((selectedItem.Price || 0) * (selectedItem.Quantity || 0))}
-                  </span>
                 </div>
               </div>
 
