@@ -10,6 +10,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import {
@@ -31,6 +38,11 @@ import {
   TrendingUp,
   Camera,
   X,
+  Eye,
+  Copy,
+  Check,
+  Building2,
+  Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,19 +64,19 @@ function getStockStatus(qty: number) {
   if (qty <= 0)
     return {
       label: "Out of Stock",
-      color:
-        "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+      badgeColor: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-900/50",
+      dotColor: "bg-red-500",
     };
   if (qty <= 10)
     return {
       label: "Low Stock",
-      color:
-        "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+      badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-900/50",
+      dotColor: "bg-amber-500",
     };
   return {
     label: "In Stock",
-    color:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/50",
+    dotColor: "bg-emerald-500",
   };
 }
 
@@ -94,17 +106,22 @@ function SkeletonCard({ view }: { view: ViewMode }) {
   );
 }
 
-// ─── Grid Card ────────────────────────────────────────────────────────────────
+// ─── On-Screen Grid Card ──────────────────────────────────────────────────────
 function GridCard({
   item,
   url,
+  onClick,
 }: {
   item: InventoryItem;
   url: string | null;
+  onClick: () => void;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
   return (
-    <Card className="overflow-hidden group card-hover border border-border/60">
+    <Card
+      onClick={onClick}
+      className="overflow-hidden group cursor-pointer border border-border/60 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card"
+    >
       <div className="aspect-square bg-muted relative overflow-hidden">
         {url ? (
           <>
@@ -117,38 +134,42 @@ function GridCard({
               width={400}
               height={400}
             />
-            <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/90 text-slate-900 shadow-md backdrop-blur-sm">
+                <Eye className="h-3.5 w-3.5" /> Quick View
+              </span>
+            </div>
           </>
         ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <ImageOff className="h-8 w-8 opacity-40" />
-            <span className="text-xs opacity-50">No image</span>
+          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-gradient-to-br from-muted to-muted/50">
+            <ImageOff className="h-9 w-9 opacity-30" />
+            <span className="text-xs text-muted-foreground/60">No image available</span>
           </div>
         )}
-        {/* Stock badge — top right */}
-        <span
-          className={`absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ${stock.color}`}
+
+        {/* Stock status pill */}
+        <div
+          className={`absolute top-2.5 right-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-sm backdrop-blur-md ${stock.badgeColor}`}
         >
+          <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
           {stock.label}
-        </span>
+        </div>
       </div>
-      <CardContent className="p-3 space-y-1.5">
-        <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.4rem]">
+
+      <CardContent className="p-3.5 space-y-2">
+        <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.4rem] group-hover:text-primary transition-colors">
           {item["Item Description"]}
         </h3>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] text-muted-foreground font-mono">
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+          <span className="font-mono bg-muted/60 px-1.5 py-0.5 rounded">
             SKU #{item.id}
           </span>
-          <span className="text-[11px] text-muted-foreground">
-            Qty:{" "}
-            <span className="font-medium text-foreground">
-              {item.Quantity ?? 0}
-            </span>
+          <span>
+            Qty: <strong className="text-foreground font-semibold">{item.Quantity ?? 0}</strong>
           </span>
         </div>
-        <div className="pt-1">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-primary/10 text-primary">
+        <div className="pt-1 flex items-center justify-between">
+          <span className="text-base font-bold text-primary tracking-tight">
             {formatCurrency(item.Price || 0)}
           </span>
         </div>
@@ -157,18 +178,23 @@ function GridCard({
   );
 }
 
-// ─── List Row ─────────────────────────────────────────────────────────────────
+// ─── On-Screen List Row ───────────────────────────────────────────────────────
 function ListRow({
   item,
   url,
+  onClick,
 }: {
   item: InventoryItem;
   url: string | null;
+  onClick: () => void;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors group">
-      <div className="h-14 w-14 md:h-16 md:w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+    <div
+      onClick={onClick}
+      className="flex items-center gap-3.5 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-all cursor-pointer group hover:border-primary/30"
+    >
+      <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
         {url ? (
           <img
             src={url}
@@ -181,37 +207,88 @@ function ListRow({
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-            <ImageOff className="h-5 w-5 opacity-40" />
+            <ImageOff className="h-5 w-5 opacity-30" />
           </div>
         )}
       </div>
+
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm truncate">
+        <p className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
           {item["Item Description"]}
         </p>
-        <p className="text-xs text-muted-foreground font-mono mt-0.5">
-          SKU #{item.id}
-        </p>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-3 mt-1 text-xs">
+          <span className="text-muted-foreground font-mono">SKU #{item.id}</span>
           <span
-            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stock.color}`}
+            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stock.badgeColor}`}
           >
+            <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
             {stock.label}
-          </span>
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            Qty:{" "}
-            <span className="font-medium text-foreground">
-              {item.Quantity ?? 0}
-            </span>
           </span>
         </div>
       </div>
-      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-        <span className="font-bold text-sm text-primary">
+
+      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-right">
+        <span className="font-bold text-base text-primary">
           {formatCurrency(item.Price || 0)}
         </span>
-        <span className="text-[11px] text-muted-foreground sm:hidden">
-          Qty: {item.Quantity ?? 0}
+        <span className="text-xs text-muted-foreground">
+          Qty: <strong className="text-foreground">{item.Quantity ?? 0}</strong>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Print-Only Card Component (Clean, High-End Print Layout) ───────────────
+function PrintCard({
+  item,
+  url,
+}: {
+  item: InventoryItem;
+  url: string | null;
+}) {
+  const stock = getStockStatus(item.Quantity ?? 0);
+  return (
+    <div className="print-card-item rounded-lg border border-slate-300 bg-white overflow-hidden p-0 flex flex-col justify-between text-slate-900 shadow-none">
+      <div>
+        {/* Aspect square image */}
+        <div className="aspect-square bg-slate-100 relative overflow-hidden border-b border-slate-200 flex items-center justify-center">
+          {url ? (
+            <img
+              src={url}
+              alt={item["Item Description"]}
+              className="h-full w-full object-cover"
+              decoding="sync"
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-1 text-slate-400">
+              <ImageOff className="h-8 w-8" />
+              <span className="text-[10px]">No image</span>
+            </div>
+          )}
+          {/* Subtle stock tag */}
+          <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded bg-white/95 text-slate-800 border border-slate-200">
+            {stock.label}
+          </span>
+        </div>
+
+        {/* Text Details */}
+        <div className="p-3 space-y-1.5">
+          <h4 className="font-bold text-xs leading-snug line-clamp-2 text-slate-900">
+            {item["Item Description"]}
+          </h4>
+          <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+            <span>SKU: #{item.id}</span>
+            <span>Qty: {item.Quantity ?? 0}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Price Footer */}
+      <div className="px-3 pb-3 pt-1 border-t border-slate-100 flex items-center justify-between mt-auto">
+        <span className="text-[10px] uppercase font-bold text-slate-400">Price</span>
+        <span className="text-sm font-extrabold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          {formatCurrency(item.Price || 0)}
         </span>
       </div>
     </div>
@@ -229,6 +306,9 @@ export default function Catalogue() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Selected item for preview modal
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   // View & pagination state
   const [view, setView] = useState<ViewMode>(() => {
@@ -263,7 +343,7 @@ export default function Catalogue() {
     setPage(1);
   }, [search, onlyWithImages, sort, minPrice, maxPrice]);
 
-  // ── Data ───────────────────────────────────────────────────────────────────
+  // ── Data Query ──────────────────────────────────────────────────────────────
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["catalogue", location],
     queryFn: async () => {
@@ -290,11 +370,15 @@ export default function Catalogue() {
   const stats = useMemo(() => {
     if (items.length === 0) return null;
     const prices = items.map((i) => i.Price || 0).filter((p) => p > 0);
+    const totalInventoryValue = items.reduce(
+      (sum, item) => sum + (item.Price || 0) * (item.Quantity || 0),
+      0
+    );
     return {
       total: items.length,
       withImages: items.filter((i) => i.image_url).length,
-      minPrice: prices.length ? Math.min(...prices) : 0,
       maxPrice: prices.length ? Math.max(...prices) : 0,
+      totalValue: totalInventoryValue,
     };
   }, [items]);
 
@@ -342,7 +426,7 @@ export default function Catalogue() {
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = page * PAGE_SIZE < filtered.length;
 
-  // ── Optimize ───────────────────────────────────────────────────────────────
+  // ── Optimize Images Handler ─────────────────────────────────────────────────
   const handleOptimizeImages = useCallback(async () => {
     const targets = items.filter((i) => i.image_url) as (InventoryItem & {
       image_url: string;
@@ -418,29 +502,58 @@ export default function Catalogue() {
   const hasActiveFilters =
     search || minPrice || maxPrice || onlyWithImages || sort !== "name_asc";
 
+  const currentDateFormatted = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }, []);
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4 md:space-y-6 fade-in pb-8 print:space-y-0">
+    <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0">
 
-      {/* ── Print-only header (hidden on screen) ─────────────────────────── */}
+      {/* ── PRINT-ONLY STUNNING CATALOGUE HEADER ──────────────────────────── */}
       <div className="hidden print:block print:mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Product Catalogue</h1>
-        <p className="text-sm text-muted-foreground mt-1">{location}</p>
-        <hr className="mt-3 border-gray-300" />
+        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
+          <div>
+            <span className="text-xs uppercase tracking-widest font-extrabold text-indigo-900">
+              STOCK BUDDY MANAGER
+            </span>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              PRODUCT CATALOGUE
+            </h1>
+          </div>
+          <div className="text-right">
+            <span className="inline-block bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded">
+              {location.toUpperCase()} BRANCH
+            </span>
+            <p className="text-[11px] text-slate-500 font-mono mt-1">
+              Date: {currentDateFormatted}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between py-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 rounded mt-2 border border-slate-200">
+          <span>Total Products: <strong>{filtered.length}</strong></span>
+          <span>Currency: <strong>NGN (₦)</strong></span>
+          <span>Official Stock Catalogue</span>
+        </div>
       </div>
 
-      {/* ── Header (hidden when printing) ────────────────────────────────── */}
+      {/* ── SCREEN HEADER (Hidden when printing) ─────────────────────────── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between print:hidden">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             Product Catalogue
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Browse your inventory — share with customers or print.
+            Browse and showcase inventory for Ikeja branch.
           </p>
         </div>
 
-        {/* Action buttons — wrap on small screens */}
+        {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -458,8 +571,8 @@ export default function Catalogue() {
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-1.5" />
-                Optimize
+                <Sparkles className="h-4 w-4 mr-1.5 text-amber-500" />
+                Optimize Images
               </>
             )}
           </Button>
@@ -470,95 +583,96 @@ export default function Catalogue() {
             onClick={handleShare}
             className="flex-1 sm:flex-none"
           >
-            <Share2 className="h-4 w-4 mr-1.5" />
+            <Share2 className="h-4 w-4 mr-1.5 text-primary" />
             Share
           </Button>
 
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={() => window.print()}
-            className="flex-1 sm:flex-none"
+            className="flex-1 sm:flex-none font-semibold shadow-sm"
           >
             <Printer className="h-4 w-4 mr-1.5" />
-            Print
+            Print Catalogue
           </Button>
         </div>
       </div>
 
-      {/* ── Stats Bar (hidden when printing) ─────────────────────────────── */}
+      {/* ── SCREEN STATS BAR (Hidden when printing) ──────────────────────── */}
       {stats && !isLoading && (
-        <div className="grid grid-cols-3 gap-2 md:gap-3 print:hidden">
-          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-3 print:hidden">
+          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Package className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none">
-                Products
-              </p>
-              <p className="text-base font-bold mt-0.5 truncate">
-                {stats.total}
-              </p>
+              <p className="text-[11px] text-muted-foreground leading-none font-medium">Total Products</p>
+              <p className="text-base font-bold mt-1 truncate">{stats.total}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
+            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
               <Camera className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none">
-                With Images
-              </p>
-              <p className="text-base font-bold mt-0.5 truncate">
-                {stats.withImages}
+              <p className="text-[11px] text-muted-foreground leading-none font-medium">With Photos</p>
+              <p className="text-base font-bold mt-1 truncate">{stats.withImages}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
+            <div className="h-9 w-9 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-muted-foreground leading-none font-medium">Highest Price</p>
+              <p className="text-sm font-bold mt-1 truncate">
+                {formatCurrency(stats.maxPrice)}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
-            <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
+            <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <Boxes className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none">
-                Max Price
-              </p>
-              <p className="text-sm font-bold mt-0.5 truncate">
-                {formatCurrency(stats.maxPrice)}
+              <p className="text-[11px] text-muted-foreground leading-none font-medium">Total Stock Value</p>
+              <p className="text-sm font-bold mt-1 truncate text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(stats.totalValue)}
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Search + Filter Bar (hidden when printing) ────────────────────── */}
-      <div className="space-y-2 print:hidden">
-        {/* Top row: search + view toggle + filter toggle */}
+      {/* ── SEARCH & FILTER CONTROLS (Hidden when printing) ───────────────── */}
+      <div className="space-y-2.5 print:hidden">
         <div className="flex gap-2">
-          {/* Search */}
+          {/* Search Bar */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               id="catalogue-search"
-              placeholder="Search products…"
+              placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9.5 bg-card"
             />
           </div>
 
           {/* View toggle */}
-          <div className="flex rounded-lg border border-border overflow-hidden">
+          <div className="flex rounded-lg border border-border bg-card overflow-hidden">
             <button
               id="view-grid-btn"
               title="Grid view"
               onClick={() => setView("grid")}
               className={`px-3 py-2 transition-colors ${
                 view === "grid"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:bg-muted"
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -569,37 +683,37 @@ export default function Catalogue() {
               onClick={() => setView("list")}
               className={`px-3 py-2 transition-colors ${
                 view === "list"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:bg-muted"
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-muted"
               }`}
             >
               <List className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Filter toggle button */}
+          {/* Filter button */}
           <Button
             id="toggle-filters-btn"
             variant="outline"
             size="icon"
             onClick={() => setFiltersOpen((v) => !v)}
-            className="relative flex-shrink-0"
+            className="relative flex-shrink-0 bg-card"
           >
             <SlidersHorizontal className="h-4 w-4" />
             {hasActiveFilters && (
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary" />
+              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary" />
             )}
           </Button>
         </div>
 
-        {/* Collapsible filter panel */}
+        {/* Collapsible Filter Panel */}
         {filtersOpen && (
-          <div className="rounded-xl border border-border/70 bg-card p-3 space-y-3 animate-[fadeIn_0.2s_ease-out]">
+          <div className="rounded-xl border border-border/80 bg-card p-4 space-y-3 shadow-sm animate-[fadeIn_0.2s_ease-out]">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Sort */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Sort by
+                  Sort Order
                 </label>
                 <Select
                   value={sort}
@@ -625,7 +739,7 @@ export default function Catalogue() {
               {/* Min price */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Min price
+                  Min Price (₦)
                 </label>
                 <Input
                   id="min-price-input"
@@ -641,7 +755,7 @@ export default function Catalogue() {
               {/* Max price */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Max price
+                  Max Price (₦)
                 </label>
                 <Input
                   id="max-price-input"
@@ -654,10 +768,10 @@ export default function Catalogue() {
                 />
               </div>
 
-              {/* Images only */}
+              {/* Images only toggle */}
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Visibility
+                  Photo Status
                 </label>
                 <Button
                   id="images-only-btn"
@@ -666,12 +780,12 @@ export default function Catalogue() {
                   onClick={() => setOnlyWithImages((v) => !v)}
                   className="w-full h-9 text-sm justify-start"
                 >
-                  With images only
+                  {onlyWithImages ? "Showing photos only" : "All items (with or without photos)"}
                 </Button>
               </div>
             </div>
 
-            {/* Clear filters */}
+            {/* Clear button */}
             {hasActiveFilters && (
               <div className="flex justify-end pt-1">
                 <Button
@@ -682,64 +796,64 @@ export default function Catalogue() {
                   className="text-xs text-muted-foreground h-7"
                 >
                   <X className="h-3 w-3 mr-1" />
-                  Clear all filters
+                  Clear filters
                 </Button>
               </div>
             )}
           </div>
         )}
 
-        {/* Result count */}
+        {/* Counter */}
         {!isLoading && (
           <p className="text-xs text-muted-foreground px-0.5">
             Showing{" "}
-            <span className="font-medium text-foreground">
+            <span className="font-semibold text-foreground">
               {Math.min(paginated.length, filtered.length)}
             </span>{" "}
             of{" "}
-            <span className="font-medium text-foreground">
+            <span className="font-semibold text-foreground">
               {filtered.length}
             </span>{" "}
-            product{filtered.length !== 1 ? "s" : ""}
+            products
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="ml-2 text-primary underline underline-offset-2"
+                className="ml-2 text-primary underline underline-offset-2 hover:text-primary/80"
               >
-                Clear filters
+                Reset filters
               </button>
             )}
           </p>
         )}
       </div>
 
-      {/* ── Content Area ─────────────────────────────────────────────────────── */}
+      {/* ── ON-SCREEN CONTENT AREA ────────────────────────────────────────── */}
       {isLoading ? (
         view === "grid" ? (
-          <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 print:hidden">
             {Array.from({ length: 8 }).map((_, i) => (
               <SkeletonCard key={i} view="grid" />
             ))}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 print:hidden">
             {Array.from({ length: 6 }).map((_, i) => (
               <SkeletonCard key={i} view="list" />
             ))}
           </div>
         )
       ) : filtered.length === 0 ? (
-        /* Empty state */
-        <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-          <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center">
+        /* Empty State */
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3 bg-card rounded-2xl border border-dashed p-6 print:hidden">
+          <div className="h-16 w-16 rounded-2xl bg-muted/80 flex items-center justify-center">
             <Package className="h-8 w-8 text-muted-foreground opacity-50" />
           </div>
           <div>
-            <p className="font-semibold text-foreground">No products found</p>
-            <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+            <h3 className="font-semibold text-base text-foreground">No products found</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
               {hasActiveFilters
-                ? "Try adjusting your filters or search term."
-                : "Add images to inventory items to build your catalogue."}
+                ? "Try clearing search keywords or price boundaries."
+                : "Add images to inventory items to populate your visual catalogue."}
             </p>
           </div>
           {hasActiveFilters && (
@@ -750,7 +864,7 @@ export default function Catalogue() {
         </div>
       ) : (
         <>
-          {/* ── Screen view (paginated) ─────────────────────────────────── */}
+          {/* On-screen Paginated Grid/List (Hidden when printing) */}
           {view === "grid" ? (
             <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 stagger-children print:hidden">
               {paginated.map((item) => {
@@ -760,6 +874,7 @@ export default function Catalogue() {
                     key={`${item.location}-${item.id}`}
                     item={item}
                     url={url}
+                    onClick={() => setSelectedItem(item)}
                   />
                 );
               })}
@@ -773,18 +888,19 @@ export default function Catalogue() {
                     key={`${item.location}-${item.id}`}
                     item={item}
                     url={url}
+                    onClick={() => setSelectedItem(item)}
                   />
                 );
               })}
             </div>
           )}
 
-          {/* ── Print-only view (all items, 3-column grid) ──────────────── */}
-          <div className="hidden print:grid print:gap-4 print:grid-cols-3">
+          {/* ── PRINT-ONLY CATALOGUE GRID (Renders all filtered items cleanly) ── */}
+          <div className="hidden print:grid print:grid-cols-3 print:gap-4">
             {filtered.map((item) => {
               const url = item.image_url ? signed[item.image_url] : null;
               return (
-                <GridCard
+                <PrintCard
                   key={`print-${item.location}-${item.id}`}
                   item={item}
                   url={url}
@@ -795,18 +911,112 @@ export default function Catalogue() {
         </>
       )}
 
-      {/* ── Show More (hidden when printing) ─────────────────────────────── */}
+      {/* ── SHOW MORE BUTTON (Hidden when printing) ───────────────────────── */}
       {!isLoading && hasMore && (
         <div className="flex justify-center pt-2 print:hidden">
           <Button
             id="show-more-btn"
             variant="outline"
             onClick={() => setPage((p) => p + 1)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto px-6 font-medium"
           >
             Show more ({filtered.length - paginated.length} remaining)
           </Button>
         </div>
+      )}
+
+      {/* ── PRODUCT QUICK VIEW MODAL (ON-SCREEN) ─────────────────────────── */}
+      {selectedItem && (
+        <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl">
+            <div className="aspect-square w-full bg-muted relative overflow-hidden">
+              {selectedItem.image_url && signed[selectedItem.image_url] ? (
+                <img
+                  src={signed[selectedItem.image_url]}
+                  alt={selectedItem["Item Description"]}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-gradient-to-br from-muted to-muted/50">
+                  <ImageOff className="h-12 w-12 opacity-30" />
+                  <span className="text-xs text-muted-foreground/60">No image uploaded</span>
+                </div>
+              )}
+              {/* Stock badge */}
+              <div className="absolute top-3 left-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-md backdrop-blur-md ${
+                    getStockStatus(selectedItem.Quantity ?? 0).badgeColor
+                  }`}
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      getStockStatus(selectedItem.Quantity ?? 0).dotColor
+                    }`}
+                  />
+                  {getStockStatus(selectedItem.Quantity ?? 0).label}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <span className="text-xs font-mono text-muted-foreground">
+                  SKU #{selectedItem.id} • {selectedItem.location} Branch
+                </span>
+                <DialogTitle className="text-lg font-bold mt-1 text-foreground leading-snug">
+                  {selectedItem["Item Description"]}
+                </DialogTitle>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-muted/50 border border-border/50 text-xs">
+                <div>
+                  <span className="text-muted-foreground block">Unit Price</span>
+                  <strong className="text-base text-primary font-bold">
+                    {formatCurrency(selectedItem.Price || 0)}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block">Stock Available</span>
+                  <strong className="text-base text-foreground font-bold">
+                    {selectedItem.Quantity ?? 0} units
+                  </strong>
+                </div>
+                <div className="col-span-2 pt-2 border-t border-border/40 flex justify-between items-center">
+                  <span className="text-muted-foreground">Total Inventory Value:</span>
+                  <span className="font-bold text-foreground">
+                    {formatCurrency((selectedItem.Price || 0) * (selectedItem.Quantity || 0))}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${selectedItem["Item Description"]} - ${formatCurrency(
+                        selectedItem.Price || 0
+                      )}`
+                    );
+                    toast.success("Product details copied to clipboard");
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Product Info
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setSelectedItem(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

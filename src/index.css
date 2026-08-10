@@ -4,22 +4,36 @@
 
 /* Print rules */
 @media print {
-  /* Hide global chrome */
+  /* Suppress default browser print headers & footers (timestamp, page numbers, URL) */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  /* Hide global navigation and chrome */
   .mobile-bottom-nav,
+  header,
   header.sticky,
-  .connection-banner {
+  .connection-banner,
+  nav,
+  aside,
+  .sidebar,
+  [role="navigation"] {
     display: none !important;
   }
 
-  /* Clean page background */
-  body {
+  /* Ensure page uses clean background and exact colors */
+  html, body {
     background: white !important;
     background-image: none !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Remove card shadows & hover transforms so cards sit flush on paper */
+  /* Remove shadows & hover transforms for paper output */
   .card-hover,
   [class*="hover:shadow"],
   [class*="hover:-translate"] {
@@ -28,19 +42,22 @@
     transition: none !important;
   }
 
-  /* Ensure images print fully (don't let lazy-load strip them) */
+  /* Ensure images print sharply */
   img {
     max-width: 100% !important;
     page-break-inside: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* Cards should never be split across pages */
+  /* Avoid page breaks inside individual product cards */
+  .print-card-item,
   .print\:grid > * {
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  /* Stock badge colours print correctly */
+  /* Stock badge background colors for crisp printing */
   .bg-emerald-100  { background-color: #d1fae5 !important; }
   .text-emerald-700 { color: #047857 !important; }
   .bg-amber-100   { background-color: #fef3c7 !important; }
@@ -48,8 +65,8 @@
   .bg-red-100     { background-color: #fee2e2 !important; }
   .text-red-700   { color: #b91c1c !important; }
 
-  /* Price pill */
-  .bg-primary\/10 { background-color: #dbeafe !important; }
+  /* Price pill in print */
+  .bg-primary\/10 { background-color: #eff6ff !important; }
   .text-primary   { color: #1d4ed8 !important; }
 }
 

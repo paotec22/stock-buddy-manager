@@ -8,6 +8,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatCurrency } from "@/utils/formatters";
 import {
   ImageOff,
@@ -19,7 +24,11 @@ import {
   X,
   Camera,
   TrendingUp,
+  Eye,
+  Copy,
+  Boxes,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const SUPABASE_URL = "https://itycbazttpidqlgmmrot.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -45,18 +54,22 @@ function getStockStatus(qty?: number | null) {
   if (qty == null || qty <= 0)
     return {
       label: "Out of Stock",
-      color: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+      badgeColor:
+        "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-900/50",
+      dotColor: "bg-red-500",
     };
   if (qty <= 10)
     return {
       label: "Low Stock",
-      color:
-        "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+      badgeColor:
+        "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-900/50",
+      dotColor: "bg-amber-500",
     };
   return {
     label: "In Stock",
-    color:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+    badgeColor:
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/50",
+    dotColor: "bg-emerald-500",
   };
 }
 
@@ -87,10 +100,19 @@ function SkeletonCard({ view }: { view: ViewMode }) {
 }
 
 // ─── Grid Card ────────────────────────────────────────────────────────────────
-function GridCard({ item }: { item: PublicItem }) {
+function GridCard({
+  item,
+  onClick,
+}: {
+  item: PublicItem;
+  onClick: () => void;
+}) {
   const stock = getStockStatus(item.quantity);
   return (
-    <div className="rounded-xl border border-border/60 bg-card overflow-hidden group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+    <div
+      onClick={onClick}
+      className="rounded-xl border border-border/60 bg-card overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer hover:border-primary/40"
+    >
       <div className="aspect-square bg-muted relative overflow-hidden">
         {item.image ? (
           <>
@@ -103,34 +125,38 @@ function GridCard({ item }: { item: PublicItem }) {
               width={400}
               height={400}
             />
-            <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/90 text-slate-900 shadow-md backdrop-blur-sm">
+                <Eye className="h-3.5 w-3.5" /> Quick View
+              </span>
+            </div>
           </>
         ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <ImageOff className="h-8 w-8 opacity-40" />
+          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-gradient-to-br from-muted to-muted/50">
+            <ImageOff className="h-8 w-8 opacity-30" />
             <span className="text-xs opacity-50">No image</span>
           </div>
         )}
-        {/* Stock badge */}
-        <span
-          className={`absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ${stock.color}`}
+
+        <div
+          className={`absolute top-2.5 right-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-sm backdrop-blur-md ${stock.badgeColor}`}
         >
+          <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
           {stock.label}
-        </span>
+        </div>
       </div>
 
-      <div className="p-3 space-y-1.5">
-        <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.4rem]">
+      <div className="p-3.5 space-y-1.5">
+        <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.4rem] group-hover:text-primary transition-colors">
           {item.description}
         </h3>
         {item.quantity != null && (
           <p className="text-[11px] text-muted-foreground">
-            Qty:{" "}
-            <span className="font-medium text-foreground">{item.quantity}</span>
+            Qty: <span className="font-semibold text-foreground">{item.quantity}</span>
           </p>
         )}
         <div className="pt-0.5">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-primary/10 text-primary">
+          <span className="text-base font-bold text-primary tracking-tight">
             {formatCurrency(item.price || 0)}
           </span>
         </div>
@@ -140,11 +166,20 @@ function GridCard({ item }: { item: PublicItem }) {
 }
 
 // ─── List Row ─────────────────────────────────────────────────────────────────
-function ListRow({ item }: { item: PublicItem }) {
+function ListRow({
+  item,
+  onClick,
+}: {
+  item: PublicItem;
+  onClick: () => void;
+}) {
   const stock = getStockStatus(item.quantity);
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors group">
-      <div className="h-14 w-14 md:h-16 md:w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+    <div
+      onClick={onClick}
+      className="flex items-center gap-3.5 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-all cursor-pointer group hover:border-primary/30"
+    >
+      <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
         {item.image ? (
           <img
             src={item.image}
@@ -157,32 +192,32 @@ function ListRow({ item }: { item: PublicItem }) {
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-            <ImageOff className="h-5 w-5 opacity-40" />
+            <ImageOff className="h-5 w-5 opacity-30" />
           </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm truncate">{item.description}</p>
+        <p className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+          {item.description}
+        </p>
         <div className="flex items-center gap-2 mt-1">
           <span
-            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stock.color}`}
+            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stock.badgeColor}`}
           >
+            <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
             {stock.label}
           </span>
           {item.quantity != null && (
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              Qty:{" "}
-              <span className="font-medium text-foreground">
-                {item.quantity}
-              </span>
+              Qty: <span className="font-medium text-foreground">{item.quantity}</span>
             </span>
           )}
         </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
-        <p className="font-bold text-sm text-primary">
+        <p className="font-bold text-base text-primary">
           {formatCurrency(item.price || 0)}
         </p>
         {item.quantity != null && (
@@ -190,6 +225,53 @@ function ListRow({ item }: { item: PublicItem }) {
             Qty: {item.quantity}
           </p>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Print-Only Card Component ────────────────────────────────────────────────
+function PrintCard({ item }: { item: PublicItem }) {
+  const stock = getStockStatus(item.quantity);
+  return (
+    <div className="print-card-item rounded-lg border border-slate-300 bg-white overflow-hidden p-0 flex flex-col justify-between text-slate-900 shadow-none">
+      <div>
+        <div className="aspect-square bg-slate-100 relative overflow-hidden border-b border-slate-200 flex items-center justify-center">
+          {item.image ? (
+            <img
+              src={item.image}
+              alt={item.description}
+              className="h-full w-full object-cover"
+              decoding="sync"
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-1 text-slate-400">
+              <ImageOff className="h-8 w-8" />
+              <span className="text-[10px]">No image</span>
+            </div>
+          )}
+          <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded bg-white/95 text-slate-800 border border-slate-200">
+            {stock.label}
+          </span>
+        </div>
+
+        <div className="p-3 space-y-1.5">
+          <h4 className="font-bold text-xs leading-snug line-clamp-2 text-slate-900">
+            {item.description}
+          </h4>
+          {item.quantity != null && (
+            <p className="text-[10px] text-slate-500 font-mono">
+              Available Qty: {item.quantity}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="px-3 pb-3 pt-1 border-t border-slate-100 flex items-center justify-between mt-auto">
+        <span className="text-[10px] uppercase font-bold text-slate-400">Price</span>
+        <span className="text-sm font-extrabold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          {formatCurrency(item.price || 0)}
+        </span>
       </div>
     </div>
   );
@@ -204,6 +286,9 @@ export default function PublicCatalogue() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const [selectedItem, setSelectedItem] = useState<PublicItem | null>(null);
+
   const [view, setView] = useState<ViewMode>(() => {
     try {
       return (localStorage.getItem(VIEW_KEY) as ViewMode) || "grid";
@@ -312,9 +397,45 @@ export default function PublicCatalogue() {
     setSort("name_asc");
   };
 
+  const currentDateFormatted = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header (hidden when printing) */}
+      {/* ── PRINT-ONLY STUNNING CATALOGUE HEADER ──────────────────────────── */}
+      <div className="hidden print:block px-6 pt-4 print:mb-6">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
+          <div>
+            <span className="text-xs uppercase tracking-widest font-extrabold text-indigo-900">
+              STOCK BUDDY MANAGER
+            </span>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              PRODUCT CATALOGUE
+            </h1>
+          </div>
+          <div className="text-right">
+            <span className="inline-block bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded">
+              {location.toUpperCase()} BRANCH
+            </span>
+            <p className="text-[11px] text-slate-500 font-mono mt-1">
+              Date: {currentDateFormatted}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between py-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 rounded mt-2 border border-slate-200">
+          <span>Total Products: <strong>{filtered.length}</strong></span>
+          <span>Currency: <strong>NGN (₦)</strong></span>
+          <span>Public Catalogue</span>
+        </div>
+      </div>
+
+      {/* ── Header (Hidden when printing) ────────────────────────────────── */}
       <header className="border-b bg-card/60 backdrop-blur sticky top-0 z-10 print:hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-4">
           <div>
@@ -322,7 +443,7 @@ export default function PublicCatalogue() {
               Product Catalogue
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-              Browse our available products
+              Browse our available inventory
             </p>
           </div>
           {/* View toggle */}
@@ -355,20 +476,13 @@ export default function PublicCatalogue() {
         </div>
       </header>
 
-      {/* Print-only header */}
-      <div className="hidden print:block px-8 pt-6 pb-4">
-        <h1 className="text-2xl font-bold tracking-tight">Product Catalogue</h1>
-        <p className="text-sm text-muted-foreground mt-1">{location}</p>
-        <hr className="mt-3 border-gray-300" />
-      </div>
-
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-6 space-y-4 pb-10">
-        {/* Stats (hidden when printing) */}
+        {/* Stats (Hidden when printing) */}
         {stats && !loading && (
           <div className="grid grid-cols-3 gap-2 md:gap-3 print:hidden">
-            <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5">
-              <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Package className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
+            <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Package className="h-4 w-4 text-primary" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">
@@ -379,26 +493,26 @@ export default function PublicCatalogue() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5">
-              <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <Camera className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">
-                  Shown
+                  With Photos
                 </p>
                 <p className="text-sm md:text-base font-bold mt-0.5">
                   {stats.withImages}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5">
-              <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="h-3.5 w-3.5 md:h-4 md:w-4 text-violet-600 dark:text-violet-400" />
+            <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
+              <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">
-                  Max
+                  Max Price
                 </p>
                 <p className="text-xs md:text-sm font-bold mt-0.5 truncate">
                   {formatCurrency(stats.maxPrice)}
@@ -408,7 +522,7 @@ export default function PublicCatalogue() {
           </div>
         )}
 
-        {/* Search + Filter bar (hidden when printing) */}
+        {/* Search + Filter bar (Hidden when printing) */}
         <div className="space-y-2 print:hidden">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -526,20 +640,20 @@ export default function PublicCatalogue() {
         {/* Content */}
         {loading ? (
           view === "grid" ? (
-            <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 print:hidden">
               {Array.from({ length: 8 }).map((_, i) => (
                 <SkeletonCard key={i} view="grid" />
               ))}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 print:hidden">
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} view="list" />
               ))}
             </div>
           )
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-3 print:hidden">
             <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
               <Package className="h-7 w-7 text-destructive opacity-60" />
             </div>
@@ -549,7 +663,7 @@ export default function PublicCatalogue() {
             </div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-3 print:hidden">
             <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center">
               <Package className="h-7 w-7 text-muted-foreground opacity-50" />
             </div>
@@ -569,25 +683,33 @@ export default function PublicCatalogue() {
           </div>
         ) : (
           <>
-            {/* Screen view — paginated */}
+            {/* Screen view */}
             {view === "grid" ? (
               <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 print:hidden">
                 {paginated.map((item) => (
-                  <GridCard key={`${item.location}-${item.id}`} item={item} />
+                  <GridCard
+                    key={`${item.location}-${item.id}`}
+                    item={item}
+                    onClick={() => setSelectedItem(item)}
+                  />
                 ))}
               </div>
             ) : (
               <div className="space-y-2 print:hidden">
                 {paginated.map((item) => (
-                  <ListRow key={`${item.location}-${item.id}`} item={item} />
+                  <ListRow
+                    key={`${item.location}-${item.id}`}
+                    item={item}
+                    onClick={() => setSelectedItem(item)}
+                  />
                 ))}
               </div>
             )}
 
-            {/* Print-only view — all items, 3-column grid */}
-            <div className="hidden print:grid print:gap-4 print:grid-cols-3">
+            {/* Print-only view (all items, 3-column grid) */}
+            <div className="hidden print:grid print:grid-cols-3 print:gap-4">
               {filtered.map((item) => (
-                <GridCard
+                <PrintCard
                   key={`print-${item.location}-${item.id}`}
                   item={item}
                 />
@@ -596,7 +718,7 @@ export default function PublicCatalogue() {
           </>
         )}
 
-        {/* Show more (hidden when printing) */}
+        {/* Show more (Hidden when printing) */}
         {!loading && hasMore && (
           <div className="flex justify-center pt-2 print:hidden">
             <Button
@@ -610,6 +732,95 @@ export default function PublicCatalogue() {
           </div>
         )}
       </main>
+
+      {/* Product Quick View Modal */}
+      {selectedItem && (
+        <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl">
+            <div className="aspect-square w-full bg-muted relative overflow-hidden">
+              {selectedItem.image ? (
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.description}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-gradient-to-br from-muted to-muted/50">
+                  <ImageOff className="h-12 w-12 opacity-30" />
+                  <span className="text-xs text-muted-foreground/60">No image available</span>
+                </div>
+              )}
+              <div className="absolute top-3 left-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-md backdrop-blur-md ${
+                    getStockStatus(selectedItem.quantity).badgeColor
+                  }`}
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      getStockStatus(selectedItem.quantity).dotColor
+                    }`}
+                  />
+                  {getStockStatus(selectedItem.quantity).label}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <span className="text-xs font-mono text-muted-foreground">
+                  {selectedItem.location} Branch
+                </span>
+                <DialogTitle className="text-lg font-bold mt-1 text-foreground leading-snug">
+                  {selectedItem.description}
+                </DialogTitle>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-muted/50 border border-border/50 text-xs">
+                <div>
+                  <span className="text-muted-foreground block">Price</span>
+                  <strong className="text-base text-primary font-bold">
+                    {formatCurrency(selectedItem.price || 0)}
+                  </strong>
+                </div>
+                {selectedItem.quantity != null && (
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Availability</span>
+                    <strong className="text-base text-foreground font-bold">
+                      {selectedItem.quantity} units
+                    </strong>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${selectedItem.description} - ${formatCurrency(
+                        selectedItem.price || 0
+                      )}`
+                    );
+                    toast.success("Product details copied to clipboard");
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Product Info
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setSelectedItem(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
