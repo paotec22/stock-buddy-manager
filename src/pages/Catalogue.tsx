@@ -42,7 +42,6 @@ import {
   Copy,
   Check,
   Building2,
-  Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -365,15 +364,10 @@ export default function Catalogue() {
   const stats = useMemo(() => {
     if (items.length === 0) return null;
     const prices = items.map((i) => i.Price || 0).filter((p) => p > 0);
-    const totalInventoryValue = items.reduce(
-      (sum, item) => sum + (item.Price || 0) * (item.Quantity || 0),
-      0
-    );
     return {
       total: items.length,
       withImages: items.filter((i) => i.image_url).length,
       maxPrice: prices.length ? Math.max(...prices) : 0,
-      totalValue: totalInventoryValue,
     };
   }, [items]);
 
