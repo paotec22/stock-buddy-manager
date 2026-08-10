@@ -406,17 +406,16 @@ export default function PublicCatalogue() {
       {/* ── PRINT-ONLY STUNNING CATALOGUE HEADER ──────────────────────────── */}
       <div className="hidden print:block px-6 pt-4 print:mb-6">
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <img
               src="/Puido_Smart_Solutions.svg"
               alt="Puido Smart Solutions"
-              className="h-12 w-auto object-contain"
+              className="h-14 w-auto object-contain"
             />
             <div>
               <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-                Puido Smart Solutions
+                PRODUCT CATALOGUE
               </h2>
-              <p className="text-xs font-semibold text-slate-600 mt-1">PRODUCT CATALOGUE</p>
             </div>
           </div>
           <div className="text-right">
@@ -443,14 +442,14 @@ export default function PublicCatalogue() {
             <img
               src="/Puido_Smart_Solutions.svg"
               alt="Puido Smart Solutions"
-              className="h-10 md:h-12 w-auto object-contain"
+              className="h-12 md:h-14 w-auto object-contain"
             />
             <div>
               <h1 className="text-lg md:text-2xl font-bold tracking-tight">
-                Puido Smart Solutions
+                Product Catalogue
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                Product Catalogue — {location} Branch
+                Browse our available inventory — {location} Branch
               </p>
             </div>
           </div>
