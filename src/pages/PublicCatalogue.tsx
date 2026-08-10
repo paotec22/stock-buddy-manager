@@ -25,11 +25,15 @@ const SUPABASE_URL = "https://itycbazttpidqlgmmrot.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNiYXp0dHBpZHFsZ21tcm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwNTU3MDEsImV4cCI6MjA1MDYzMTcwMX0.S5Pa5PcYBQiOdJbDvTR_cAHKIfM8uGq-OVONyhpws9o";
 
+<<<<<<< HEAD
 const PAGE_SIZE = 20;
 const VIEW_KEY = "pub_catalogue_view_mode";
 
 type SortKey = "name_asc" | "name_desc" | "price_asc" | "price_desc";
 type ViewMode = "grid" | "list";
+=======
+const LOCATIONS = ["Ikeja"];
+>>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
 
 interface PublicItem {
   id: number;
@@ -179,8 +183,12 @@ function ListRow({ item }: { item: PublicItem }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function PublicCatalogue() {
+<<<<<<< HEAD
   const location = "Ikeja";
 
+=======
+  const [location, setLocation] = useState("Ikeja");
+>>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("name_asc");
   const [minPrice, setMinPrice] = useState("");
@@ -390,6 +398,7 @@ export default function PublicCatalogue() {
             </Button>
           </div>
 
+<<<<<<< HEAD
           {/* Collapsible filters */}
           {filtersOpen && (
             <div className="rounded-xl border border-border/70 bg-card p-3 space-y-3 animate-[fadeIn_0.2s_ease-out]">
@@ -407,6 +416,45 @@ export default function PublicCatalogue() {
                       <SelectItem value="price_desc">Price: High → Low</SelectItem>
                     </SelectContent>
                   </Select>
+=======
+        {loading ? (
+          <div className="text-center text-muted-foreground py-12">Loading catalogue...</div>
+        ) : error ? (
+          <Card>
+            <CardContent className="p-10 text-center text-destructive">
+              Could not load catalogue. {error}
+            </CardContent>
+          </Card>
+        ) : filtered.length === 0 ? (
+          <Card>
+            <CardContent className="p-10 text-center text-muted-foreground">
+              No products to display.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filtered.map((item) => (
+              <Card
+                key={`${item.location}-${item.id}`}
+                className="overflow-hidden group hover:shadow-lg transition-shadow"
+              >
+                <div className="aspect-square bg-muted relative overflow-hidden">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.description}
+                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      decoding="async"
+                      width={800}
+                      height={800}
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                      <ImageOff className="h-10 w-10" />
+                    </div>
+                  )}
+>>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Min price</label>
