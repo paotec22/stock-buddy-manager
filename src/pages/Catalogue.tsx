@@ -273,8 +273,10 @@ export default function Catalogue() {
                   <img
                     src={selectedUrl}
                     alt={selected["Item Description"]}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain bg-muted p-2"
+                    decoding="async"
                   />
+
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-muted-foreground">
                     <ImageOff className="h-12 w-12" />
