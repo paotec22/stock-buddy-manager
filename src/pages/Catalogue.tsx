@@ -609,7 +609,7 @@ export default function Catalogue() {
           <Button
             variant="default"
             size="sm"
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="flex-1 sm:flex-none font-semibold shadow-sm"
           >
             <Printer className="h-4 w-4 mr-1.5" />
