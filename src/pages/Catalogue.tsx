@@ -486,6 +486,19 @@ export default function Catalogue() {
     }
   }, []);
 
+  const handlePrint = useCallback(() => {
+    const originalTitle = document.title;
+    try {
+      document.title = "";
+    } catch {}
+    window.print();
+    setTimeout(() => {
+      try {
+        document.title = originalTitle;
+      } catch {}
+    }, 1000);
+  }, []);
+
   const clearFilters = () => {
     setSearch("");
     setMinPrice("");

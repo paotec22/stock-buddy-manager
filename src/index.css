@@ -4,10 +4,10 @@
 
 /* Print rules */
 @media print {
-  /* Suppress default browser print headers & footers (timestamp, page numbers, URL) */
+  /* Zero out page margin to force browsers (Chrome, Edge, Safari) to drop default header (timestamp/date/title) and footer */
   @page {
-    size: A4 portrait;
-    margin: 10mm 12mm 10mm 12mm;
+    size: auto;
+    margin: 0 !important;
   }
 
   /* Hide global navigation and chrome */
@@ -22,15 +22,21 @@
     display: none !important;
   }
 
-  /* Ensure page uses clean background and exact colors */
-  html, body {
+  /* Ensure page uses clean background, exact colors, and internal padding */
+  html {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
     background: white !important;
     background-image: none !important;
     color: #0f172a !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 10mm 12mm !important;
   }
 
   /* Remove shadows & hover transforms for paper output */
