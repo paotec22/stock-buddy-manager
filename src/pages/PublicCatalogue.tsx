@@ -135,8 +135,8 @@ export default function PublicCatalogue() {
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                       decoding="async"
-                      width={400}
-                      height={400}
+                      width={800}
+                      height={800}
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-muted-foreground">

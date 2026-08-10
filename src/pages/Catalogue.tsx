@@ -231,11 +231,11 @@ export default function Catalogue() {
                     <img
                       src={url}
                       alt={item["Item Description"]}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out [image-rendering:auto]"
                       loading="lazy"
                       decoding="async"
-                      width={400}
-                      height={400}
+                      width={800}
+                      height={800}
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-muted to-muted/50">
@@ -244,6 +244,7 @@ export default function Catalogue() {
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
+
                 <CardContent className="p-4 space-y-2">
                   <h3 className="font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                     {item["Item Description"]}
@@ -272,8 +273,10 @@ export default function Catalogue() {
                   <img
                     src={selectedUrl}
                     alt={selected["Item Description"]}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain bg-muted p-2"
+                    decoding="async"
                   />
+
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-muted-foreground">
                     <ImageOff className="h-12 w-12" />

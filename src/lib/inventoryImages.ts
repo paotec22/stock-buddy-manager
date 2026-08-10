@@ -9,7 +9,7 @@ export const INVENTORY_IMAGES_BUCKET = "inventory-images";
  */
 async function compressImage(
   file: File,
-  { maxDim = 1200, quality = 0.8 }: { maxDim?: number; quality?: number } = {}
+  { maxDim = 2000, quality = 0.92 }: { maxDim?: number; quality?: number } = {}
 ): Promise<{ blob: Blob; ext: string; contentType: string }> {
   // Skip compression for SVGs (already lightweight vector) and GIFs (would lose animation).
   if (file.type === "image/svg+xml" || file.type === "image/gif") {
@@ -62,7 +62,7 @@ async function compressImage(
 
 /**
  * Upload an inventory item image and return the storage path stored in `image_url`.
- * Images are compressed to WebP (max 1200px) client-side before upload.
+ * Images are compressed to WebP (max 2000px) client-side before upload.
  */
 export async function uploadInventoryImage(file: File, itemId: number | string): Promise<string> {
   if (!file.type.startsWith("image/")) {
