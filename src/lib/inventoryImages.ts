@@ -62,7 +62,7 @@ async function compressImage(
 
 /**
  * Upload an inventory item image and return the storage path stored in `image_url`.
- * Images are compressed to WebP (max 1200px) client-side before upload.
+ * Images are compressed to WebP (max 2000px) client-side before upload.
  */
 export async function uploadInventoryImage(file: File, itemId: number | string): Promise<string> {
   if (!file.type.startsWith("image/")) {
