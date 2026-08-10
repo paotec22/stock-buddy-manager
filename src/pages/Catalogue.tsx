@@ -247,7 +247,6 @@ function PrintCard({
   item: InventoryItem;
   url: string | null;
 }) {
-  const stock = getStockStatus(item.Quantity ?? 0);
   return (
     <div className="print-card-item rounded-lg border border-slate-300 bg-white overflow-hidden p-0 flex flex-col justify-between text-slate-900 shadow-none">
       <div>
@@ -266,10 +265,6 @@ function PrintCard({
               <span className="text-[10px]">No image</span>
             </div>
           )}
-          {/* Subtle stock tag */}
-          <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded bg-white/95 text-slate-800 border border-slate-200">
-            {stock.label}
-          </span>
         </div>
 
         {/* Text Details */}

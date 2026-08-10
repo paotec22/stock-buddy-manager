@@ -232,7 +232,6 @@ function ListRow({
 
 // ─── Print-Only Card Component ────────────────────────────────────────────────
 function PrintCard({ item }: { item: PublicItem }) {
-  const stock = getStockStatus(item.quantity);
   return (
     <div className="print-card-item rounded-lg border border-slate-300 bg-white overflow-hidden p-0 flex flex-col justify-between text-slate-900 shadow-none">
       <div>
@@ -250,9 +249,6 @@ function PrintCard({ item }: { item: PublicItem }) {
               <span className="text-[10px]">No image</span>
             </div>
           )}
-          <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded bg-white/95 text-slate-800 border border-slate-200">
-            {stock.label}
-          </span>
         </div>
 
         <div className="p-3 space-y-1.5">
