@@ -529,7 +529,7 @@ export default function Catalogue() {
             <img
               src="/Puido_Smart_Solutions.svg"
               alt="Puido Smart Solutions"
-              className="h-14 w-auto object-contain"
+              className="h-10 w-auto object-contain"
             />
             <div>
               <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
@@ -560,7 +560,7 @@ export default function Catalogue() {
           <img
             src="/Puido_Smart_Solutions.svg"
             alt="Puido Smart Solutions"
-            className="h-12 md:h-14 w-auto object-contain"
+            className="h-8 md:h-10 w-auto object-contain"
           />
           <div>
             <h1 className="text-xl md:text-2xl font-bold tracking-tight">
