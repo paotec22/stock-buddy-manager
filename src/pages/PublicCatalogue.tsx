@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,15 +25,11 @@ const SUPABASE_URL = "https://itycbazttpidqlgmmrot.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNiYXp0dHBpZHFsZ21tcm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwNTU3MDEsImV4cCI6MjA1MDYzMTcwMX0.S5Pa5PcYBQiOdJbDvTR_cAHKIfM8uGq-OVONyhpws9o";
 
-<<<<<<< HEAD
 const PAGE_SIZE = 20;
 const VIEW_KEY = "pub_catalogue_view_mode";
 
 type SortKey = "name_asc" | "name_desc" | "price_asc" | "price_desc";
 type ViewMode = "grid" | "list";
-=======
-const LOCATIONS = ["Ikeja"];
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
 
 interface PublicItem {
   id: number;
@@ -44,16 +40,27 @@ interface PublicItem {
   quantity?: number | null;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getStockStatus(qty?: number | null) {
   if (qty == null || qty <= 0)
-    return { label: "Out of Stock", color: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400" };
+    return {
+      label: "Out of Stock",
+      color: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+    };
   if (qty <= 10)
-    return { label: "Low Stock", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" };
-  return { label: "In Stock", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" };
+    return {
+      label: "Low Stock",
+      color:
+        "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+    };
+  return {
+    label: "In Stock",
+    color:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+  };
 }
 
-// ─── Skeleton ────────────────────────────────────────────────────────────────
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 function SkeletonCard({ view }: { view: ViewMode }) {
   if (view === "list") {
     return (
@@ -104,7 +111,6 @@ function GridCard({ item }: { item: PublicItem }) {
             <span className="text-xs opacity-50">No image</span>
           </div>
         )}
-
         {/* Stock badge */}
         <span
           className={`absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ${stock.color}`}
@@ -119,7 +125,8 @@ function GridCard({ item }: { item: PublicItem }) {
         </h3>
         {item.quantity != null && (
           <p className="text-[11px] text-muted-foreground">
-            Qty: <span className="font-medium text-foreground">{item.quantity}</span>
+            Qty:{" "}
+            <span className="font-medium text-foreground">{item.quantity}</span>
           </p>
         )}
         <div className="pt-0.5">
@@ -132,7 +139,7 @@ function GridCard({ item }: { item: PublicItem }) {
   );
 }
 
-// ─── List Row ────────────────────────────────────────────────────────────────
+// ─── List Row ─────────────────────────────────────────────────────────────────
 function ListRow({ item }: { item: PublicItem }) {
   const stock = getStockStatus(item.quantity);
   return (
@@ -158,19 +165,26 @@ function ListRow({ item }: { item: PublicItem }) {
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm truncate">{item.description}</p>
         <div className="flex items-center gap-2 mt-1">
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stock.color}`}>
+          <span
+            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stock.color}`}
+          >
             {stock.label}
           </span>
           {item.quantity != null && (
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              Qty: <span className="font-medium text-foreground">{item.quantity}</span>
+              Qty:{" "}
+              <span className="font-medium text-foreground">
+                {item.quantity}
+              </span>
             </span>
           )}
         </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
-        <p className="font-bold text-sm text-primary">{formatCurrency(item.price || 0)}</p>
+        <p className="font-bold text-sm text-primary">
+          {formatCurrency(item.price || 0)}
+        </p>
         {item.quantity != null && (
           <p className="text-[11px] text-muted-foreground sm:hidden">
             Qty: {item.quantity}
@@ -183,12 +197,8 @@ function ListRow({ item }: { item: PublicItem }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function PublicCatalogue() {
-<<<<<<< HEAD
   const location = "Ikeja";
 
-=======
-  const [location, setLocation] = useState("Ikeja");
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("name_asc");
   const [minPrice, setMinPrice] = useState("");
@@ -261,7 +271,10 @@ export default function PublicCatalogue() {
 
   const filtered = useMemo(() => {
     let out = items.filter((it) => {
-      if (search.trim() && !it.description?.toLowerCase().includes(search.toLowerCase()))
+      if (
+        search.trim() &&
+        !it.description?.toLowerCase().includes(search.toLowerCase())
+      )
         return false;
       const min = parseFloat(minPrice);
       const max = parseFloat(maxPrice);
@@ -272,11 +285,16 @@ export default function PublicCatalogue() {
 
     out = [...out].sort((a, b) => {
       switch (sort) {
-        case "name_asc": return (a.description ?? "").localeCompare(b.description ?? "");
-        case "name_desc": return (b.description ?? "").localeCompare(a.description ?? "");
-        case "price_asc": return (a.price || 0) - (b.price || 0);
-        case "price_desc": return (b.price || 0) - (a.price || 0);
-        default: return 0;
+        case "name_asc":
+          return (a.description ?? "").localeCompare(b.description ?? "");
+        case "name_desc":
+          return (b.description ?? "").localeCompare(a.description ?? "");
+        case "price_asc":
+          return (a.price || 0) - (b.price || 0);
+        case "price_desc":
+          return (b.price || 0) - (a.price || 0);
+        default:
+          return 0;
       }
     });
 
@@ -296,16 +314,18 @@ export default function PublicCatalogue() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="border-b bg-card/60 backdrop-blur sticky top-0 z-10">
+      {/* Header (hidden when printing) */}
+      <header className="border-b bg-card/60 backdrop-blur sticky top-0 z-10 print:hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg md:text-2xl font-bold tracking-tight">Product Catalogue</h1>
+            <h1 className="text-lg md:text-2xl font-bold tracking-tight">
+              Product Catalogue
+            </h1>
             <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">
               Browse our available products
             </p>
           </div>
-          {/* View toggle in header on mobile */}
+          {/* View toggle */}
           <div className="flex rounded-lg border border-border overflow-hidden">
             <button
               id="pub-view-grid-btn"
@@ -335,17 +355,28 @@ export default function PublicCatalogue() {
         </div>
       </header>
 
+      {/* Print-only header */}
+      <div className="hidden print:block px-8 pt-6 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight">Product Catalogue</h1>
+        <p className="text-sm text-muted-foreground mt-1">{location}</p>
+        <hr className="mt-3 border-gray-300" />
+      </div>
+
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-6 space-y-4 pb-10">
-        {/* Stats */}
+        {/* Stats (hidden when printing) */}
         {stats && !loading && (
-          <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <div className="grid grid-cols-3 gap-2 md:gap-3 print:hidden">
             <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5">
               <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Package className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">Products</p>
-                <p className="text-sm md:text-base font-bold mt-0.5">{stats.total}</p>
+                <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">
+                  Products
+                </p>
+                <p className="text-sm md:text-base font-bold mt-0.5">
+                  {stats.total}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5">
@@ -353,8 +384,12 @@ export default function PublicCatalogue() {
                 <Camera className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">Shown</p>
-                <p className="text-sm md:text-base font-bold mt-0.5">{stats.withImages}</p>
+                <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">
+                  Shown
+                </p>
+                <p className="text-sm md:text-base font-bold mt-0.5">
+                  {stats.withImages}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5">
@@ -362,7 +397,9 @@ export default function PublicCatalogue() {
                 <TrendingUp className="h-3.5 w-3.5 md:h-4 md:w-4 text-violet-600 dark:text-violet-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">Max</p>
+                <p className="text-[10px] md:text-[11px] text-muted-foreground leading-none">
+                  Max
+                </p>
                 <p className="text-xs md:text-sm font-bold mt-0.5 truncate">
                   {formatCurrency(stats.maxPrice)}
                 </p>
@@ -371,8 +408,8 @@ export default function PublicCatalogue() {
           </div>
         )}
 
-        {/* Search + Filter bar */}
-        <div className="space-y-2">
+        {/* Search + Filter bar (hidden when printing) */}
+        <div className="space-y-2 print:hidden">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -398,66 +435,37 @@ export default function PublicCatalogue() {
             </Button>
           </div>
 
-<<<<<<< HEAD
           {/* Collapsible filters */}
           {filtersOpen && (
             <div className="rounded-xl border border-border/70 bg-card p-3 space-y-3 animate-[fadeIn_0.2s_ease-out]">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Sort by</label>
-                  <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Sort by
+                  </label>
+                  <Select
+                    value={sort}
+                    onValueChange={(v) => setSort(v as SortKey)}
+                  >
                     <SelectTrigger id="pub-sort-select" className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="name_asc">Name: A → Z</SelectItem>
                       <SelectItem value="name_desc">Name: Z → A</SelectItem>
-                      <SelectItem value="price_asc">Price: Low → High</SelectItem>
-                      <SelectItem value="price_desc">Price: High → Low</SelectItem>
+                      <SelectItem value="price_asc">
+                        Price: Low → High
+                      </SelectItem>
+                      <SelectItem value="price_desc">
+                        Price: High → Low
+                      </SelectItem>
                     </SelectContent>
                   </Select>
-=======
-        {loading ? (
-          <div className="text-center text-muted-foreground py-12">Loading catalogue...</div>
-        ) : error ? (
-          <Card>
-            <CardContent className="p-10 text-center text-destructive">
-              Could not load catalogue. {error}
-            </CardContent>
-          </Card>
-        ) : filtered.length === 0 ? (
-          <Card>
-            <CardContent className="p-10 text-center text-muted-foreground">
-              No products to display.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((item) => (
-              <Card
-                key={`${item.location}-${item.id}`}
-                className="overflow-hidden group hover:shadow-lg transition-shadow"
-              >
-                <div className="aspect-square bg-muted relative overflow-hidden">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.description}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                      decoding="async"
-                      width={800}
-                      height={800}
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-                      <ImageOff className="h-10 w-10" />
-                    </div>
-                  )}
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Min price</label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Min price
+                  </label>
                   <Input
                     id="pub-min-price"
                     type="number"
@@ -469,7 +477,9 @@ export default function PublicCatalogue() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Max price</label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Max price
+                  </label>
                   <Input
                     id="pub-max-price"
                     type="number"
@@ -505,8 +515,10 @@ export default function PublicCatalogue() {
                 {Math.min(paginated.length, filtered.length)}
               </span>{" "}
               of{" "}
-              <span className="font-medium text-foreground">{filtered.length}</span> product
-              {filtered.length !== 1 ? "s" : ""}
+              <span className="font-medium text-foreground">
+                {filtered.length}
+              </span>{" "}
+              product{filtered.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
@@ -555,23 +567,38 @@ export default function PublicCatalogue() {
               </Button>
             )}
           </div>
-        ) : view === "grid" ? (
-          <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {paginated.map((item) => (
-              <GridCard key={`${item.location}-${item.id}`} item={item} />
-            ))}
-          </div>
         ) : (
-          <div className="space-y-2">
-            {paginated.map((item) => (
-              <ListRow key={`${item.location}-${item.id}`} item={item} />
-            ))}
-          </div>
+          <>
+            {/* Screen view — paginated */}
+            {view === "grid" ? (
+              <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 print:hidden">
+                {paginated.map((item) => (
+                  <GridCard key={`${item.location}-${item.id}`} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 print:hidden">
+                {paginated.map((item) => (
+                  <ListRow key={`${item.location}-${item.id}`} item={item} />
+                ))}
+              </div>
+            )}
+
+            {/* Print-only view — all items, 3-column grid */}
+            <div className="hidden print:grid print:gap-4 print:grid-cols-3">
+              {filtered.map((item) => (
+                <GridCard
+                  key={`print-${item.location}-${item.id}`}
+                  item={item}
+                />
+              ))}
+            </div>
+          </>
         )}
 
-        {/* Show more */}
+        {/* Show more (hidden when printing) */}
         {!loading && hasMore && (
-          <div className="flex justify-center pt-2">
+          <div className="flex justify-center pt-2 print:hidden">
             <Button
               id="pub-show-more-btn"
               variant="outline"

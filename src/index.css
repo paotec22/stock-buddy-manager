@@ -4,15 +4,53 @@
 
 /* Print rules */
 @media print {
+  /* Hide global chrome */
   .mobile-bottom-nav,
   header.sticky,
   .connection-banner {
     display: none !important;
   }
+
+  /* Clean page background */
   body {
     background: white !important;
     background-image: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
+
+  /* Remove card shadows & hover transforms so cards sit flush on paper */
+  .card-hover,
+  [class*="hover:shadow"],
+  [class*="hover:-translate"] {
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure images print fully (don't let lazy-load strip them) */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Cards should never be split across pages */
+  .print\:grid > * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Stock badge colours print correctly */
+  .bg-emerald-100  { background-color: #d1fae5 !important; }
+  .text-emerald-700 { color: #047857 !important; }
+  .bg-amber-100   { background-color: #fef3c7 !important; }
+  .text-amber-700 { color: #b45309 !important; }
+  .bg-red-100     { background-color: #fee2e2 !important; }
+  .text-red-700   { color: #b91c1c !important; }
+
+  /* Price pill */
+  .bg-primary\/10 { background-color: #dbeafe !important; }
+  .text-primary   { color: #1d4ed8 !important; }
 }
 
 @layer base {

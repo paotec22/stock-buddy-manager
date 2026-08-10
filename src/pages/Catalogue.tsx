@@ -10,12 +10,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-<<<<<<< HEAD
-=======
-import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import {
@@ -23,7 +17,6 @@ import {
   optimizeExistingInventoryImage,
 } from "@/lib/inventoryImages";
 import { formatCurrency } from "@/utils/formatters";
-<<<<<<< HEAD
 import {
   ImageOff,
   Printer,
@@ -33,41 +26,46 @@ import {
   Share2,
   LayoutGrid,
   List,
-  ChevronDown,
-  ChevronUp,
   SlidersHorizontal,
   Package,
   TrendingUp,
   Camera,
   X,
 } from "lucide-react";
-=======
-import { ImageOff, Printer, Search, Sparkles, Loader2, Share2, PackageSearch, MapPin } from "lucide-react";
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
 import { toast } from "sonner";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 20;
 const VIEW_KEY = "catalogue_view_mode";
 
-<<<<<<< HEAD
 type SortKey =
   | "name_asc"
   | "name_desc"
   | "price_asc"
   | "price_desc"
   | "qty_asc";
-=======
-const LOCATIONS = ["Ikeja"];
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
 
 type ViewMode = "grid" | "list";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getStockStatus(qty: number) {
-  if (qty <= 0) return { label: "Out of Stock", color: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400" };
-  if (qty <= 10) return { label: "Low Stock", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" };
-  return { label: "In Stock", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" };
+  if (qty <= 0)
+    return {
+      label: "Out of Stock",
+      color:
+        "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+    };
+  if (qty <= 10)
+    return {
+      label: "Low Stock",
+      color:
+        "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+    };
+  return {
+    label: "In Stock",
+    color:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+  };
 }
 
 // ─── Skeleton Card ────────────────────────────────────────────────────────────
@@ -96,7 +94,7 @@ function SkeletonCard({ view }: { view: ViewMode }) {
   );
 }
 
-// ─── Product Card (Grid) ──────────────────────────────────────────────────────
+// ─── Grid Card ────────────────────────────────────────────────────────────────
 function GridCard({
   item,
   url,
@@ -105,10 +103,8 @@ function GridCard({
   url: string | null;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
-
   return (
     <Card className="overflow-hidden group card-hover border border-border/60">
-      {/* Image */}
       <div className="aspect-square bg-muted relative overflow-hidden">
         {url ? (
           <>
@@ -121,7 +117,6 @@ function GridCard({
               width={400}
               height={400}
             />
-            {/* Gradient overlay for text on mobile */}
             <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
           </>
         ) : (
@@ -130,33 +125,28 @@ function GridCard({
             <span className="text-xs opacity-50">No image</span>
           </div>
         )}
-
         {/* Stock badge — top right */}
         <span
-          className={`absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${stock.color} shadow-sm`}
+          className={`absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ${stock.color}`}
         >
           {stock.label}
         </span>
       </div>
-
-      {/* Card body */}
       <CardContent className="p-3 space-y-1.5">
         <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.4rem]">
           {item["Item Description"]}
         </h3>
-
-        {/* SKU + Qty row */}
         <div className="flex items-center justify-between gap-2">
           <span className="text-[11px] text-muted-foreground font-mono">
             SKU #{item.id}
           </span>
           <span className="text-[11px] text-muted-foreground">
             Qty:{" "}
-            <span className="font-medium text-foreground">{item.Quantity ?? 0}</span>
+            <span className="font-medium text-foreground">
+              {item.Quantity ?? 0}
+            </span>
           </span>
         </div>
-
-        {/* Price pill */}
         <div className="pt-1">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-primary/10 text-primary">
             {formatCurrency(item.Price || 0)}
@@ -167,7 +157,7 @@ function GridCard({
   );
 }
 
-// ─── Product Row (List) ───────────────────────────────────────────────────────
+// ─── List Row ─────────────────────────────────────────────────────────────────
 function ListRow({
   item,
   url,
@@ -176,10 +166,8 @@ function ListRow({
   url: string | null;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
-
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors group">
-      {/* Thumbnail */}
       <div className="h-14 w-14 md:h-16 md:w-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
         {url ? (
           <img
@@ -197,11 +185,13 @@ function ListRow({
           </div>
         )}
       </div>
-
-      {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm truncate">{item["Item Description"]}</p>
-        <p className="text-xs text-muted-foreground font-mono mt-0.5">SKU #{item.id}</p>
+        <p className="font-semibold text-sm truncate">
+          {item["Item Description"]}
+        </p>
+        <p className="text-xs text-muted-foreground font-mono mt-0.5">
+          SKU #{item.id}
+        </p>
         <div className="flex items-center gap-2 mt-1">
           <span
             className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${stock.color}`}
@@ -209,12 +199,13 @@ function ListRow({
             {stock.label}
           </span>
           <span className="text-xs text-muted-foreground hidden sm:inline">
-            Qty: <span className="font-medium text-foreground">{item.Quantity ?? 0}</span>
+            Qty:{" "}
+            <span className="font-medium text-foreground">
+              {item.Quantity ?? 0}
+            </span>
           </span>
         </div>
       </div>
-
-      {/* Right side */}
       <div className="flex flex-col items-end gap-1 flex-shrink-0">
         <span className="font-bold text-sm text-primary">
           {formatCurrency(item.Price || 0)}
@@ -229,13 +220,9 @@ function ListRow({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Catalogue() {
-<<<<<<< HEAD
   const location = "Ikeja";
 
   // Filter & sort state
-=======
-  const [location, setLocation] = useState("Ikeja");
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
   const [search, setSearch] = useState("");
   const [onlyWithImages, setOnlyWithImages] = useState(false);
   const [sort, setSort] = useState<SortKey>("name_asc");
@@ -258,8 +245,10 @@ export default function Catalogue() {
 
   // Optimize state
   const [optimizing, setOptimizing] = useState(false);
-  const [optimizeProgress, setOptimizeProgress] = useState({ done: 0, total: 0 });
-  const [selected, setSelected] = useState<InventoryItem | null>(null);
+  const [optimizeProgress, setOptimizeProgress] = useState({
+    done: 0,
+    total: 0,
+  });
 
   // Persist view mode
   useEffect(() => {
@@ -284,12 +273,7 @@ export default function Catalogue() {
         .eq("location", "Ikeja")
         .order("Item Description", { ascending: true });
       if (error) throw error;
-<<<<<<< HEAD
       return (data as InventoryItem[]) || [];
-=======
-      const fetchedItems = (data as InventoryItem[]) || [];
-      return fetchedItems.filter(item => item.location?.toLowerCase() !== "not to carry");
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
     },
   });
 
@@ -333,9 +317,13 @@ export default function Catalogue() {
     out = [...out].sort((a, b) => {
       switch (sort) {
         case "name_asc":
-          return (a["Item Description"] ?? "").localeCompare(b["Item Description"] ?? "");
+          return (a["Item Description"] ?? "").localeCompare(
+            b["Item Description"] ?? ""
+          );
         case "name_desc":
-          return (b["Item Description"] ?? "").localeCompare(a["Item Description"] ?? "");
+          return (b["Item Description"] ?? "").localeCompare(
+            a["Item Description"] ?? ""
+          );
         case "price_asc":
           return (a.Price || 0) - (b.Price || 0);
         case "price_desc":
@@ -351,7 +339,6 @@ export default function Catalogue() {
   }, [items, search, onlyWithImages, sort, minPrice, maxPrice]);
 
   // ── Pagination ─────────────────────────────────────────────────────────────
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = page * PAGE_SIZE < filtered.length;
 
@@ -428,24 +415,26 @@ export default function Catalogue() {
     setSort("name_asc");
   };
 
-<<<<<<< HEAD
   const hasActiveFilters =
     search || minPrice || maxPrice || onlyWithImages || sort !== "name_asc";
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4 md:space-y-6 fade-in pb-8 print:space-y-0">
-      {/* ── Print-only header (hidden on screen) ──────────────────────────── */}
+
+      {/* ── Print-only header (hidden on screen) ─────────────────────────── */}
       <div className="hidden print:block print:mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Product Catalogue</h1>
-        <p className="text-sm text-muted-foreground mt-1">Ikeja</p>
-        <hr className="mt-3 border-border" />
+        <p className="text-sm text-muted-foreground mt-1">{location}</p>
+        <hr className="mt-3 border-gray-300" />
       </div>
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header (hidden when printing) ────────────────────────────────── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between print:hidden">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Product Catalogue</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Product Catalogue
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Browse your inventory — share with customers or print.
           </p>
@@ -497,7 +486,7 @@ export default function Catalogue() {
         </div>
       </div>
 
-      {/* ── Stats Bar ──────────────────────────────────────────────────────── */}
+      {/* ── Stats Bar (hidden when printing) ─────────────────────────────── */}
       {stats && !isLoading && (
         <div className="grid grid-cols-3 gap-2 md:gap-3 print:hidden">
           <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5">
@@ -505,8 +494,12 @@ export default function Catalogue() {
               <Package className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none">Products</p>
-              <p className="text-base font-bold mt-0.5 truncate">{stats.total}</p>
+              <p className="text-[11px] text-muted-foreground leading-none">
+                Products
+              </p>
+              <p className="text-base font-bold mt-0.5 truncate">
+                {stats.total}
+              </p>
             </div>
           </div>
 
@@ -515,8 +508,12 @@ export default function Catalogue() {
               <Camera className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none">With Images</p>
-              <p className="text-base font-bold mt-0.5 truncate">{stats.withImages}</p>
+              <p className="text-[11px] text-muted-foreground leading-none">
+                With Images
+              </p>
+              <p className="text-base font-bold mt-0.5 truncate">
+                {stats.withImages}
+              </p>
             </div>
           </div>
 
@@ -525,7 +522,9 @@ export default function Catalogue() {
               <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none">Max Price</p>
+              <p className="text-[11px] text-muted-foreground leading-none">
+                Max Price
+              </p>
               <p className="text-sm font-bold mt-0.5 truncate">
                 {formatCurrency(stats.maxPrice)}
               </p>
@@ -534,73 +533,11 @@ export default function Catalogue() {
         </div>
       )}
 
-      {/* ── Search + Filter Bar ─────────────────────────────────────────────── */}
+      {/* ── Search + Filter Bar (hidden when printing) ────────────────────── */}
       <div className="space-y-2 print:hidden">
         {/* Top row: search + view toggle + filter toggle */}
         <div className="flex gap-2">
           {/* Search */}
-=======
-  const selectedUrl = selected?.image_url ? signed[selected.image_url] : null;
-
-  return (
-    <div className="space-y-6 fade-in">
-      {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm">
-        <div className="absolute inset-0 opacity-60 pointer-events-none">
-          <div className="absolute -top-24 -left-16 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-          <div className="absolute -bottom-24 -right-16 h-64 w-64 rounded-full bg-secondary/20 blur-3xl" />
-        </div>
-        <div className="relative flex flex-col gap-4 p-6 md:p-8 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2">
-            <Badge variant="secondary" className="w-fit">Showroom</Badge>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Product Catalogue</h1>
-            <p className="text-sm md:text-base text-muted-foreground max-w-xl">
-              A curated visual showcase of your inventory. Share with customers, print, or browse in style.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 print:hidden">
-            <Button variant="outline" onClick={handleOptimizeImages} disabled={optimizing}>
-              {optimizing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Optimizing {optimizeProgress.done}/{optimizeProgress.total}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" /> Optimize images
-                </>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                const link = `${window.location.origin}/share/catalogue`;
-                try {
-                  if (navigator.share) {
-                    await navigator.share({ title: "Product Catalogue", url: link });
-                  } else {
-                    await navigator.clipboard.writeText(link);
-                    toast.success("Share link copied to clipboard");
-                  }
-                } catch {
-                  await navigator.clipboard.writeText(link);
-                  toast.success("Share link copied to clipboard");
-                }
-              }}
-            >
-              <Share2 className="h-4 w-4 mr-2" /> Share catalogue
-            </Button>
-            <Button variant="outline" onClick={() => window.print()}>
-              <Printer className="h-4 w-4 mr-2" /> Print / PDF
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Sticky glass filter bar */}
-      <div className="sticky top-16 z-20 print:hidden">
-        <div className="rounded-xl border border-border/60 bg-background/70 backdrop-blur-xl shadow-sm p-3 flex flex-col md:flex-row gap-3 md:items-center">
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -608,33 +545,9 @@ export default function Catalogue() {
               placeholder="Search products…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-background/60"
+              className="pl-9"
             />
           </div>
-<<<<<<< HEAD
-=======
-          <Select value={location} onValueChange={setLocation}>
-            <SelectTrigger className="md:w-48 bg-background/60">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {LOCATIONS.map((l) => (
-                <SelectItem key={l} value={l}>{l}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant={onlyWithImages ? "default" : "outline"}
-            onClick={() => setOnlyWithImages((v) => !v)}
-          >
-            With images only
-          </Button>
-          <div className="hidden md:block text-xs text-muted-foreground pl-2 whitespace-nowrap">
-            {filtered.length} product{filtered.length === 1 ? "" : "s"}
-          </div>
-        </div>
-      </div>
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
 
           {/* View toggle */}
           <div className="flex rounded-lg border border-border overflow-hidden">
@@ -685,16 +598,25 @@ export default function Catalogue() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Sort */}
               <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">Sort by</label>
-                <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                <label className="text-xs font-medium text-muted-foreground">
+                  Sort by
+                </label>
+                <Select
+                  value={sort}
+                  onValueChange={(v) => setSort(v as SortKey)}
+                >
                   <SelectTrigger id="sort-select" className="h-9 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="name_asc">Name: A → Z</SelectItem>
                     <SelectItem value="name_desc">Name: Z → A</SelectItem>
-                    <SelectItem value="price_asc">Price: Low → High</SelectItem>
-                    <SelectItem value="price_desc">Price: High → Low</SelectItem>
+                    <SelectItem value="price_asc">
+                      Price: Low → High
+                    </SelectItem>
+                    <SelectItem value="price_desc">
+                      Price: High → Low
+                    </SelectItem>
                     <SelectItem value="qty_asc">Qty: Low → High</SelectItem>
                   </SelectContent>
                 </Select>
@@ -775,7 +697,9 @@ export default function Catalogue() {
               {Math.min(paginated.length, filtered.length)}
             </span>{" "}
             of{" "}
-            <span className="font-medium text-foreground">{filtered.length}</span>{" "}
+            <span className="font-medium text-foreground">
+              {filtered.length}
+            </span>{" "}
             product{filtered.length !== 1 ? "s" : ""}
             {hasActiveFilters && (
               <button
@@ -789,9 +713,8 @@ export default function Catalogue() {
         )}
       </div>
 
-      {/* ── Content Area ────────────────────────────────────────────────────── */}
+      {/* ── Content Area ─────────────────────────────────────────────────────── */}
       {isLoading ? (
-<<<<<<< HEAD
         view === "grid" ? (
           <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -825,109 +748,56 @@ export default function Catalogue() {
             </Button>
           )}
         </div>
-      ) : view === "grid" ? (
-        /* Grid view */
-        <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 stagger-children">
-          {paginated.map((item) => {
-            const url = item.image_url ? signed[item.image_url] : null;
-            return (
-              <GridCard
-                key={`${item.location}-${item.id}`}
-                item={item}
-                url={url}
-              />
-=======
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <Skeleton className="aspect-square w-full" />
-              <CardContent className="p-4 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/3" />
-                <Skeleton className="h-5 w-1/2 mt-2" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="p-12 text-center flex flex-col items-center gap-3">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-              <PackageSearch className="h-8 w-8 text-muted-foreground" />
+      ) : (
+        <>
+          {/* ── Screen view (paginated) ─────────────────────────────────── */}
+          {view === "grid" ? (
+            <div className="grid gap-3 md:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 stagger-children print:hidden">
+              {paginated.map((item) => {
+                const url = item.image_url ? signed[item.image_url] : null;
+                return (
+                  <GridCard
+                    key={`${item.location}-${item.id}`}
+                    item={item}
+                    url={url}
+                  />
+                );
+              })}
             </div>
-            <h3 className="font-semibold text-lg">No products found</h3>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              Try adjusting your search or filters. Add images to your inventory items to build a beautiful catalogue.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-      ) : view === "grid" ? (
-        /* Grid view */
-        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 stagger-children print:hidden">
-          {paginated.map((item) => {
-            const url = item.image_url ? signed[item.image_url] : null;
-            return (
-              <Card
-                key={`${item.location}-${item.id}`}
-                onClick={() => setSelected(item)}
-                className="overflow-hidden group cursor-pointer border-border/60 bg-card/70 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/40"
-              >
-                <div className="aspect-square bg-muted relative overflow-hidden">
-                  {url ? (
-                    <img
-                      src={url}
-                      alt={item["Item Description"]}
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out [image-rendering:auto]"
-                      loading="lazy"
-                      decoding="async"
-                      width={800}
-                      height={800}
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-muted to-muted/50">
-                      <ImageOff className="h-10 w-10" />
-                    </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+          ) : (
+            <div className="space-y-2 print:hidden">
+              {paginated.map((item) => {
+                const url = item.image_url ? signed[item.image_url] : null;
+                return (
+                  <ListRow
+                    key={`${item.location}-${item.id}`}
+                    item={item}
+                    url={url}
+                  />
+                );
+              })}
+            </div>
+          )}
 
-                <CardContent className="p-4 space-y-2">
-                  <h3 className="font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                    {item["Item Description"]}
-                  </h3>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    {item.location}
-                  </div>
-                  <p className="text-xl font-bold text-primary pt-1 tracking-tight">
-                    {formatCurrency(item.Price || 0)}
-                  </p>
-                </CardContent>
-              </Card>
->>>>>>> dbef9933c2b8859b4001498738f3b1e35dd48e9b
-            );
-          })}
-        </div>
-      ) : (
-        /* List view */
-        <div className="space-y-2">
-          {paginated.map((item) => {
-            const url = item.image_url ? signed[item.image_url] : null;
-            return (
-              <ListRow
-                key={`${item.location}-${item.id}`}
-                item={item}
-                url={url}
-              />
-            );
-          })}
-        </div>
+          {/* ── Print-only view (all items, 3-column grid) ──────────────── */}
+          <div className="hidden print:grid print:gap-4 print:grid-cols-3">
+            {filtered.map((item) => {
+              const url = item.image_url ? signed[item.image_url] : null;
+              return (
+                <GridCard
+                  key={`print-${item.location}-${item.id}`}
+                  item={item}
+                  url={url}
+                />
+              );
+            })}
+          </div>
+        </>
       )}
 
-      {/* ── Show More ───────────────────────────────────────────────────────── */}
+      {/* ── Show More (hidden when printing) ─────────────────────────────── */}
       {!isLoading && hasMore && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-2 print:hidden">
           <Button
             id="show-more-btn"
             variant="outline"
@@ -938,49 +808,6 @@ export default function Catalogue() {
           </Button>
         </div>
       )}
-
-      {/* Product detail modal */}
-      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden">
-          {selected && (
-            <div className="grid md:grid-cols-2">
-              <div className="aspect-square bg-muted relative">
-                {selectedUrl ? (
-                  <img
-                    src={selectedUrl}
-                    alt={selected["Item Description"]}
-                    className="h-full w-full object-contain bg-muted p-2"
-                    decoding="async"
-                  />
-
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-                    <ImageOff className="h-12 w-12" />
-                  </div>
-                )}
-              </div>
-              <div className="p-6 flex flex-col gap-4">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl leading-tight">
-                    {selected["Item Description"]}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-1">
-                    <MapPin className="h-3 w-3" /> {selected.location}
-                  </Badge>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Price</div>
-                  <div className="text-3xl font-bold text-primary">
-                    {formatCurrency(selected.Price || 0)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
