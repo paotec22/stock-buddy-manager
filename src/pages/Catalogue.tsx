@@ -567,7 +567,7 @@ export default function Catalogue() {
               Product Catalogue
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Browse inventory — {location} Branch
+              Browse available inventory
             </p>
           </div>
         </div>
