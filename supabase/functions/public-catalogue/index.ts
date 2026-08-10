@@ -15,25 +15,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url)
-    const location = url.searchParams.get('location')
-
     let q = supabase
       .from('inventory list')
       .select('id, "Item Description", Price, Quantity, location, image_url')
+      .eq('location', 'Ikeja')
       .order('Item Description', { ascending: true })
-
-    if (location && location !== 'All') {
-      q = q.eq('location', location)
-    } else {
-      q = q.neq('location', 'Not to carry')
-    }
 
     const { data, error } = await q
     if (error) throw error
 
     const filteredData = (data ?? []).filter(
-      (i: any) => i.location?.toLowerCase() !== 'not to carry'
+      (i: any) => i.location?.toLowerCase() === 'ikeja'
     )
 
     const paths = filteredData
