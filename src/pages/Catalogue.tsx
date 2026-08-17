@@ -27,7 +27,6 @@ import { formatCurrency } from "@/utils/formatters";
 import {
   ImageOff,
   Printer,
-  Search,
   Sparkles,
   Loader2,
   Share2,
@@ -654,18 +653,13 @@ export default function Catalogue() {
       <div className="space-y-2.5 print:hidden">
         <div className="flex gap-2">
           {/* Search Bar */}
-          <div className="relative flex-1">
-            {search.trim() === "" && (
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            )}
+          <div className="flex-1">
             <Input
               id="catalogue-search"
               placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`bg-card transition-all duration-200 ${
-                search.trim() === "" ? "pl-9.5" : "pl-3.5"
-              }`}
+              className="bg-card pl-3.5"
             />
           </div>
 
