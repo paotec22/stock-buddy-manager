@@ -566,7 +566,7 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-nowrap gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -576,15 +576,15 @@ export default function Catalogue() {
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                <span className="truncate">
+                <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
+                <span className="truncate hidden sm:inline">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-1.5 text-amber-500" />
-                Optimize Images
+                <Sparkles className="h-4 w-4 sm:mr-1.5 text-amber-500" />
+                <span className="hidden sm:inline">Optimize Images</span>
               </>
             )}
           </Button>
@@ -595,8 +595,8 @@ export default function Catalogue() {
             onClick={handleShare}
             className="flex-1 sm:flex-none"
           >
-            <Share2 className="h-4 w-4 mr-1.5 text-primary" />
-            Share
+            <Share2 className="h-4 w-4 sm:mr-1.5 text-primary" />
+            <span className="hidden sm:inline">Share</span>
           </Button>
 
           <Button
@@ -605,8 +605,8 @@ export default function Catalogue() {
             onClick={handlePrint}
             className="flex-1 sm:flex-none font-semibold shadow-sm"
           >
-            <Printer className="h-4 w-4 mr-1.5" />
-            Print Catalogue
+            <Printer className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Print Catalogue</span>
           </Button>
         </div>
       </div>
