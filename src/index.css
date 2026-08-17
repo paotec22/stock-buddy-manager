@@ -18,7 +18,8 @@
   nav,
   aside,
   .sidebar,
-  [role="navigation"] {
+  [role="navigation"],
+  .catalogue-bg::before {
     display: none !important;
   }
 
