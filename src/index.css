@@ -488,3 +488,52 @@
 .btn-primary {
   @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200;
 }
+
+/* Catalogue diagonal stripe background */
+.catalogue-bg {
+  position: relative;
+  background-color: hsl(var(--background));
+}
+
+.catalogue-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0px,
+      transparent 80px,
+      hsl(217 91% 60% / 0.03) 80px,
+      hsl(217 91% 60% / 0.03) 82px,
+      transparent 82px,
+      transparent 160px,
+      hsl(262 83% 58% / 0.025) 160px,
+      hsl(262 83% 58% / 0.025) 162px,
+      transparent 162px,
+      transparent 240px
+    );
+  mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 85%);
+}
+
+.dark .catalogue-bg::before {
+  background:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0px,
+      transparent 80px,
+      hsl(217 91% 65% / 0.04) 80px,
+      hsl(217 91% 65% / 0.04) 82px,
+      transparent 82px,
+      transparent 160px,
+      hsl(262 83% 63% / 0.03) 160px,
+      hsl(262 83% 63% / 0.03) 162px,
+      transparent 162px,
+      transparent 240px
+    );
+  mask-image: radial-gradient(ellipse at 50% 0%, black 50%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 50%, transparent 90%);
+}
