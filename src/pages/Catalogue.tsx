@@ -27,7 +27,6 @@ import { formatCurrency } from "@/utils/formatters";
 import {
   ImageOff,
   Printer,
-  Search,
   Sparkles,
   Loader2,
   Share2,
