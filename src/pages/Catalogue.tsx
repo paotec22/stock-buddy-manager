@@ -513,7 +513,7 @@ export default function Catalogue() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0">
+    <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0 catalogue-bg -mx-4 md:-mx-8 lg:-mx-16 xl:-mx-24 px-4 md:px-8 lg:px-16 xl:px-24 pt-4 md:pt-6">
 
       {/* ── PRINT-ONLY STUNNING CATALOGUE HEADER ──────────────────────────── */}
       <div className="hidden print:block print:mb-6">
