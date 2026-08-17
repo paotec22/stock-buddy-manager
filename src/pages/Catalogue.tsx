@@ -655,13 +655,17 @@ export default function Catalogue() {
         <div className="flex gap-2">
           {/* Search Bar */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            {search.trim() === "" && (
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            )}
             <Input
               id="catalogue-search"
               placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9.5 bg-card"
+              className={`bg-card transition-all duration-200 ${
+                search.trim() === "" ? "pl-9.5" : "pl-3.5"
+              }`}
             />
           </div>
 
