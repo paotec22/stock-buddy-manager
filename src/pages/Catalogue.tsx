@@ -780,7 +780,17 @@ export default function Catalogue() {
                   onClick={() => setOnlyWithImages((v) => !v)}
                   className="w-full h-9 text-sm justify-start"
                 >
-                  {onlyWithImages ? "Showing photos only" : "All items (with or without photos)"}
+                  {onlyWithImages ? (
+                    <>
+                      <span className="sm:hidden">With photos only</span>
+                      <span className="hidden sm:inline">Showing photos only</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="sm:hidden">All items</span>
+                      <span className="hidden sm:inline">All items (with or without photos)</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
