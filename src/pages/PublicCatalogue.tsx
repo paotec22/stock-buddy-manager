@@ -26,7 +26,6 @@ import {
   TrendingUp,
   Eye,
   Copy,
-  Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,31 +45,6 @@ interface PublicItem {
   price: number | null;
   location: string;
   image: string | null;
-  quantity?: number | null;
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getStockStatus(qty?: number | null) {
-  if (qty == null || qty <= 0)
-    return {
-      label: "Out of Stock",
-      badgeColor:
-        "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-900/50",
-      dotColor: "bg-red-500",
-    };
-  if (qty <= 10)
-    return {
-      label: "Low Stock",
-      badgeColor:
-        "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-900/50",
-      dotColor: "bg-amber-500",
-    };
-  return {
-    label: "In Stock",
-    badgeColor:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/50",
-    dotColor: "bg-emerald-500",
-  };
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -107,7 +81,6 @@ function GridCard({
   item: PublicItem;
   onClick: () => void;
 }) {
-  const stock = getStockStatus(item.quantity);
   return (
     <div
       onClick={onClick}
@@ -137,24 +110,12 @@ function GridCard({
             <span className="text-[10px] opacity-50">No image</span>
           </div>
         )}
-
-        <div
-          className={`absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-xs backdrop-blur-md ${stock.badgeColor}`}
-        >
-          <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
-          {stock.label}
-        </div>
       </div>
 
       <div className="p-2.5 space-y-1.5">
         <h3 className="font-semibold text-xs leading-snug line-clamp-2 min-h-[2rem] group-hover:text-primary transition-colors">
           {item.description}
         </h3>
-        {item.quantity != null && (
-          <p className="text-[10px] text-muted-foreground">
-            Qty: <span className="font-semibold text-foreground">{item.quantity}</span>
-          </p>
-        )}
         <div className="pt-0.5">
           <span className="text-sm font-bold text-primary tracking-tight">
             {formatCurrency(item.price || 0)}
@@ -173,7 +134,6 @@ function ListRow({
   item: PublicItem;
   onClick: () => void;
 }) {
-  const stock = getStockStatus(item.quantity);
   return (
     <div
       onClick={onClick}
@@ -201,30 +161,12 @@ function ListRow({
         <p className="font-semibold text-xs truncate group-hover:text-primary transition-colors">
           {item.description}
         </p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span
-            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.2 rounded-full border ${stock.badgeColor}`}
-          >
-            <span className={`h-1 w-1 rounded-full ${stock.dotColor}`} />
-            {stock.label}
-          </span>
-          {item.quantity != null && (
-            <span className="text-[10px] text-muted-foreground hidden sm:inline">
-              Qty: <span className="font-medium text-foreground">{item.quantity}</span>
-            </span>
-          )}
-        </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
         <p className="font-bold text-sm text-primary">
           {formatCurrency(item.price || 0)}
         </p>
-        {item.quantity != null && (
-          <p className="text-[10px] text-muted-foreground sm:hidden">
-            Qty: {item.quantity}
-          </p>
-        )}
       </div>
     </div>
   );
@@ -255,11 +197,6 @@ function PrintCard({ item }: { item: PublicItem }) {
           <h4 className="font-bold text-[11px] leading-tight line-clamp-2 text-slate-900">
             {item.description}
           </h4>
-          {item.quantity != null && (
-            <p className="text-[9px] text-slate-500 font-mono">
-              Available Qty: {item.quantity}
-            </p>
-          )}
         </div>
       </div>
 
@@ -757,20 +694,6 @@ export default function PublicCatalogue() {
                   <span className="text-xs text-muted-foreground/60">No image available</span>
                 </div>
               )}
-              <div className="absolute top-3 left-3">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-md backdrop-blur-md ${
-                    getStockStatus(selectedItem.quantity).badgeColor
-                  }`}
-                >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      getStockStatus(selectedItem.quantity).dotColor
-                    }`}
-                  />
-                  {getStockStatus(selectedItem.quantity).label}
-                </span>
-              </div>
             </div>
 
             <div className="p-5 space-y-4">
@@ -783,21 +706,13 @@ export default function PublicCatalogue() {
                 </DialogTitle>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-muted/50 border border-border/50 text-xs">
+              <div className="grid grid-cols-1 gap-3 p-3 rounded-xl bg-muted/50 border border-border/50 text-xs">
                 <div>
                   <span className="text-muted-foreground block">Price</span>
                   <strong className="text-base text-primary font-bold">
                     {formatCurrency(selectedItem.price || 0)}
                   </strong>
                 </div>
-                {selectedItem.quantity != null && (
-                  <div>
-                    <span className="text-muted-foreground block font-medium">Availability</span>
-                    <strong className="text-base text-foreground font-bold">
-                      {selectedItem.quantity} units
-                    </strong>
-                  </div>
-                )}
               </div>
 
               <div className="flex gap-2 pt-1">
