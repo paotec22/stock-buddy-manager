@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
   try {
     let q = supabase
       .from('inventory list')
-      .select('id, "Item Description", Price, Quantity, location, image_url')
+      .select('id, "Item Description", Price, Quantity, location, image_url, features')
       .eq('location', 'Ikeja')
       .order('Item Description', { ascending: true })
 
@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
       image: i.image_url
         ? (/^https?:\/\//.test(i.image_url) ? i.image_url : urlMap[i.image_url] ?? null)
         : null,
+      features: i.features,
     }))
 
     return new Response(JSON.stringify({ items }), {
