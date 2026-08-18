@@ -75,18 +75,19 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="app-theme">
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ConnectionBanner />
-          <CommandPalette />
-          <OnboardingTour />
-          <BrowserRouter>
-            <AuthProvider>
+        {/* BrowserRouter must wrap any components that use react-router hooks */}
+        <BrowserRouter>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <ConnectionBanner />
+              <CommandPalette />
+              <OnboardingTour />
               <AnimatedRoutes />
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   );
