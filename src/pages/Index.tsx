@@ -76,11 +76,11 @@ const Index = () => {
       <main className="relative z-10 min-h-screen flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-5xl">
           {/* Desktop: Split layout | Mobile: Stacked */}
-          <div className="hidden lg:grid lg:grid-cols-2 gap-8 items-center">
-            {/* Brand Hero Panel */}
-            <div className="relative p-10 md:p-16 bg-gradient-to-br from-primary via-primary/80 to-secondary rounded-3xl text-primary-foreground overflow-hidden">
+          <div className="lg:grid lg:grid-cols-2 gap-8 items-center">
+            {/* Brand Hero Panel - desktop only */}
+            <div className="hidden lg:block relative p-10 md:p-16 bg-gradient-to-br from-primary via-primary/80 to-secondary rounded-3xl text-primary-foreground overflow-hidden">
               <div className="absolute inset-0 bg-[url('/Puido_Smart_Solutions.svg')] bg-center bg-no-repeat opacity-5" aria-hidden="true" />
-              
+
               <div className="relative z-10 max-w-lg">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="h-12 w-12 rounded-xl bg-primary-foreground/20 backdrop-blur flex items-center justify-center border border-primary-foreground/20">
@@ -88,7 +88,7 @@ const Index = () => {
                   </div>
                   <span className="text-xl font-bold">SI Manager</span>
                 </div>
-                
+
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 leading-tight">
                   Manage Inventory <br />with <span className="relative">Confidence</span>
                 </h1>
@@ -124,118 +124,118 @@ const Index = () => {
                 <BarChart3 className="h-24 w-24" />
               </div>
             </div>
-          </div>
 
-          {/* Login Form Panel - shown on both desktop and mobile */}
-          <div className="lg:col-span-1">
-            <Card className="bg-card/80 backdrop-blur-xl border-border/40 shadow-2xl card-hover relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary" />
-              <CardHeader className="space-y-2 text-center pb-2">
-                <div className="inline-flex items-center justify-center gap-2 h-12 w-12 rounded-xl bg-primary/10 mx-auto mb-2">
-                  <Package className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Sign in to access your dashboard
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleLogin} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-sm font-medium">
-                      Email address
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="you@company.com"
-                        value={loginData.email}
-                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                        required
-                        disabled={isLoading}
-                        autoComplete="email"
-                        className="pl-10"
-                      />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                      </span>
-                    </div>
+            {/* Login Form Panel - shown on both desktop and mobile */}
+            <div className="lg:col-span-1">
+              <Card className="bg-card/80 backdrop-blur-xl border-border/40 shadow-2xl card-hover relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary" />
+                <CardHeader className="space-y-2 text-center pb-2">
+                  <div className="inline-flex items-center justify-center gap-2 h-12 w-12 rounded-xl bg-primary/10 mx-auto mb-2">
+                    <Package className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="login-password" className="text-sm font-medium">
-                        Password
+                  <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Sign in to access your dashboard
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleLogin} className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email" className="text-sm font-medium">
+                        Email address
                       </Label>
-                      <a href="#" className="text-xs text-primary hover:underline">Forgot?</a>
+                      <div className="relative">
+                        <Input
+                          id="login-email"
+                          type="email"
+                          placeholder="you@company.com"
+                          value={loginData.email}
+                          onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                          required
+                          disabled={isLoading}
+                          autoComplete="email"
+                          className="pl-10"
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        </span>
+                      </div>
                     </div>
-                    <div className="relative">
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginData.password}
-                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                        required
-                        disabled={isLoading}
-                        autoComplete="current-password"
-                        className="pl-10"
-                      />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                      </span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="login-password" className="text-sm font-medium">
+                          Password
+                        </Label>
+                        <a href="#" className="text-xs text-primary hover:underline">Forgot?</a>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="login-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={loginData.password}
+                          onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                          required
+                          disabled={isLoading}
+                          autoComplete="current-password"
+                          className="pl-10"
+                        />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        </span>
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full py-3 text-base font-semibold" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        <>
+                          Sign In
+                          <ArrowRight className="h-5 w-5 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+
+                  <div className="mt-6 pt-6 border-t relative">
+                    <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+                    <p className="text-center text-sm text-muted-foreground mb-4">Demo credentials</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="button"
+                        onClick={() => {
+                          setLoginData({ email: "admin@simanager.com", password: "admin123" });
+                        }}
+                        className="text-xs"
+                      >
+                        Admin
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="button"
+                        onClick={() => {
+                          setLoginData({ email: "user@simanager.com", password: "user123" });
+                        }}
+                        className="text-xs"
+                      >
+                        User
+                      </Button>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
 
-                  <Button type="submit" className="w-full py-3 text-base font-semibold" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      <>
-                        Sign In
-                        <ArrowRight className="h-5 w-5 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                <div className="mt-6 pt-6 border-t relative">
-                  <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-                  <p className="text-center text-sm text-muted-foreground mb-4">Demo credentials</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      type="button"
-                      onClick={() => {
-                        setLoginData({ email: "admin@simanager.com", password: "admin123" });
-                      }}
-                      className="text-xs"
-                    >
-                      Admin
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      type="button"
-                      onClick={() => {
-                        setLoginData({ email: "user@simanager.com", password: "user123" });
-                      }}
-                      className="text-xs"
-                    >
-                      User
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <p className="text-center text-sm text-muted-foreground mt-6">
-              Powered by <strong className="text-foreground">Puido Smart Solutions</strong>
-            </p>
+              <p className="text-center text-sm text-muted-foreground mt-6">
+                Powered by <strong className="text-foreground">Puido Smart Solutions</strong>
+              </p>
+            </div>
           </div>
         </div>
       </main>
