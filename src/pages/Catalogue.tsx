@@ -27,7 +27,6 @@ import { formatCurrency } from "@/utils/formatters";
 import {
   ImageOff,
   Printer,
-  Search,
   Sparkles,
   Loader2,
   Share2,
@@ -514,7 +513,7 @@ export default function Catalogue() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0">
+    <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0 catalogue-bg -mx-4 md:-mx-8 lg:-mx-16 xl:-mx-24 px-4 md:px-8 lg:px-16 xl:px-24 pt-4 md:pt-6">
 
       {/* ── PRINT-ONLY STUNNING CATALOGUE HEADER ──────────────────────────── */}
       <div className="hidden print:block print:mb-6">
@@ -567,7 +566,7 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-nowrap gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -577,15 +576,15 @@ export default function Catalogue() {
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                <span className="truncate">
+                <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
+                <span className="truncate hidden sm:inline">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-1.5 text-amber-500" />
-                Optimize Images
+                <Sparkles className="h-4 w-4 sm:mr-1.5 text-amber-500" />
+                <span className="hidden sm:inline">Optimize Images</span>
               </>
             )}
           </Button>
@@ -596,8 +595,8 @@ export default function Catalogue() {
             onClick={handleShare}
             className="flex-1 sm:flex-none"
           >
-            <Share2 className="h-4 w-4 mr-1.5 text-primary" />
-            Share
+            <Share2 className="h-4 w-4 sm:mr-1.5 text-primary" />
+            <span className="hidden sm:inline">Share</span>
           </Button>
 
           <Button
@@ -606,8 +605,8 @@ export default function Catalogue() {
             onClick={handlePrint}
             className="flex-1 sm:flex-none font-semibold shadow-sm"
           >
-            <Printer className="h-4 w-4 mr-1.5" />
-            Print Catalogue
+            <Printer className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Print Catalogue</span>
           </Button>
         </div>
       </div>
@@ -654,14 +653,13 @@ export default function Catalogue() {
       <div className="space-y-2.5 print:hidden">
         <div className="flex gap-2">
           {/* Search Bar */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <div className="flex-1">
             <Input
               id="catalogue-search"
               placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9.5 bg-card"
+              className="bg-card pl-3.5"
             />
           </div>
 
@@ -782,7 +780,17 @@ export default function Catalogue() {
                   onClick={() => setOnlyWithImages((v) => !v)}
                   className="w-full h-9 text-sm justify-start"
                 >
-                  {onlyWithImages ? "Showing photos only" : "All items (with or without photos)"}
+                  {onlyWithImages ? (
+                    <>
+                      <span className="sm:hidden">With photos only</span>
+                      <span className="hidden sm:inline">Showing photos only</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="sm:hidden">All items</span>
+                      <span className="hidden sm:inline">All items (with or without photos)</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
