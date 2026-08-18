@@ -41,6 +41,7 @@ import {
   Copy,
   Check,
   Building2,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFAB } from "@/components/MobileFAB";
@@ -120,9 +121,9 @@ function GridCard({
   return (
     <Card
       onClick={onClick}
-      className="overflow-hidden group cursor-pointer border border-border/60 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-card"
+      className="overflow-hidden group cursor-pointer border border-border/40 bg-card/65 backdrop-blur-xs rounded-2xl shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-primary hover:border-primary/35"
     >
-      <div className="aspect-square bg-muted relative overflow-hidden">
+      <div className="aspect-square bg-slate-100 dark:bg-slate-900/40 relative overflow-hidden flex items-center justify-center">
         {url ? (
           <>
             <img
@@ -134,41 +135,41 @@ function GridCard({
               width={400}
               height={400}
             />
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/90 text-slate-900 shadow-md backdrop-blur-sm">
-                <Eye className="h-3 w-3" /> Quick View
+            <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white/95 text-slate-900 shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                <Eye className="h-3.5 w-3.5 text-primary" /> Quick View
               </span>
             </div>
           </>
         ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-1 bg-gradient-to-br from-muted to-muted/50">
-            <ImageOff className="h-7 w-7 opacity-30" />
-            <span className="text-[10px] text-muted-foreground/60">No image</span>
+          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-1.5 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+            <ImageOff className="h-8 w-8 opacity-25 text-primary" />
+            <span className="text-[10px] text-muted-foreground/60 font-medium">No image</span>
           </div>
         )}
 
         {/* Stock status pill */}
         <div
-          className={`absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shadow-xs backdrop-blur-md ${stock.badgeColor}`}
+          className={`absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shadow-sm backdrop-blur-md ${stock.badgeColor}`}
         >
           <span className={`h-1.5 w-1.5 rounded-full ${stock.dotColor}`} />
           {stock.label}
         </div>
       </div>
 
-      <CardContent className="p-2.5 space-y-1.5">
-        <h3 className="font-semibold text-xs leading-snug line-clamp-2 min-h-[2rem] group-hover:text-primary transition-colors">
+      <CardContent className="p-3 space-y-2">
+        <h3 className="font-semibold text-xs leading-snug line-clamp-2 min-h-[2rem] group-hover:text-primary transition-colors text-foreground/90">
           {item["Item Description"]}
         </h3>
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <span className="font-mono bg-muted/60 px-1 py-0.2 rounded">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+          <span className="font-mono bg-muted/80 text-muted-foreground border border-border/50 px-1.5 py-0.5 rounded">
             SKU #{item.id}
           </span>
-          <span>
+          <span className="font-medium">
             Qty: <strong className="text-foreground font-semibold">{item.Quantity ?? 0}</strong>
           </span>
         </div>
-        <div className="pt-0.5 flex items-center justify-between">
+        <div className="pt-1 flex items-center justify-between border-t border-border/40">
           <span className="text-sm font-bold text-primary tracking-tight">
             {formatCurrency(item.Price || 0)}
           </span>
@@ -192,9 +193,9 @@ function ListRow({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-3 p-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-all cursor-pointer group hover:border-primary/30"
+      className="flex items-center gap-4 p-3 rounded-2xl border border-border/40 bg-card/65 backdrop-blur-xs hover:bg-card hover:shadow-md transition-all duration-300 cursor-pointer group hover:border-primary/35"
     >
-      <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
+      <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-900/40 overflow-hidden flex-shrink-0 relative flex items-center justify-center">
         {url ? (
           <img
             src={url}
@@ -202,24 +203,24 @@ function ListRow({
             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             decoding="async"
-            width={48}
-            height={48}
+            width={56}
+            height={56}
           />
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-            <ImageOff className="h-4 w-4 opacity-30" />
+          <div className="h-full w-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-primary/5 to-secondary/5">
+            <ImageOff className="h-5 w-5 opacity-25 text-primary" />
           </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+        <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors truncate">
           {item["Item Description"]}
         </p>
-        <div className="flex items-center gap-2 mt-0.5 text-[10px]">
-          <span className="text-muted-foreground font-mono">SKU #{item.id}</span>
+        <div className="flex items-center gap-2 mt-1 text-[10px]">
+          <span className="text-muted-foreground font-mono bg-muted/80 border border-border/50 px-1 py-0.2 rounded">SKU #{item.id}</span>
           <span
-            className={`inline-flex items-center gap-1 font-semibold px-1.5 py-0.2 rounded-full border ${stock.badgeColor}`}
+            className={`inline-flex items-center gap-1 font-semibold px-2 py-0.2 rounded-full border shadow-2xs backdrop-blur-md ${stock.badgeColor}`}
           >
             <span className={`h-1 w-1 rounded-full ${stock.dotColor}`} />
             {stock.label}
@@ -227,7 +228,7 @@ function ListRow({
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-0.5 flex-shrink-0 text-right">
+      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-right pr-1">
         <span className="font-bold text-sm text-primary">
           {formatCurrency(item.Price || 0)}
         </span>
@@ -550,43 +551,49 @@ export default function Catalogue() {
       </div>
 
       {/* ── SCREEN HEADER (Hidden when printing) ─────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
-        <div className="flex items-center gap-3">
-          <img
-            src="/Puido_Smart_Solutions.svg"
-            alt="Puido Smart Solutions"
-            className="h-8 md:h-10 w-auto object-contain"
-          />
+      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-card via-card/85 to-card/50 p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Glow decoration */}
+        <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-secondary/80 blur-3xl opacity-10 pointer-events-none" />
+
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner">
+            <img
+              src="/Puido_Smart_Solutions.svg"
+              alt="Puido Smart Solutions"
+              className="h-8 w-auto object-contain"
+            />
+          </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Product Catalogue
             </h1>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Browse available inventory
+            <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">
+              Browse and manage available inventory for <span className="text-primary font-semibold">{location}</span>
             </p>
           </div>
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-nowrap gap-2">
+        <div className="flex flex-wrap gap-2.5 relative z-10 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={handleOptimizeImages}
             disabled={optimizing}
-            className="flex-1 sm:flex-none"
+            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-accent/5 hover:text-accent border-border/80 transition-all duration-300 hover:scale-[1.02]"
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
-                <span className="truncate hidden sm:inline">
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <span className="truncate">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 sm:mr-1.5 text-amber-500" />
-                <span className="hidden sm:inline">Optimize Images</span>
+                <Sparkles className="h-4 w-4 mr-1.5 text-amber-500 animate-pulse" />
+                <span>Optimize</span>
               </>
             )}
           </Button>
@@ -595,133 +602,150 @@ export default function Catalogue() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="flex-1 sm:flex-none"
+            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all duration-300 hover:scale-[1.02]"
           >
-            <Share2 className="h-4 w-4 sm:mr-1.5 text-primary" />
-            <span className="hidden sm:inline">Share</span>
+            <Share2 className="h-4 w-4 mr-1.5 text-primary" />
+            <span>Share Link</span>
           </Button>
 
           <Button
             variant="default"
             size="sm"
             onClick={handlePrint}
-            className="flex-1 sm:flex-none font-semibold shadow-sm"
+            className="flex-1 sm:flex-none h-9 rounded-xl font-semibold shadow-md bg-gradient-to-r from-primary to-secondary hover:from-primary/95 hover:to-secondary/95 transition-all duration-300 hover:scale-[1.02]"
           >
-            <Printer className="h-4 w-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Print Catalogue</span>
+            <Printer className="h-4 w-4 mr-1.5" />
+            <span>Print Catalogue</span>
           </Button>
         </div>
       </div>
 
       {/* ── SCREEN STATS BAR (Hidden when printing) ──────────────────────── */}
       {stats && !isLoading && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 md:gap-3 print:hidden">
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Package className="h-4 w-4 text-primary" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 print:hidden">
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-primary/25 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary-light" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <Package className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none font-medium">Total Products</p>
-              <p className="text-base font-bold mt-1 truncate">{stats.total}</p>
+              <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Total Products</p>
+              <p className="text-lg font-extrabold mt-1.5 truncate text-foreground">{stats.total}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-              <Camera className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-emerald-500/25 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-400" />
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <Camera className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none font-medium">With Photos</p>
-              <p className="text-base font-bold mt-1 truncate">{stats.withImages}</p>
+              <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">With Photos</p>
+              <p className="text-lg font-extrabold mt-1.5 truncate text-foreground">{stats.withImages}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-xs">
-            <div className="h-9 w-9 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-violet-500/25 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 to-violet-400" />
+            <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <TrendingUp className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground leading-none font-medium">Highest Price</p>
-              <p className="text-sm font-bold mt-1 truncate">
+              <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Highest Price</p>
+              <p className="text-lg font-extrabold mt-1.5 truncate text-primary dark:text-violet-400">
                 {formatCurrency(stats.maxPrice)}
               </p>
             </div>
           </div>
-
         </div>
       )}
 
       {/* ── SEARCH & FILTER CONTROLS (Hidden when printing) ───────────────── */}
-      <div className="space-y-2.5 print:hidden">
-        <div className="flex gap-2">
+      <div className="space-y-3 print:hidden">
+        <div className="flex flex-col sm:flex-row gap-2.5">
           {/* Search Bar */}
-          <div className="flex-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               id="catalogue-search"
               placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-card pl-3.5"
+              className="bg-card/65 backdrop-blur-xs pl-9.5 h-10 border-border/60 focus-visible:ring-primary/20 rounded-xl"
             />
           </div>
 
-          {/* View toggle */}
-          <div className="flex rounded-lg border border-border bg-card overflow-hidden">
-            <button
-              id="view-grid-btn"
-              title="Grid view"
-              onClick={() => setView("grid")}
-              className={`px-3 py-2 transition-colors ${
-                view === "grid"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              id="view-list-btn"
-              title="List view"
-              onClick={() => setView("list")}
-              className={`px-3 py-2 transition-colors ${
-                view === "list"
-                  ? "bg-primary text-primary-foreground font-semibold"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              <List className="h-4 w-4" />
-            </button>
-          </div>
+          <div className="flex gap-2 justify-end">
+            {/* View toggle */}
+            <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5 h-10">
+              <button
+                id="view-grid-btn"
+                title="Grid view"
+                onClick={() => setView("grid")}
+                className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                  view === "grid"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                id="view-list-btn"
+                title="List view"
+                onClick={() => setView("list")}
+                className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                  view === "list"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
 
-          {/* Filter button */}
-          <Button
-            id="toggle-filters-btn"
-            variant="outline"
-            size="icon"
-            onClick={() => setFiltersOpen((v) => !v)}
-            className="relative flex-shrink-0 bg-card"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            {hasActiveFilters && (
-              <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary" />
-            )}
-          </Button>
+            {/* Filter button */}
+            <Button
+              id="toggle-filters-btn"
+              variant="outline"
+              onClick={() => setFiltersOpen((v) => !v)}
+              className={`h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 ${
+                filtersOpen ? "border-primary text-primary bg-primary/5" : ""
+              }`}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="text-xs font-semibold">Filters</span>
+              {hasActiveFilters && (
+                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Collapsible Filter Panel */}
         {filtersOpen && (
-          <div className="rounded-xl border border-border/80 bg-card p-4 space-y-3 shadow-sm animate-[fadeIn_0.2s_ease-out]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-2xl border border-border/40 bg-card/80 p-4 space-y-3.5 shadow-md backdrop-blur-md animate-[fadeIn_0.2s_ease-out] relative">
+            <div className="absolute right-4 top-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setFiltersOpen(false)}
+                className="h-6 w-6 rounded-full hover:bg-muted"
+              >
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
               {/* Sort */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Sort Order
                 </label>
                 <Select
                   value={sort}
                   onValueChange={(v) => setSort(v as SortKey)}
                 >
-                  <SelectTrigger id="sort-select" className="h-9 text-sm">
+                  <SelectTrigger id="sort-select" className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -739,8 +763,8 @@ export default function Catalogue() {
               </div>
 
               {/* Min price */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Min Price (₦)
                 </label>
                 <Input
@@ -750,13 +774,13 @@ export default function Catalogue() {
                   placeholder="0"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="h-9 text-sm"
+                  className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
                 />
               </div>
 
               {/* Max price */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Max Price (₦)
                 </label>
                 <Input
@@ -766,13 +790,13 @@ export default function Catalogue() {
                   placeholder="Any"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="h-9 text-sm"
+                  className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
                 />
               </div>
 
               {/* Images only toggle */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-muted-foreground">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Photo Status
                 </label>
                 <Button
@@ -780,7 +804,11 @@ export default function Catalogue() {
                   variant={onlyWithImages ? "default" : "outline"}
                   size="sm"
                   onClick={() => setOnlyWithImages((v) => !v)}
-                  className="w-full h-9 text-sm justify-start"
+                  className={`w-full h-9.5 text-sm justify-start rounded-xl font-medium ${
+                    onlyWithImages
+                      ? "bg-primary text-primary-foreground hover:bg-primary/95"
+                      : "bg-background/50 hover:bg-muted border-border/60 text-muted-foreground"
+                  }`}
                 >
                   {onlyWithImages ? (
                     <>
@@ -799,16 +827,16 @@ export default function Catalogue() {
 
             {/* Clear button */}
             {hasActiveFilters && (
-              <div className="flex justify-end pt-1">
+              <div className="flex justify-end pt-1 border-t border-border/40 mt-1">
                 <Button
                   id="clear-filters-btn"
                   variant="ghost"
                   size="sm"
                   onClick={clearFilters}
-                  className="text-xs text-muted-foreground h-7"
+                  className="text-xs text-muted-foreground h-8 hover:text-foreground font-semibold hover:bg-transparent"
                 >
-                  <X className="h-3 w-3 mr-1" />
-                  Clear filters
+                  <X className="h-3.5 w-3.5 mr-1 text-destructive" />
+                  Reset all filters
                 </Button>
               </div>
             )}
@@ -940,105 +968,120 @@ export default function Catalogue() {
       {/* ── PRODUCT QUICK VIEW MODAL (ON-SCREEN) ─────────────────────────── */}
       {selectedItem && (
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-          <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl">
-            <div className="aspect-square w-full bg-muted relative overflow-hidden">
-              {selectedItem.image_url && signed[selectedItem.image_url] ? (
-                <img
-                  src={signed[selectedItem.image_url]}
-                  alt={selectedItem["Item Description"]}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-gradient-to-br from-muted to-muted/50">
-                  <ImageOff className="h-12 w-12 opacity-30" />
-                  <span className="text-xs text-muted-foreground/60">No image uploaded</span>
-                </div>
-              )}
-              {/* Stock badge */}
-              <div className="absolute top-3 left-3">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-md backdrop-blur-md ${
-                    getStockStatus(selectedItem.Quantity ?? 0).badgeColor
-                  }`}
-                >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      getStockStatus(selectedItem.Quantity ?? 0).dotColor
-                    }`}
+          <DialogContent className="max-w-[92vw] sm:max-w-[85vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl animate-[scaleIn_0.3s_ease-out]">
+            <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full max-h-[85vh] md:max-h-[70vh] overflow-y-auto md:overflow-hidden">
+              
+              {/* Left: Image Container */}
+              <div className="relative aspect-square md:aspect-auto md:h-full w-full bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center border-b md:border-b-0 md:border-r border-border/40">
+                {selectedItem.image_url && signed[selectedItem.image_url] ? (
+                  <img
+                    src={signed[selectedItem.image_url]}
+                    alt={selectedItem["Item Description"]}
+                    className="h-full w-full object-cover md:absolute md:inset-0"
                   />
-                  {getStockStatus(selectedItem.Quantity ?? 0).label}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div>
-                <span className="text-xs font-mono text-muted-foreground">
-                  SKU #{selectedItem.id} • {selectedItem.location} Branch
-                </span>
-                <DialogTitle className="text-lg font-bold mt-1 text-foreground leading-snug">
-                  {selectedItem["Item Description"]}
-                </DialogTitle>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-muted/50 border border-border/50 text-xs">
-                <div>
-                  <span className="text-muted-foreground block">Unit Price</span>
-                  <strong className="text-base text-primary font-bold">
-                    {formatCurrency(selectedItem.Price || 0)}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block">Stock Available</span>
-                  <strong className="text-base text-foreground font-bold">
-                    {selectedItem.Quantity ?? 0} units
-                  </strong>
+                ) : (
+                  <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-12 md:absolute md:inset-0">
+                    <ImageOff className="h-16 w-16 opacity-20 text-primary" />
+                    <span className="text-xs font-semibold text-muted-foreground/60">No image uploaded</span>
+                  </div>
+                )}
+                
+                {/* Stock status pill overlay */}
+                <div className="absolute top-4 left-4 z-10">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-lg backdrop-blur-md ${
+                      getStockStatus(selectedItem.Quantity ?? 0).badgeColor
+                    }`}
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        getStockStatus(selectedItem.Quantity ?? 0).dotColor
+                      }`}
+                    />
+                    {getStockStatus(selectedItem.Quantity ?? 0).label}
+                  </span>
                 </div>
               </div>
 
-              {selectedItem.features && selectedItem.features.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                    Key Features
-                  </h4>
-                  <ul className="space-y-1.5">
-                    {selectedItem.features.map((feature, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-start gap-2 text-xs text-foreground/90 leading-snug"
-                      >
-                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {/* Right: Info Panel */}
+              <div className="flex flex-col justify-between p-6 md:p-8 space-y-6 md:overflow-y-auto h-full">
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-wider uppercase text-primary bg-primary/10 border border-primary/10 px-2 py-0.5 rounded-full font-mono">
+                      SKU #{selectedItem.id} • {selectedItem.location} Branch
+                    </span>
+                    <DialogTitle className="text-xl font-extrabold mt-3 text-foreground leading-tight tracking-tight">
+                      {selectedItem["Item Description"]}
+                    </DialogTitle>
+                  </div>
 
-              <div className="flex gap-2 pt-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      `${selectedItem["Item Description"]} - ${formatCurrency(
-                        selectedItem.Price || 0
-                      )}`
-                    );
-                    toast.success("Product details copied to clipboard");
-                  }}
-                >
-                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Product Info
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setSelectedItem(null)}
-                >
-                  Close
-                </Button>
+                  {/* Price & Quantity Grid Cards */}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div className="p-3 rounded-2xl bg-primary/5 border border-primary/10 shadow-3xs">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-primary/70 block">Unit Price</span>
+                      <strong className="text-lg text-primary font-black tracking-tight mt-1 block">
+                        {formatCurrency(selectedItem.Price || 0)}
+                      </strong>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-muted/60 border border-border/50 shadow-3xs">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">Stock Available</span>
+                      <strong className="text-lg text-foreground font-black tracking-tight mt-1 block">
+                        {selectedItem.Quantity ?? 0} <span className="text-xs font-medium text-muted-foreground">units</span>
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Features list */}
+                  {selectedItem.features && selectedItem.features.length > 0 && (
+                    <div className="pt-2">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                        Key Product Features
+                      </h4>
+                      <ul className="space-y-2">
+                        {selectedItem.features.map((feature, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-2.5 text-xs text-foreground/80 leading-relaxed"
+                          >
+                            <div className="mt-0.5 h-4 w-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                              <Check className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="flex gap-2.5 pt-4 border-t border-border/40 mt-auto">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-10 rounded-xl hover:bg-primary/5 border-border/80 transition-all font-semibold flex items-center justify-center gap-1.5"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `${selectedItem["Item Description"]} - ${formatCurrency(
+                          selectedItem.Price || 0
+                        )}`
+                      );
+                      toast.success("Product details copied to clipboard");
+                    }}
+                  >
+                    <Copy className="h-4 w-4 text-primary" /> Copy Info
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all"
+                    onClick={() => setSelectedItem(null)}
+                  >
+                    Close
+                  </Button>
+                </div>
               </div>
+
             </div>
           </DialogContent>
         </Dialog>

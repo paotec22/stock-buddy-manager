@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
@@ -10,7 +10,11 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ session: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  session: null, 
+  loading: true, 
+  signOut: async () => {} 
+});
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -26,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error("Failed to sign out");
@@ -34,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     toast.success("Successfully signed out");
     navigate("/");
-  };
+  }, [navigate]);
 
   useEffect(() => {
     console.log("AuthProvider: Initializing with current location:", location.pathname);
@@ -120,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     loading,
     signOut
-  }), [session, loading]);
+  }), [session, loading, signOut]);
 
   console.log("AuthProvider: Rendering", { 
     hasSession: !!session, 
