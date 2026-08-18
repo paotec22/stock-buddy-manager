@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "setup": "integrated",
+  "languages": [
+    "JavaScript/TypeScript",
+    "TypeScript"
+  ],
+  "stacks": [
+    "Node.js",
+    "TypeScript",
+    "React/Next"
+  ],
+  "markers": [
+    "package.json",
+    "tsconfig.json"
+  ],
+  "packageName": "vite_react_shadcn_ts",
+  "suggestedRun": "npm run dev",
+  "createdAt": "2026-08-17T13:07:53.711Z",
+  "tool": "xgrok"
+}
