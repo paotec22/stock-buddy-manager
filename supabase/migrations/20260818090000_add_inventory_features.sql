@@ -1,0 +1,283 @@
+-- Add a "features" column to store concise feature bullet points per product
+-- (used in the catalogue Quick View modal).
+ALTER TABLE "public"."inventory list" ADD COLUMN IF NOT EXISTS features text[];
+
+-- ─── Populate feature bullets (concise) ───────────────────────────────────────
+
+-- Engines (curtain / lock motors)
+UPDATE "inventory list" SET features = ARRAY[
+  'Quiet motorised drive for smart curtains',
+  'Works with curtain tracks & rails',
+  'Compact, low-noise operation'
+] WHERE id IN (274, 351, 275, 350, 419, 276, 277);
+
+-- Telescopic curtain tracks with one-way remote
+UPDATE "inventory list" SET features = ARRAY[
+  'Telescopic aluminium track, tool-free sizing',
+  'One-way RF remote control included',
+  'Compatible with Tuya/Smart Life app',
+  'Works with Alexa & Google Home'
+] WHERE id IN (405, 406, 407);
+
+-- Smart Home Wall Control panels
+UPDATE "inventory list" SET features = ARRAY[
+  'Wall-mounted smart home control panel',
+  'Central control for lights, curtains & scenes',
+  'Works with Alexa & Google Home',
+  'Touchscreen interface'
+] WHERE id IN (382, 379, 377, 378);
+
+-- Curtain-opening robots
+UPDATE "inventory list" SET features = ARRAY[
+  '3-in-1 WiFi curtain opener (app/remote/manual)',
+  'Clips onto existing curtain rods, no rewiring',
+  'Supports schedules & scenes in Tuya app',
+  'Voice control with Alexa & Google Home'
+] WHERE id IN (404, 403);
+
+-- Solar lights & street lights
+UPDATE "inventory list" SET features = ARRAY[
+  'Solar-powered, no wiring needed',
+  'Bright LED output for outdoor areas',
+  'Auto on/off at dusk & dawn',
+  'Weather-resistant build'
+] WHERE id IN (236, 259, 314, 315, 316, 301, 300);
+
+-- Solar flood light with camera
+UPDATE "inventory list" SET features = ARRAY[
+  '200W solar flood light with built-in camera',
+  'PIR motion detection with push alerts',
+  'Solar powered, wireless installation',
+  'Remote live view via app'
+] WHERE id = 243;
+
+-- Solar cameras (4G / WiFi)
+UPDATE "inventory list" SET features = ARRAY[
+  'Dual/triple lens for wide-angle coverage',
+  'Solar powered with rechargeable battery',
+  'PIR motion detection & push alerts',
+  'Two-way audio & remote live view',
+  'Works with WiFi or 4G network'
+] WHERE id IN (232, 296, 297, 298, 365);
+
+-- Solar camera accessories
+UPDATE "inventory list" SET features = ARRAY[
+  'Separate solar panel for camera',
+  'Keeps camera battery charged',
+  'Weatherproof for outdoor use'
+] WHERE id IN (383, 299);
+
+-- Battery / power accessories
+UPDATE "inventory list" SET features = ARRAY[
+  'Spare/replacement battery',
+  'Rechargeable, easy to swap',
+  'Extended device run-time'
+] WHERE id IN (246, 247, 325, 324, 241, 242, 373);
+
+-- Cameras (Tuya / Okam / Eseecloud / Hieasy / indoor / spy)
+UPDATE "inventory list" SET features = ARRAY[
+  'HD live view & recording',
+  'Motion detection with app alerts',
+  'Two-way audio',
+  'Infrared night vision',
+  'Works with Tuya / dedicated app'
+] WHERE id IN (341, 260, 364, 228, 391, 366, 367, 368, 375, 374);
+
+-- Cameras with panel
+UPDATE "inventory list" SET features = ARRAY[
+  'HD indoor & outdoor camera',
+  'Comes with separate panel',
+  'Motion alerts & remote viewing',
+  'Two-way audio'
+] WHERE id = 374;
+
+-- Access control & locks (Tuya / TT WiFi)
+UPDATE "inventory list" SET features = ARRAY[
+  'Smart lock with WiFi connectivity',
+  'Remote lock/unlock via app',
+  'Supports access codes & RFID cards',
+  'Works with Tuya app'
+] WHERE id IN (227, 226, 418, 372, 291, 416, 359, 417, 231, 370);
+
+-- Hotel locks & engines
+UPDATE "inventory list" SET features = ARRAY[
+  'Hotel-grade RFID card lock',
+  'Card / key / app access options',
+  'Battery powered with low-battery alert'
+] WHERE id IN (237, 238, 239, 369, 342);
+
+-- Electric locks (metal / wooden / glass / aluminium / gate)
+UPDATE "inventory list" SET features = ARRAY[
+  'Electric lock for access control',
+  'Remote release via controller',
+  'Works with exit button & power supply',
+  'Durable metal/aluminium body'
+] WHERE id IN (335, 334, 333, 332, 336);
+
+-- Padlocks
+UPDATE "inventory list" SET features = ARRAY[
+  'Heavy-duty smart padlock',
+  'Key / fingerprint / app access',
+  'Weather-resistant body'
+] WHERE id IN (414, 415);
+
+-- Smart switches (neutral & non-neutral, Tuya)
+UPDATE "inventory list" SET features = ARRAY[
+  'Touch switch with app control',
+  'Works with or without neutral wire',
+  'Voice control: Alexa & Google Home',
+  'Schedules, timers & scene automation',
+  'Multiple gang control'
+] WHERE id IN (263, 266, 265, 268, 264, 267, 269, 343, 344, 345, 346, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 347, 348, 356, 357, 358);
+
+-- Smart sockets & plugs
+UPDATE "inventory list" SET features = ARRAY[
+  'Smart socket with app control',
+  'Remote on/off from anywhere',
+  'Voice control: Alexa & Google Home',
+  'Energy monitoring & schedules'
+] WHERE id IN (273, 353, 272, 354, 271, 302);
+
+-- Water heater / AC switches
+UPDATE "inventory list" SET features = ARRAY[
+  'High-current switch (20A/40A)',
+  'Remote & app control',
+  'Schedule on/off for water heater/AC',
+  'Voice control support'
+] WHERE id IN (338, 410, 270, 386);
+
+-- RFID / Mifare / programmable switches
+UPDATE "inventory list" SET features = ARRAY[
+  'Card-based access (RFID/Mifare)',
+  'Programmable cards via app',
+  'Also works as a regular switch',
+  'Voice & app control'
+] WHERE id IN (248, 250, 249, 251, 252, 253, 295, 337, 360);
+
+-- Cards / tags / trackers
+UPDATE "inventory list" SET features = ARRAY[
+  'RFID card for access control',
+  'Compatible with RFID locks & readers',
+  'Durable, wallet-friendly design'
+] WHERE id IN (255, 256, 257, 352, 371, 278, 279, 339, 340);
+
+-- Encoder / universal
+UPDATE "inventory list" SET features = ARRAY[
+  'Programs/encodes access cards',
+  'Works with compatible readers'
+] WHERE id IN (258, 254);
+
+-- Memory cards
+UPDATE "inventory list" SET features = ARRAY[
+  'High-capacity storage for cameras',
+  'Fast read/write speeds',
+  'Plug-and-play recording'
+] WHERE id IN (245, 319);
+
+-- Remotes / IR controllers
+UPDATE "inventory list" SET features = ARRAY[
+  'Multi-gang RF remote control',
+  'Controls smart switches & devices',
+  'Works with Tuya ecosystem'
+] WHERE id IN (234, 235, 388);
+
+-- Motion sensor light switches
+UPDATE "inventory list" SET features = ARRAY[
+  'Motion-activated lighting',
+  'No wiring needed (battery version)',
+  'Auto on/off to save energy',
+  'Adjustable sensitivity & duration'
+] WHERE id IN (425, 422, 424);
+
+-- Doorbells / video doorbells / door phones
+UPDATE "inventory list" SET features = ARRAY[
+  'Video doorbell with HD camera',
+  'Two-way audio talk',
+  'Motion detection & app alerts',
+  'Night vision',
+  'Remote view & recording'
+] WHERE id IN (240, 317, 303, 244, 262, 261);
+
+-- Video door phone (wireless / big / small)
+UPDATE "inventory list" SET features = ARRAY[
+  'Video intercom with indoor monitor',
+  'Two-way audio communication',
+  'Remote door unlock option',
+  'Night vision camera'
+] WHERE id IN (262, 261, 318);
+
+-- Smart breakers with metering
+UPDATE "inventory list" SET features = ARRAY[
+  'WiFi smart circuit breaker',
+  'Real-time energy monitoring',
+  'Remote on/off via app',
+  'Over/under voltage protection',
+  'Schedules & voice control'
+] WHERE id IN (399, 400, 401, 402);
+
+-- WiFi / Zigbee sensors & detectors
+UPDATE "inventory list" SET features = ARRAY[
+  'Wireless door/window sensor',
+  'Instant alert on open/close',
+  'Works with WiFi/Zigbee hub',
+  'Long battery life'
+] WHERE id IN (395, 396);
+
+UPDATE "inventory list" SET features = ARRAY[
+  'Detects gas leaks',
+  'Loud audible alarm & app alert',
+  'Wireless, easy wall mount'
+] WHERE id IN (390, 393);
+
+UPDATE "inventory list" SET features = ARRAY[
+  'Detects smoke & fire',
+  'Loud alarm with app notification',
+  'Wireless installation'
+] WHERE id IN (389, 392);
+
+UPDATE "inventory list" SET features = ARRAY[
+  'PIR motion detection',
+  'Instant push alerts to phone',
+  'Wireless, battery powered'
+] WHERE id IN (394);
+
+-- WiFi infrared universal remote
+UPDATE "inventory list" SET features = ARRAY[
+  'Universal IR remote via app',
+  'Controls TV, AC & appliances',
+  'Works with Alexa & Google Home'
+] WHERE id = 397;
+
+-- Gateway
+UPDATE "inventory list" SET features = ARRAY[
+  'Multi-mode smart home gateway',
+  'Connects sensors & devices to app',
+  'Supports WiFi/Zigbee devices'
+] WHERE id = 398;
+
+-- Wifi Extender
+UPDATE "inventory list" SET features = ARRAY[
+  'Boosts WiFi coverage',
+  'Plug-and-play setup',
+  'Dual-band connection'
+] WHERE id = 376;
+
+-- Echo devices
+UPDATE "inventory list" SET features = ARRAY[
+  'Alexa voice assistant speaker',
+  'Smart home voice control',
+  'Streaming music & news'
+] WHERE id IN (384, 385);
+
+-- Ceiling speaker
+UPDATE "inventory list" SET features = ARRAY[
+  'Built-in ceiling speaker',
+  'For intercom & music systems',
+  'Flush-mount installation'
+] WHERE id = 387;
+
+-- Extender cable / chargers
+UPDATE "inventory list" SET features = ARRAY[
+  'Power/cable accessory',
+  'Compatible with matching devices'
+] WHERE id IN (409, 303, 242);

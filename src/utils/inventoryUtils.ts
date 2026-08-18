@@ -10,6 +10,7 @@ export interface InventoryItem {
   Total: number;
   location: string;
   image_url?: string | null;
+  features?: string[] | null;
 }
 
 // Separate interface for adding new items where ID is optional

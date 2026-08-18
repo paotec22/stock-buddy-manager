@@ -994,6 +994,25 @@ export default function Catalogue() {
                 </div>
               </div>
 
+              {selectedItem.features && selectedItem.features.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                    Key Features
+                  </h4>
+                  <ul className="space-y-1.5">
+                    {selectedItem.features.map((feature, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-xs text-foreground/90 leading-snug"
+                      >
+                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="flex gap-2 pt-1">
                 <Button
                   variant="outline"
