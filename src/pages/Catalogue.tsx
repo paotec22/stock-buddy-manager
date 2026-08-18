@@ -43,6 +43,8 @@ import {
   Building2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { MobileFAB } from "@/components/MobileFAB";
+import { Share2 as ShareIcon, Printer as PrintIcon, Sparkles as SparklesIcon } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 20;
@@ -1041,6 +1043,18 @@ export default function Catalogue() {
           </DialogContent>
         </Dialog>
       )}
+      <MobileFAB
+        primaryAction={{
+          label: "Share",
+          icon: ShareIcon,
+          onClick: handleShare,
+          shortcut: "⌘S",
+        }}
+        secondaryActions={[
+          { label: "Print", icon: PrintIcon, onClick: handlePrint },
+          { label: "Optimize Images", icon: SparklesIcon, onClick: handleOptimizeImages },
+        ]}
+      />
     </div>
   );
 }

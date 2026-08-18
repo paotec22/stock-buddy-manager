@@ -10,6 +10,7 @@ import { AnimatePresence } from "framer-motion";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { AppLayout } from "@/components/AppLayout";
 import { initializeDB } from "@/lib/indexedDB";
+import { CommandPalette } from "@/components/CommandPalette";
 
 // Import all pages directly to ensure they're bundled (needed for offline support)
 import Index from "./pages/Index";
@@ -77,6 +78,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <ConnectionBanner />
+          <CommandPalette />
           <BrowserRouter>
             <AuthProvider>
               <AnimatedRoutes />

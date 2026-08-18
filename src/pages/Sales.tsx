@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { SearchInput } from "@/components/ui/search-input";
 import { Sale } from "@/components/sales/types";
+import { MobileFAB } from "@/components/MobileFAB";
 
 const SalesHeader = ({ 
   onAddSale, 
@@ -186,6 +187,19 @@ const Sales = () => {
           open={showExport}
           onOpenChange={setShowExport}
           sales={sales}
+        />
+
+        <MobileFAB
+          primaryAction={{
+            label: "Record Sale",
+            icon: Plus,
+            onClick: () => setShowAddSale(true),
+            shortcut: "⌘⇧N",
+          }}
+          secondaryActions={[
+            { label: "Bulk Upload", icon: Upload, onClick: () => setShowBulkUpload(true) },
+            { label: "Export", icon: FileSpreadsheet, onClick: () => setShowExport(true) },
+          ]}
         />
       </div>
     </RoleProtectedRoute>

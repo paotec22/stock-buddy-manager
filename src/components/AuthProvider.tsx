@@ -7,6 +7,7 @@ import { toast } from "sonner";
 interface AuthContextType {
   session: Session | null;
   loading: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({ session: null, loading: true });
@@ -24,6 +25,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Failed to sign out");
+      throw error;
+    }
+    toast.success("Successfully signed out");
+    navigate("/");
+  };
 
   useEffect(() => {
     console.log("AuthProvider: Initializing with current location:", location.pathname);
@@ -107,7 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     session,
-    loading
+    loading,
+    signOut
   }), [session, loading]);
 
   console.log("AuthProvider: Rendering", { 
