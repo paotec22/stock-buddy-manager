@@ -22,12 +22,14 @@ interface MobileFABProps {
   primaryAction: FABAction;
   secondaryActions?: FABAction[];
   position?: "bottom-right" | "bottom-left" | "center";
+  tourId?: string;
 }
 
 export function MobileFAB({
   primaryAction,
   secondaryActions = [],
   position = "bottom-right",
+  tourId,
 }: MobileFABProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -70,6 +72,7 @@ export function MobileFAB({
             size="icon"
             className="h-10 w-10 rounded-full shadow-lg"
             aria-label="Quick actions"
+            data-tour={tourId}
           >
             <Plus className="h-5 w-5" />
           </Button>
@@ -162,6 +165,7 @@ export function MobileFAB({
             )}
             aria-label={secondaryActions.length ? "Open quick actions" : primaryAction.label}
             aria-expanded={isOpen}
+            data-tour={tourId}
           >
             {isOpen && secondaryActions.length ? (
               <X className="h-6 w-6" />

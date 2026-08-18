@@ -1097,6 +1097,7 @@ export default function Catalogue() {
           { label: "Print", icon: PrintIcon, onClick: handlePrint },
           { label: "Optimize Images", icon: SparklesIcon, onClick: handleOptimizeImages },
         ]}
+        tourId="fab"
       />
     </div>
   );

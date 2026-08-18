@@ -31,13 +31,15 @@ interface NavItemProps {
   icon: React.ElementType;
   children: React.ReactNode;
   onClick?: () => void;
+  tourId?: string;
 }
 
-function NavItem({ to, icon: Icon, children, onClick }: NavItemProps) {
+function NavItem({ to, icon: Icon, children, onClick, tourId }: NavItemProps) {
   return (
     <NavLink
       to={to}
       onClick={onClick}
+      data-tour={tourId}
       className={({ isActive }) =>
         cn(
           "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
@@ -53,11 +55,12 @@ function NavItem({ to, icon: Icon, children, onClick }: NavItemProps) {
   );
 }
 
-function MobileNavItem({ to, icon: Icon, children, onClick }: NavItemProps) {
+function MobileNavItem({ to, icon: Icon, children, onClick, tourId }: NavItemProps) {
   return (
     <NavLink
       to={to}
       onClick={onClick}
+      data-tour={tourId}
       className={({ isActive }) =>
         cn(
           "flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-all duration-200",
@@ -128,15 +131,15 @@ export function TopNavbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-          <NavItem to="/inventory" icon={Package}>
+          <NavItem to="/inventory" icon={Package} tourId="sidebar-inventory">
             Inventory
           </NavItem>
-          <NavItem to="/catalogue" icon={ImageIcon}>
+          <NavItem to="/catalogue" icon={ImageIcon} tourId="sidebar-catalogue">
             Catalogue
           </NavItem>
           {!isInventoryManager && (
             <>
-              <NavItem to="/sales" icon={TrendingUp}>
+              <NavItem to="/sales" icon={TrendingUp} tourId="sidebar-sales">
                 Sales
               </NavItem>
               <NavItem to="/customers" icon={Users}>
@@ -151,7 +154,7 @@ export function TopNavbar() {
               <NavItem to="/profit-analysis" icon={PieChart}>
                 Profit
               </NavItem>
-              <NavItem to="/reports" icon={FileText}>
+              <NavItem to="/reports" icon={FileText} tourId="sidebar-reports">
                 Reports
               </NavItem>
               <NavItem to="/create-invoice" icon={FileSpreadsheet}>
@@ -225,15 +228,15 @@ export function TopNavbar() {
 
                 {/* Mobile nav items */}
                 <nav className="flex-1 flex flex-col gap-1 p-3 overflow-y-auto">
-                  <MobileNavItem to="/inventory" icon={Package} onClick={closeMobile}>
+                  <MobileNavItem to="/inventory" icon={Package} onClick={closeMobile} tourId="sidebar-inventory">
                     Inventory
                   </MobileNavItem>
-                  <MobileNavItem to="/catalogue" icon={ImageIcon} onClick={closeMobile}>
+                  <MobileNavItem to="/catalogue" icon={ImageIcon} onClick={closeMobile} tourId="sidebar-catalogue">
                     Catalogue
                   </MobileNavItem>
                   {!isInventoryManager && (
                     <>
-                      <MobileNavItem to="/sales" icon={TrendingUp} onClick={closeMobile}>
+                      <MobileNavItem to="/sales" icon={TrendingUp} onClick={closeMobile} tourId="sidebar-sales">
                         Sales
                       </MobileNavItem>
                       <MobileNavItem to="/customers" icon={Users} onClick={closeMobile}>
@@ -248,7 +251,7 @@ export function TopNavbar() {
                       <MobileNavItem to="/profit-analysis" icon={PieChart} onClick={closeMobile}>
                         Profit Analysis
                       </MobileNavItem>
-                      <MobileNavItem to="/reports" icon={FileText} onClick={closeMobile}>
+                      <MobileNavItem to="/reports" icon={FileText} onClick={closeMobile} tourId="sidebar-reports">
                         Reports
                       </MobileNavItem>
                       <MobileNavItem to="/create-invoice" icon={FileSpreadsheet} onClick={closeMobile}>

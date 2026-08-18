@@ -11,6 +11,7 @@ import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { AppLayout } from "@/components/AppLayout";
 import { initializeDB } from "@/lib/indexedDB";
 import { CommandPalette } from "@/components/CommandPalette";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 // Import all pages directly to ensure they're bundled (needed for offline support)
 import Index from "./pages/Index";
@@ -79,6 +80,7 @@ const App = () => {
           <Sonner />
           <ConnectionBanner />
           <CommandPalette />
+          <OnboardingTour />
           <BrowserRouter>
             <AuthProvider>
               <AnimatedRoutes />

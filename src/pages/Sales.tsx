@@ -200,6 +200,7 @@ const Sales = () => {
             { label: "Bulk Upload", icon: Upload, onClick: () => setShowBulkUpload(true) },
             { label: "Export", icon: FileSpreadsheet, onClick: () => setShowExport(true) },
           ]}
+          tourId="fab"
         />
       </div>
     </RoleProtectedRoute>

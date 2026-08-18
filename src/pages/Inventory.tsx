@@ -43,6 +43,7 @@ const Inventory = () => {
           { label: "Bulk Upload", icon: Upload, onClick: () => setShowBulkUpload(true) },
           { label: "Export", icon: Download, onClick: () => setShowExportModal(true) },
         ]}
+        tourId="fab"
       />
       <AddInventoryForm 
         open={showAddForm} 
