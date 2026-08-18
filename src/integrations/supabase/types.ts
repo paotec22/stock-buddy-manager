@@ -228,6 +228,7 @@ export type Database = {
       }
       "inventory list": {
         Row: {
+          features: string[] | null
           id: number
           image_url: string | null
           "Item Description": string
@@ -237,6 +238,7 @@ export type Database = {
           Total: number | null
         }
         Insert: {
+          features?: string[] | null
           id?: number
           image_url?: string | null
           "Item Description": string
@@ -246,6 +248,7 @@ export type Database = {
           Total?: number | null
         }
         Update: {
+          features?: string[] | null
           id?: number
           image_url?: string | null
           "Item Description"?: string
