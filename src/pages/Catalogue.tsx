@@ -624,7 +624,7 @@ export default function Catalogue() {
       {stats && !isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 print:hidden">
           <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-primary/25 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary-light" />
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
               <Package className="h-5 w-5 text-primary" />
             </div>
@@ -634,10 +634,10 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-emerald-500/25 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-400" />
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <Camera className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-primary/25 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <Camera className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">With Photos</p>
@@ -645,14 +645,14 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-violet-500/25 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 to-violet-400" />
-            <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <TrendingUp className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-primary/25 group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Highest Price</p>
-              <p className="text-lg font-extrabold mt-1.5 truncate text-primary dark:text-violet-400">
+              <p className="text-lg font-extrabold mt-1.5 truncate text-primary">
                 {formatCurrency(stats.maxPrice)}
               </p>
             </div>
