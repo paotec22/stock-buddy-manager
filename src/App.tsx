@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useEffect } from "react";
@@ -78,13 +78,14 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <ConnectionBanner />
-          <CommandPalette />
-          <OnboardingTour />
-          {/* AnimatedRoutes expects to run inside a Router provided by the app entry (main.tsx) */}
-          <AuthProvider>
-            <AnimatedRoutes />
-          </AuthProvider>
+          <BrowserRouter>
+            <ConnectionBanner />
+            <CommandPalette />
+            <OnboardingTour />
+            <AuthProvider>
+              <AnimatedRoutes />
+            </AuthProvider>
+          </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
