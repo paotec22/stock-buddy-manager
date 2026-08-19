@@ -551,13 +551,13 @@ export default function Catalogue() {
       </div>
 
       {/* ── SCREEN HEADER (Hidden when printing) ─────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-card via-card/85 to-card/50 p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        {/* Glow decoration */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Subtle solid glow decoration */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-secondary/80 blur-3xl opacity-10 pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
         <div className="flex items-center gap-4 relative z-10">
-          <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner">
+          <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
             <img
               src="/Puido_Smart_Solutions.svg"
               alt="Puido Smart Solutions"
@@ -565,7 +565,7 @@ export default function Catalogue() {
             />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-primary">
               Product Catalogue
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">
@@ -581,19 +581,19 @@ export default function Catalogue() {
             size="sm"
             onClick={handleOptimizeImages}
             disabled={optimizing}
-            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-accent/5 hover:text-accent border-border/80 transition-all duration-300 hover:scale-[1.02]"
+            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all duration-300 hover:scale-[1.02]"
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                <span className="truncate">
+                <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
+                <span className="truncate text-primary">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-1.5 text-amber-500 animate-pulse" />
-                <span>Optimize</span>
+                <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
+                <span className="text-primary">Optimize</span>
               </>
             )}
           </Button>
@@ -605,14 +605,14 @@ export default function Catalogue() {
             className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all duration-300 hover:scale-[1.02]"
           >
             <Share2 className="h-4 w-4 mr-1.5 text-primary" />
-            <span>Share Link</span>
+            <span className="text-primary">Share Link</span>
           </Button>
 
           <Button
             variant="default"
             size="sm"
             onClick={handlePrint}
-            className="flex-1 sm:flex-none h-9 rounded-xl font-semibold shadow-md bg-gradient-to-r from-primary to-secondary hover:from-primary/95 hover:to-secondary/95 transition-all duration-300 hover:scale-[1.02]"
+            className="flex-1 sm:flex-none h-9 rounded-xl font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-[1.02]"
           >
             <Printer className="h-4 w-4 mr-1.5" />
             <span>Print Catalogue</span>
