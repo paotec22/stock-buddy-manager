@@ -1,6 +1,6 @@
 "use client";
 
-import { Joyride } from "react-joyride";
+import { Joyride, EVENTS, STATUS } from "react-joyride";
 import { useAuth } from "./AuthProvider";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -140,34 +140,25 @@ export function OnboardingTour() {
         ]}
         run={true}
         continuous={true}
-        showSkipButton={true}
-        skipButton={
-          <button
-            className="text-sm text-muted-foreground hover:text-foreground font-medium px-3 py-1.5"
-          >
-            Skip Tour
-          </button>
-        }
-        onComplete={() => {
-          localStorage.setItem("si-manager-tour-completed", "true");
+        options={{
+          buttons: ["skip", "back", "primary"],
         }}
-        onSkip={() => {
-          localStorage.setItem("si-manager-tour-completed", "true");
-        }}
-        onClose={() => {
-          localStorage.setItem("si-manager-tour-completed", "true");
+        onEvent={(event) => {
+          if (
+            event.type === EVENTS.TOUR_END ||
+            event.status === STATUS.SKIPPED ||
+            event.status === STATUS.FINISHED
+          ) {
+            localStorage.setItem(TOUR_COMPLETED_KEY, "true");
+            setRunTour(false);
+          }
         }}
         styles={{
           tooltip: {
-            maxWidth: 380,
             padding: "1.5rem",
             borderRadius: "1rem",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            background: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
-          },
-          beacon: {
-            transform: "translate(-50%, -50%)",
+            backgroundColor: "hsl(var(--card))",
           },
         }}
         locale={{
