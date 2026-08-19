@@ -1,6 +1,6 @@
 "use client";
 
-import { Joyride } from "react-joyride";
+import { Joyride, EVENTS, STATUS } from "react-joyride";
 import { useAuth } from "./AuthProvider";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -146,9 +146,8 @@ export function OnboardingTour() {
         onEvent={(event) => {
           if (
             event.type === EVENTS.TOUR_END ||
-            (event.type === EVENTS.TOUR_STATUS &&
-              (event.state?.status === STATUS.SKIPPED ||
-                event.state?.status === STATUS.FINISHED))
+            event.status === STATUS.SKIPPED ||
+            event.status === STATUS.FINISHED
           ) {
             localStorage.setItem(TOUR_COMPLETED_KEY, "true");
             setRunTour(false);
