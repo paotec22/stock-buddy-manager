@@ -595,25 +595,27 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap items-center gap-2 relative z-10 w-full sm:w-auto">
+        <div className="flex items-center gap-2 relative z-10 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={handleOptimizeImages}
             disabled={optimizing}
-            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98]"
+            title="Optimize Images"
+            aria-label="Optimize Images"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98] px-2 sm:px-3"
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
-                <span className="truncate text-primary">
+                <Loader2 className="h-4 w-4 animate-spin text-primary sm:mr-1.5" />
+                <span className="hidden sm:inline truncate text-primary">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-1.5 text-primary" />
-                <span className="text-primary">Optimize</span>
+                <Sparkles className="h-4 w-4 text-primary sm:mr-1.5" />
+                <span className="hidden sm:inline text-primary">Optimize</span>
               </>
             )}
           </Button>
@@ -622,20 +624,24 @@ export default function Catalogue() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98]"
+            title="Share Catalogue Link"
+            aria-label="Share Catalogue Link"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98] px-2 sm:px-3"
           >
-            <Share2 className="h-4 w-4 mr-1.5 text-primary" />
-            <span className="text-primary">Share Link</span>
+            <Share2 className="h-4 w-4 text-primary sm:mr-1.5" />
+            <span className="hidden sm:inline text-primary">Share Link</span>
           </Button>
 
           <Button
             variant="default"
             size="sm"
             onClick={handlePrint}
-            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.98]"
+            title="Print Catalogue"
+            aria-label="Print Catalogue"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.98] px-2 sm:px-3"
           >
-            <Printer className="h-4 w-4 mr-1.5" />
-            <span>Print Catalogue</span>
+            <Printer className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Print Catalogue</span>
           </Button>
         </div>
       </div>
