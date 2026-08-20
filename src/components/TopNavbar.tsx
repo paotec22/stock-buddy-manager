@@ -42,10 +42,10 @@ function NavItem({ to, icon: Icon, children, onClick, tourId }: NavItemProps) {
       data-tour={tourId}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300",
+          "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150",
           isActive
-            ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:scale-[1.03]"
+            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
         )
       }
     >
@@ -63,14 +63,14 @@ function MobileNavItem({ to, icon: Icon, children, onClick, tourId }: NavItemPro
       data-tour={tourId}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-all duration-200",
+          "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm font-medium transition-colors duration-150",
           isActive
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
         )
       }
     >
-      <Icon className="h-5 w-5" />
+      <Icon className="h-4 w-4" />
       <span>{children}</span>
     </NavLink>
   );
@@ -119,14 +119,14 @@ export function TopNavbar() {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="flex h-16 items-center px-4 md:px-8 lg:px-12 w-full">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-card/95 backdrop-blur-md supports-[backdrop-filter]:bg-card/80">
+      <div className="flex h-14 items-center px-4 md:px-6 lg:px-8 w-full">
         {/* Logo */}
-        <NavLink to="/inventory" className="flex items-center gap-2 mr-6 group">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/30 group-hover:shadow-primary/50 transition-shadow duration-300 text-[#095ef1]">
-            <span className="font-bold text-primary-foreground text-sm">SI</span>
+        <NavLink to="/inventory" className="flex items-center gap-2.5 mr-6 group">
+          <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
+            <Package className="h-4 w-4" />
           </div>
-          <span className="font-bold text-lg text-primary">SI Manager</span>
+          <span className="font-semibold text-base tracking-tight text-foreground">SI Manager</span>
         </NavLink>
 
         {/* Desktop Navigation */}

@@ -65,108 +65,92 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Animated background mesh */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/10 blur-3xl animate-[pulse_4s_ease-in-out_infinite]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-secondary/10 blur-3xl animate-[pulse_4s_ease-in-out_infinite] delay-[1s]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/5 blur-3xl" />
-      </div>
-
-      <main className="relative z-10 min-h-screen flex items-center justify-center p-4 md:p-8">
+    <div className="min-h-screen bg-background flex flex-col justify-center">
+      <main className="relative z-10 w-full flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-5xl">
           {/* Desktop: Split layout | Mobile: Stacked */}
-          <div className="lg:grid lg:grid-cols-2 gap-8 items-center">
+          <div className="lg:grid lg:grid-cols-12 gap-8 items-center">
             {/* Brand Hero Panel - desktop only */}
-            <div className="hidden lg:block relative p-10 md:p-16 bg-gradient-to-br from-primary via-primary/80 to-secondary rounded-3xl text-primary-foreground overflow-hidden">
-              <div className="absolute inset-0 bg-[url('/Puido_Smart_Solutions.svg')] bg-center bg-no-repeat opacity-5" aria-hidden="true" />
-
+            <div className="hidden lg:block lg:col-span-7 relative p-10 md:p-12 bg-slate-900 dark:bg-slate-950 rounded-2xl text-slate-100 overflow-hidden border border-slate-800 shadow-xl">
               <div className="relative z-10 max-w-lg">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="h-12 w-12 rounded-xl bg-primary-foreground/20 backdrop-blur flex items-center justify-center border border-primary-foreground/20">
-                    <Package className="h-7 w-7" />
+                  <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-sm">
+                    <Package className="h-5 w-5" />
                   </div>
-                  <span className="text-xl font-bold">SI Manager</span>
+                  <span className="text-xl font-bold tracking-tight text-white">SI Manager</span>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 leading-tight">
-                  Manage Inventory <br />with <span className="relative">Confidence</span>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-white leading-tight">
+                  Intelligent Inventory &amp; Sales Management
                 </h1>
-                <p className="text-primary-foreground/80 text-lg mb-10 max-w-md leading-relaxed">
-                  Complete stock management for modern businesses. Track, sell, analyse & grow — all in one place.
+                <p className="text-slate-300 text-base mb-8 max-w-md leading-relaxed">
+                  Enterprise-grade stock control, multi-location sales tracking, instant invoicing, and profit intelligence.
                 </p>
 
                 {/* Feature highlights */}
-                <div className="space-y-4 mb-10">
+                <div className="grid grid-cols-2 gap-4 mb-8">
                   {features.map((f, i) => (
-                    <div key={i} className="flex items-start gap-3 group">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary-foreground/15 backdrop-blur flex items-center justify-center border border-primary-foreground/20 group-hover:bg-primary-foreground/25 transition-colors">
-                        <f.icon className="h-5 w-5" />
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-md bg-primary/20 text-primary-light flex items-center justify-center">
+                        <f.icon className="h-4 w-4 text-blue-400" />
                       </div>
                       <div>
-                        <p className="font-semibold text-base">{f.title}</p>
-                        <p className="text-primary-foreground/70 text-sm">{f.desc}</p>
+                        <p className="font-semibold text-sm text-slate-100">{f.title}</p>
+                        <p className="text-slate-400 text-xs mt-0.5 leading-snug">{f.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Trust indicators */}
-                <div className="flex flex-wrap gap-6 text-sm text-primary-foreground/70">
-                  <span className="flex items-center gap-1">🔒 Enterprise-grade security</span>
-                  <span className="flex items-center gap-1">☁️ Cloud-synced</span>
-                  <span className="flex items-center gap-1">📱 Works offline</span>
+                <div className="flex flex-wrap gap-4 text-xs text-slate-400 border-t border-slate-800 pt-6">
+                  <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-400" /> Role-based Security</span>
+                  <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-blue-400" /> Offline-First Sync</span>
+                  <span className="flex items-center gap-1.5"><BarChart3 className="h-3.5 w-3.5 text-amber-400" /> Live Financials</span>
                 </div>
-              </div>
-
-              {/* Decorative elements */}
-              <div className="absolute bottom-8 right-8 opacity-20">
-                <BarChart3 className="h-24 w-24" />
               </div>
             </div>
 
-            {/* Login Form Panel - shown on both desktop and mobile */}
-            <div className="lg:col-span-1">
-              <Card className="bg-card/80 backdrop-blur-xl border-border/40 shadow-2xl card-hover relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary" />
-                <CardHeader className="space-y-2 text-center pb-2">
-                  <div className="inline-flex items-center justify-center gap-2 h-12 w-12 rounded-xl bg-primary/10 mx-auto mb-2">
-                    <Package className="h-6 w-6 text-primary" />
+            {/* Login Form Panel */}
+            <div className="lg:col-span-5">
+              <Card className="border border-border bg-card shadow-sm rounded-xl">
+                <CardHeader className="space-y-1.5 text-center pb-4">
+                  <div className="inline-flex items-center justify-center gap-2 h-10 w-10 rounded-lg bg-primary/10 text-primary mx-auto mb-1">
+                    <Package className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Sign in to access your dashboard
+                  <CardTitle className="text-xl font-bold tracking-tight">Sign In</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
+                    Access your company stock and sales records
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email" className="text-sm font-medium">
-                        Email address
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="login-email" className="text-xs font-medium text-foreground">
+                        Email Address
                       </Label>
                       <div className="relative">
                         <Input
                           id="login-email"
                           type="email"
-                          placeholder="you@company.com"
+                          placeholder="name@company.com"
                           value={loginData.email}
                           onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                           required
                           disabled={isLoading}
                           autoComplete="email"
-                          className="pl-10"
+                          className="pl-9 h-10 text-sm"
                         />
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                         </span>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="login-password" className="text-sm font-medium">
+                        <Label htmlFor="login-password" className="text-xs font-medium text-foreground">
                           Password
                         </Label>
-                        <a href="#" className="text-xs text-primary hover:underline">Forgot?</a>
                       </div>
                       <div className="relative">
                         <Input
@@ -178,34 +162,33 @@ const Index = () => {
                           required
                           disabled={isLoading}
                           autoComplete="current-password"
-                          className="pl-10"
+                          className="pl-9 h-10 text-sm"
                         />
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         </span>
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full py-3 text-base font-semibold" disabled={isLoading}>
+                    <Button type="submit" className="w-full h-10 text-sm font-medium mt-2" disabled={isLoading}>
                       {isLoading ? (
                         <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Signing in...
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Signing In...
                         </>
                       ) : (
                         <>
                           Sign In
-                          <ArrowRight className="h-5 w-5 ml-2" />
+                          <ArrowRight className="h-4 w-4 ml-1.5" />
                         </>
                       )}
                     </Button>
                   </form>
-
                 </CardContent>
               </Card>
 
-              <p className="text-center text-sm text-muted-foreground mt-6">
-                Powered by <strong className="text-foreground">Puido Smart Solutions</strong>
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                Powered by <strong className="text-foreground font-medium">Puido Smart Solutions</strong>
               </p>
             </div>
           </div>

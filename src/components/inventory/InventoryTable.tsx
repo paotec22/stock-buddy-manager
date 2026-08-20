@@ -143,14 +143,14 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
         </div>
       )}
 
-      <div className="rounded-xl border shadow-sm bg-card glass-effect overflow-auto animate-fade-in">
-        <Table className="stagger-rows">
+      <div className="rounded-lg border border-border bg-card overflow-auto shadow-sm">
+        <Table>
           <TableHeader>
-            <TableRow className="bg-muted/30">
-              <TableHead className="text-xs sm:text-sm font-medium">Item Description</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">Status</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">Qty</TableHead>
-              <TableHead className="text-xs sm:text-sm font-medium">Price</TableHead>
+            <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border">
+              <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider h-10">Item Description</TableHead>
+              <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider h-10 w-32">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider h-10 w-24">Qty</TableHead>
+              <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wider h-10 w-32">Price</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -173,29 +173,29 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                   onPointerLeave={clearLongPress}
                   onKeyDown={(e) => handleRowKey(e, item.id)}
                   tabIndex={0}
-                  className={`group cursor-pointer select-none transition-colors ${
+                  className={`group cursor-pointer select-none transition-colors border-b border-border/70 ${
                     isSelected 
-                      ? "bg-primary/10 border-primary/20" 
-                      : "hover:bg-muted/50"
+                      ? "bg-primary/10 hover:bg-primary/15" 
+                      : "hover:bg-muted/40"
                   }`}
                   aria-pressed={isSelected}
                 >
-                  <TableCell className="relative" onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="relative py-2.5" onClick={(e) => e.stopPropagation()}>
                     {isSelected && (
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                          <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </span>
                     )}
 
-                    <div className={`flex items-center gap-3 ${isSelected ? "pl-6" : ""}`}>
+                    <div className={`flex items-center gap-3 ${isSelected ? "pl-5" : ""}`}>
                       <InventoryImageCell item={item} />
                       {editingDescription[item.id] ? (
                         <input
                           type="text"
                           defaultValue={item["Item Description"]}
-                          className="w-full px-2 py-1 text-sm border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          className="w-full px-2 py-1 text-sm border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                           onBlur={(e) => {
                             const newDescription = e.target.value.trim();
                             if (newDescription && newDescription !== item["Item Description"]) {
@@ -215,7 +215,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                       ) : (
                         <button
                           onClick={() => setEditingDescription(prev => ({ ...prev, [item.id]: true }))}
-                          className="text-left font-medium hover:bg-muted/50 px-2 py-1 rounded transition-colors w-full"
+                          className="text-left font-medium text-sm hover:bg-muted/60 px-1.5 py-0.5 rounded transition-colors w-full truncate"
                         >
                           {item["Item Description"]}
                         </button>
@@ -223,7 +223,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     </div>
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell className="py-2.5">
                     <StatusBadge 
                       status={getStockStatus(item.Quantity || 0)} 
                       size="sm"
@@ -231,14 +231,14 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     />
                   </TableCell>
 
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="py-2.5" onClick={(e) => e.stopPropagation()}>
                     {editingQuantity[item.id] ? (
                       <input
                         type="number"
                         min="0"
                         step="1"
                         defaultValue={item.Quantity?.toString() || "0"}
-                        className="w-20 px-2 py-1 text-sm border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="w-20 px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         onBlur={(e) => {
                           const newQuantity = parseInt(e.target.value) || 0;
                           if (newQuantity !== item.Quantity) {
@@ -258,21 +258,21 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     ) : (
                       <button
                         onClick={() => setEditingQuantity(prev => ({ ...prev, [item.id]: true }))}
-                        className="text-left hover:bg-muted/50 px-2 py-1 rounded transition-colors"
+                        className="text-left font-mono tabular-nums text-sm font-medium hover:bg-muted/60 px-2 py-0.5 rounded transition-colors"
                       >
                         {item.Quantity || 0}
                       </button>
                     )}
                   </TableCell>
 
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="py-2.5" onClick={(e) => e.stopPropagation()}>
                     {editingPrice[item.id] ? (
                       <input
                         type="number"
                         min="0"
                         step="0.01"
                         defaultValue={item.Price?.toString() || "0"}
-                        className="w-24 px-2 py-1 text-sm border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="w-24 px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         onBlur={(e) => {
                           const newPrice = parseFloat(e.target.value) || 0;
                           if (newPrice !== item.Price) {
@@ -292,7 +292,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     ) : (
                       <button
                         onClick={() => setEditingPrice(prev => ({ ...prev, [item.id]: true }))}
-                        className="text-left hover:bg-muted/50 px-2 py-1 rounded transition-colors"
+                        className="text-left font-mono tabular-nums text-sm font-semibold text-foreground hover:bg-muted/60 px-2 py-0.5 rounded transition-colors"
                       >
                         {item.Price ? formatCurrency(item.Price) : "—"}
                       </button>

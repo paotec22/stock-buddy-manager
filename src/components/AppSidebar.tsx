@@ -48,19 +48,16 @@ function SidebarItem({ className, to, icon: Icon, children, ...props }: SidebarI
       to={to}
       className={({ isActive }) =>
         cn(
-          "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          "group flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
           isActive 
-            ? "bg-primary text-primary-foreground shadow-sm" 
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:shadow-sm",
+            ? "bg-primary text-primary-foreground font-semibold shadow-sm" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/70",
           className
         )
       }
       {...props}
     >
-      <Icon className={cn(
-        "h-5 w-5 transition-transform duration-200",
-        "group-hover:scale-110"
-      )} />
+      <Icon className="h-4 w-4" />
       <span>{children}</span>
     </NavLink>
   );
