@@ -47,7 +47,7 @@ import { toast } from "sonner";
 import { MobileFAB } from "@/components/MobileFAB";
 import { Share2 as ShareIcon, Printer as PrintIcon, Sparkles as SparklesIcon } from "lucide-react";
 
-// ─── Constants ─────────────────────────────────────────────────────────��[...]
+// ─── Constants ─────────────────────────────────────────────────────────
 const PAGE_SIZE = 20;
 const VIEW_KEY = "catalogue_view_mode";
 
@@ -60,7 +60,7 @@ type SortKey =
 
 type ViewMode = "grid" | "list";
 
-// ─── Helpers ──────────────────────────────────────────────────────────�[...]
+// ─── Helpers ──────────────────────────────────────────────────────────
 function getStockStatus(qty: number) {
   if (qty <= 0)
     return {
@@ -81,7 +81,7 @@ function getStockStatus(qty: number) {
   };
 }
 
-// ─── Skeleton Card ────────────────────────────────────────────────────────�[...]
+// ─── Skeleton Card ────────────────────────────────────────────────────────
 function SkeletonCard({ view }: { view: ViewMode }) {
   if (view === "list") {
     return (
@@ -121,7 +121,7 @@ function GridCard({
   return (
     <Card
       onClick={onClick}
-      className="overflow-hidden group cursor-pointer border border-border/40 bg-card/65 backdrop-blur-xs rounded-2xl shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-prima[...]
+      className="overflow-hidden group cursor-pointer border border-border/40 bg-card/65 backdrop-blur-sm rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40"
     >
       <div className="aspect-square bg-slate-100 dark:bg-slate-900/40 relative overflow-hidden flex items-center justify-center">
         {url ? (
@@ -136,7 +136,7 @@ function GridCard({
               height={400}
             />
             <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white/95 text-slate-900 shadow-md transform translate-y-2 group-hover:transla[...]
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-background/95 text-foreground shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                 <Eye className="h-3.5 w-3.5 text-primary" /> Quick View
               </span>
             </div>
@@ -179,7 +179,7 @@ function GridCard({
   );
 }
 
-// ─── On-Screen List Row ──────────────────────────────────────────────────────�[...]
+// ─── On-Screen List Row ──────────────────────────────────────────────────────
 function ListRow({
   item,
   url,
@@ -193,7 +193,7 @@ function ListRow({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 p-3 rounded-2xl border border-border/40 bg-card/65 backdrop-blur-xs hover:bg-card hover:shadow-md transition-all duration-300 cursor-pointer group hover:b[...]
+      className="flex items-center gap-4 p-3 rounded-2xl border border-border/40 bg-card/65 backdrop-blur-sm hover:bg-card hover:shadow-md transition-all duration-300 cursor-pointer group hover:border-primary/40"
     >
       <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-900/40 overflow-hidden flex-shrink-0 relative flex items-center justify-center">
         {url ? (
@@ -291,7 +291,7 @@ function PrintCard({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────��[...]
+// ─── Main Component ───────────────────────────────────────────────────────
 export default function Catalogue() {
   const location = "Ikeja";
 
@@ -339,7 +339,7 @@ export default function Catalogue() {
     setPage(1);
   }, [search, onlyWithImages, sort, minPrice, maxPrice]);
 
-  // ── Data Query ─────────────────────────────────────────────────────────�[...]
+  // ── Data Query ─────────────────────────────────────────────────────────
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["catalogue", location],
     queryFn: async () => {
@@ -362,7 +362,7 @@ export default function Catalogue() {
     getInventoryImageUrls(paths).then(setSigned);
   }, [items]);
 
-  // ── Stats ───────────────────────────────────────────────────────────[...]
+  // ── Stats ───────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     if (items.length === 0) return null;
     const prices = items.map((i) => i.Price || 0).filter((p) => p > 0);
@@ -373,7 +373,7 @@ export default function Catalogue() {
     };
   }, [items]);
 
-  // ── Filter + Sort ────────────────────────────────────────────────────────�[...]
+  // ── Filter + Sort ────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let out = items.filter((it) => {
       if (onlyWithImages && !it.image_url) return false;
@@ -413,7 +413,7 @@ export default function Catalogue() {
     return out;
   }, [items, search, onlyWithImages, sort, minPrice, maxPrice]);
 
-  // ── Pagination ─────────────────────────────────────────────────────────�[...]
+  // ── Pagination ─────────────────────────────────────────────────────────
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = page * PAGE_SIZE < filtered.length;
 
@@ -514,7 +514,7 @@ export default function Catalogue() {
     });
   }, []);
 
-  // ── Render ──────────────────────────────────────────────────────────��[...]
+  // ── Render ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0 catalogue-bg -mx-4 md:-mx-8 lg:-mx-16 xl:-mx-24 px-4 md:px-8 lg:px-16 xl:px-24 pt-4 md:pt-6">
 
@@ -551,7 +551,7 @@ export default function Catalogue() {
       </div>
 
       {/* ── SCREEN HEADER (Hidden when printing) ─────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:ju[...]">
+      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         {/* Subtle solid glow decoration */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
@@ -623,7 +623,7 @@ export default function Catalogue() {
       {/* ── SCREEN STATS BAR (Hidden when printing) ──────────────────────── */}
       {stats && !isLoading && (
         <div className="hidden sm:grid sm:grid-cols-3 gap-3 md:gap-4 print:hidden">
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-m[...]
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
               <Package className="h-5 w-5 text-primary" />
@@ -634,7 +634,7 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-m[...]
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
               <Camera className="h-5 w-5 text-primary" />
@@ -645,7 +645,7 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-m[...]
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -968,11 +968,11 @@ export default function Catalogue() {
       {/* ── PRODUCT QUICK VIEW MODAL (ON-SCREEN) ─────────────────────────── */}
       {selectedItem && (
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-          <DialogContent className="max-w-[92vw] sm:max-w-[85vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl animate-[scaleIn_0.3s_[...]
+          <DialogContent className="max-w-[92vw] sm:max-w-[85vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full max-h-[85vh] md:max-h-[70vh] overflow-y-auto md:overflow-hidden">
               
               {/* Left: Image Container */}
-              <div className="relative aspect-square md:aspect-auto md:h-full w-full bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center border-b md:border-b-0 md:border-r border-b[...]
+              <div className="relative aspect-square md:aspect-auto md:h-full w-full bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center border-b md:border-b-0 md:border-r border-border/40">
                 {selectedItem.image_url && signed[selectedItem.image_url] ? (
                   <img
                     src={signed[selectedItem.image_url]}
@@ -980,7 +980,7 @@ export default function Catalogue() {
                     className="h-full w-full object-cover md:absolute md:inset-0"
                   />
                 ) : (
-                  <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-12 md:absolut[...]
+                  <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 py-12">
                     <ImageOff className="h-16 w-16 opacity-20 text-primary" />
                     <span className="text-xs font-semibold text-muted-foreground/60">No image uploaded</span>
                   </div>
