@@ -231,14 +231,14 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     />
                   </TableCell>
 
-                  <TableCell className="py-2.5" onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="py-2.5 sm:py-2" onClick={(e) => e.stopPropagation()}>
                     {editingQuantity[item.id] ? (
                       <input
                         type="number"
                         min="0"
                         step="1"
                         defaultValue={item.Quantity?.toString() || "0"}
-                        className="w-20 px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="w-20 min-h-[36px] sm:min-h-0 px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         onBlur={(e) => {
                           const newQuantity = parseInt(e.target.value) || 0;
                           if (newQuantity !== item.Quantity) {
@@ -258,21 +258,21 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     ) : (
                       <button
                         onClick={() => setEditingQuantity(prev => ({ ...prev, [item.id]: true }))}
-                        className="text-left font-mono tabular-nums text-sm font-medium hover:bg-muted/60 px-2 py-0.5 rounded transition-colors"
+                        className="inline-flex items-center min-h-[36px] sm:min-h-0 text-left font-mono tabular-nums text-sm font-medium hover:bg-muted/60 px-2 py-1 rounded transition-colors"
                       >
                         {item.Quantity || 0}
                       </button>
                     )}
                   </TableCell>
 
-                  <TableCell className="py-2.5" onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="py-2.5 sm:py-2" onClick={(e) => e.stopPropagation()}>
                     {editingPrice[item.id] ? (
                       <input
                         type="number"
                         min="0"
                         step="0.01"
                         defaultValue={item.Price?.toString() || "0"}
-                        className="w-24 px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="w-24 min-h-[36px] sm:min-h-0 px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         onBlur={(e) => {
                           const newPrice = parseFloat(e.target.value) || 0;
                           if (newPrice !== item.Price) {
@@ -292,7 +292,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
                     ) : (
                       <button
                         onClick={() => setEditingPrice(prev => ({ ...prev, [item.id]: true }))}
-                        className="text-left font-mono tabular-nums text-sm font-semibold text-foreground hover:bg-muted/60 px-2 py-0.5 rounded transition-colors"
+                        className="inline-flex items-center min-h-[36px] sm:min-h-0 text-left font-mono tabular-nums text-sm font-semibold text-foreground hover:bg-muted/60 px-2 py-1 rounded transition-colors"
                       >
                         {item.Price ? formatCurrency(item.Price) : "—"}
                       </button>

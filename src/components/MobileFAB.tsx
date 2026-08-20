@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Menu, X, ChevronUp } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,8 @@ export function MobileFAB({
 }: MobileFABProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const primaryActionRef = useRef(primaryAction);
+  primaryActionRef.current = primaryAction;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -46,12 +48,12 @@ export function MobileFAB({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "N") {
         e.preventDefault();
-        primaryAction.onClick();
+        primaryActionRef.current?.onClick();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [primaryAction]);
+  }, []);
 
   // Don't render on desktop unless there are secondary actions (for Sheet)
   if (!isMobile && !secondaryActions.length) return null;

@@ -99,28 +99,31 @@ export default function Expenses() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Expenses & Installations</h1>
+    <div className="space-y-6">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Expenses & Installations</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">Record overhead expenses and installation job charges</p>
+      </div>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="card-hover">
-          <CardHeader>
-            <CardTitle>New Expense</CardTitle>
+      <div className="grid gap-5 md:grid-cols-2">
+        <Card className="border border-border bg-card shadow-sm">
+          <CardHeader className="p-4 sm:p-5 pb-2">
+            <CardTitle className="text-base sm:text-lg">New Expense</CardTitle>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleExpenseSubmit} className="space-y-4">
+          <CardContent className="p-4 sm:p-5 pt-2">
+            <form onSubmit={handleExpenseSubmit} className="space-y-3.5">
               <div>
-                <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
-                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Enter expense description" />
+                <label htmlFor="description" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Description</label>
+                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Enter expense description" className="h-10 text-sm" />
               </div>
               <div>
-                <label htmlFor="amount" className="block text-sm font-medium mb-1">Amount (₦)</label>
-                <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Enter amount" min="0" step="0.01" />
+                <label htmlFor="amount" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Amount (₦)</label>
+                <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" min="0" step="0.01" className="h-10 text-sm font-mono tabular-nums" />
               </div>
               <div>
-                <label htmlFor="category" className="block text-sm font-medium mb-1">Category</label>
+                <label htmlFor="category" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Category</label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select a category" /></SelectTrigger>
                   <SelectContent>
                     {EXPENSE_CATEGORIES.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -129,9 +132,9 @@ export default function Expenses() {
                 </Select>
               </div>
               <div>
-                <label htmlFor="location" className="block text-sm font-medium mb-1">Location</label>
+                <label htmlFor="location" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Location</label>
                 <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger><SelectValue placeholder="Select a location" /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select a location" /></SelectTrigger>
                   <SelectContent>
                     {LOCATIONS.map((loc) => (
                       <SelectItem key={loc} value={loc}>{loc}</SelectItem>
@@ -140,10 +143,10 @@ export default function Expenses() {
                 </Select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Expense Date</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Expense Date</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !expenseDate && "text-muted-foreground")}>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-10 text-sm", !expenseDate && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {expenseDate ? format(expenseDate, "PPP") : <span>Pick a date</span>}
                     </Button>
@@ -153,33 +156,33 @@ export default function Expenses() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <Button type="submit" className="w-full">Record Expense</Button>
+              <Button type="submit" className="w-full min-h-[44px] text-sm font-semibold">Record Expense</Button>
             </form>
           </CardContent>
         </Card>
 
-        <Card className="card-hover">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wrench className="h-5 w-5" />
-              New Installation
+        <Card className="border border-border bg-card shadow-sm">
+          <CardHeader className="p-4 sm:p-5 pb-2">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-primary" />
+              <span>New Installation</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleInstallationSubmit} className="space-y-4">
+          <CardContent className="p-4 sm:p-5 pt-2">
+            <form onSubmit={handleInstallationSubmit} className="space-y-3.5">
               <div>
-                <label htmlFor="installationDescription" className="block text-sm font-medium mb-1">Description</label>
-                <Input id="installationDescription" value={installationDescription} onChange={(e) => setInstallationDescription(e.target.value)} placeholder="Enter installation description" />
+                <label htmlFor="installationDescription" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Description</label>
+                <Input id="installationDescription" value={installationDescription} onChange={(e) => setInstallationDescription(e.target.value)} placeholder="Enter installation description" className="h-10 text-sm" />
               </div>
               <div>
-                <label htmlFor="installationAmount" className="block text-sm font-medium mb-1">Amount (₦)</label>
-                <Input id="installationAmount" type="number" value={installationAmount} onChange={(e) => setInstallationAmount(e.target.value)} placeholder="Enter amount" min="0" step="0.01" />
+                <label htmlFor="installationAmount" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Amount (₦)</label>
+                <Input id="installationAmount" type="number" value={installationAmount} onChange={(e) => setInstallationAmount(e.target.value)} placeholder="0.00" min="0" step="0.01" className="h-10 text-sm font-mono tabular-nums" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Installation Date</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Installation Date</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !installationDate && "text-muted-foreground")}>
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-10 text-sm", !installationDate && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {installationDate ? format(installationDate, "PPP") : <span>Pick a date</span>}
                     </Button>
@@ -189,7 +192,7 @@ export default function Expenses() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <Button type="submit" className="w-full">Record Installation</Button>
+              <Button type="submit" className="w-full min-h-[44px] text-sm font-semibold">Record Installation</Button>
             </form>
           </CardContent>
         </Card>

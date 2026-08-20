@@ -67,19 +67,34 @@ export function InventoryHeader({
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2.5">
-          <Button onClick={onAddItem} size="sm" className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <Button 
+            onClick={onAddItem} 
+            size="sm" 
+            className="flex-1 md:flex-initial min-h-[40px] md:min-h-0 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium"
+          >
             <Plus className="mr-1.5 h-4 w-4" />
-            Add Item
+            <span>Add Item</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={onBulkUpload} className="bg-background border-input hover:bg-muted font-medium">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onBulkUpload} 
+            className="flex-1 md:flex-initial min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium"
+          >
             <Upload className="mr-1.5 h-4 w-4" />
-            Bulk Upload
+            <span>Upload</span>
           </Button>
           {onExport && (
-            <Button variant="outline" size="sm" onClick={onExport} className="bg-background border-input hover:bg-muted font-medium">
-              <Download className="mr-1.5 h-4 w-4" />
-              Export
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onExport} 
+              className="min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium px-2.5 sm:px-3"
+              title="Export Inventory"
+            >
+              <Download className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
           )}
         </div>

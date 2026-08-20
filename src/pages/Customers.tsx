@@ -204,8 +204,8 @@ export default function Customers() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
             <Users className="h-6 w-6 text-primary" />
@@ -215,15 +215,15 @@ export default function Customers() {
             Manage your customer directory and view purchase history
           </p>
         </div>
-        <Button onClick={openAdd}>
+        <Button onClick={openAdd} className="w-full sm:w-auto min-h-[40px] font-semibold rounded-xl active:scale-[0.98]">
           <Plus className="h-4 w-4 mr-2" /> Add customer
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="rounded-2xl border-border/60">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
               Total customers
             </CardTitle>
           </CardHeader>
@@ -231,9 +231,9 @@ export default function Customers() {
             <div className="text-2xl font-bold">{customers.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl border-border/60">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
               Customers with sales
             </CardTitle>
           </CardHeader>
@@ -241,14 +241,14 @@ export default function Customers() {
             <div className="text-2xl font-bold">{Object.keys(salesByCustomer).length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl border-border/60">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
               Outstanding balance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-destructive">
               ₦{totalOutstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
           </CardContent>
@@ -256,19 +256,19 @@ export default function Customers() {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           placeholder="Search by name, phone, or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
+          className="pl-9 h-11 sm:h-10 text-sm rounded-xl bg-card/65 border-border/60"
         />
       </div>
 
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Loading customers...</div>
       ) : filtered.length === 0 ? (
-        <Card>
+        <Card className="rounded-2xl border-border/60">
           <CardContent className="py-12 text-center text-muted-foreground">
             {customers.length === 0
               ? "No customers yet. Add your first customer to get started."
@@ -282,26 +282,28 @@ export default function Customers() {
             return (
               <Card
                 key={c.id}
-                className="hover:shadow-md transition-shadow cursor-pointer"
+                className="hover:shadow-md transition-all cursor-pointer rounded-2xl border-border/60 group"
                 onClick={() => setSelected(c)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-base">{c.name}</CardTitle>
+                    <CardTitle className="text-base group-hover:text-primary transition-colors">{c.name}</CardTitle>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8"
+                        className="h-9 w-9 min-h-[36px] min-w-[36px] rounded-lg hover:bg-muted"
                         onClick={() => openEdit(c)}
+                        aria-label="Edit customer"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 text-destructive"
+                        className="h-9 w-9 min-h-[36px] min-w-[36px] rounded-lg text-destructive hover:bg-destructive/10"
                         onClick={() => setDeleteTarget(c)}
+                        aria-label="Delete customer"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -325,14 +327,14 @@ export default function Customers() {
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="rounded-md">
                       {stats?.total_orders ?? 0} order{(stats?.total_orders ?? 0) === 1 ? "" : "s"}
                     </Badge>
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="rounded-md">
                       ₦{(stats?.total_spent ?? 0).toLocaleString()}
                     </Badge>
                     {(stats?.outstanding ?? 0) > 0 && (
-                      <Badge variant="destructive">
+                      <Badge variant="destructive" className="rounded-md">
                         ₦{stats!.outstanding.toLocaleString()} owed
                       </Badge>
                     )}
@@ -346,7 +348,7 @@ export default function Customers() {
 
       {/* Add / Edit dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl max-w-lg">
           <DialogHeader>
             <DialogTitle>{form.id ? "Edit customer" : "Add customer"}</DialogTitle>
           </DialogHeader>
@@ -358,6 +360,7 @@ export default function Customers() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 maxLength={100}
+                className="min-h-[40px] rounded-xl mt-1"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -368,6 +371,7 @@ export default function Customers() {
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   maxLength={30}
+                  className="min-h-[40px] rounded-xl mt-1"
                 />
               </div>
               <div>
@@ -378,6 +382,7 @@ export default function Customers() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   maxLength={255}
+                  className="min-h-[40px] rounded-xl mt-1"
                 />
               </div>
             </div>
@@ -388,6 +393,7 @@ export default function Customers() {
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 maxLength={300}
+                className="min-h-[40px] rounded-xl mt-1"
               />
             </div>
             <div>
@@ -398,14 +404,15 @@ export default function Customers() {
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 maxLength={1000}
                 rows={3}
+                className="rounded-xl mt-1"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving} className="min-h-[42px] rounded-xl active:scale-[0.98]">
               Cancel
             </Button>
-            <Button onClick={save} disabled={saving}>
+            <Button onClick={save} disabled={saving} className="min-h-[42px] rounded-xl font-semibold active:scale-[0.98]">
               {saving ? "Saving..." : form.id ? "Save changes" : "Add customer"}
             </Button>
           </DialogFooter>
@@ -414,17 +421,17 @@ export default function Customers() {
 
       {/* Purchase history dialog */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl rounded-2xl">
           <DialogHeader>
             <DialogTitle>{selected?.name} — Purchase history</DialogTitle>
           </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] overflow-y-auto overflow-x-auto">
             {selectedHistory.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
                 No sales recorded for this customer yet.
               </p>
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[400px]">
                 <thead className="text-left text-muted-foreground border-b">
                   <tr>
                     <th className="py-2">Date</th>
@@ -461,7 +468,7 @@ export default function Customers() {
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this customer?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -469,9 +476,9 @@ export default function Customers() {
               invoices remain but will no longer be linked to a customer.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogCancel className="min-h-[42px] rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="min-h-[42px] rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

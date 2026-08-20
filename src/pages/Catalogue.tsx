@@ -340,7 +340,7 @@ export default function Catalogue() {
   }, [search, onlyWithImages, sort, minPrice, maxPrice]);
 
   // ── Data Query ─────────────────────────────────────────────────────────
-  const { data: items = [], isLoading } = useQuery({
+  const { data: itemsData, isLoading } = useQuery({
     queryKey: ["catalogue", location],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -353,14 +353,34 @@ export default function Catalogue() {
     },
   });
 
+  const items = useMemo(() => itemsData || [], [itemsData]);
+
+  // Extract a stable serialized key of image URLs so signed URLs are only fetched when actual image paths change
+  const imagePathsKey = useMemo(() => {
+    if (!itemsData || itemsData.length === 0) return "";
+    return itemsData
+      .map((i) => i.image_url)
+      .filter(Boolean)
+      .sort()
+      .join("|");
+  }, [itemsData]);
+
   useEffect(() => {
-    const paths = items.map((i) => i.image_url).filter(Boolean) as string[];
-    if (paths.length === 0) {
-      setSigned({});
+    if (!imagePathsKey) {
+      setSigned((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
-    getInventoryImageUrls(paths).then(setSigned);
-  }, [items]);
+    const paths = imagePathsKey.split("|").filter(Boolean);
+    let isCurrent = true;
+    getInventoryImageUrls(paths).then((map) => {
+      if (isCurrent) {
+        setSigned(map);
+      }
+    });
+    return () => {
+      isCurrent = false;
+    };
+  }, [imagePathsKey]);
 
   // ── Stats ───────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -575,13 +595,13 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2.5 relative z-10 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 relative z-10 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={handleOptimizeImages}
             disabled={optimizing}
-            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all duration-300 hover:scale-[1.02]"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98]"
           >
             {optimizing ? (
               <>
@@ -602,7 +622,7 @@ export default function Catalogue() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all duration-300 hover:scale-[1.02]"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98]"
           >
             <Share2 className="h-4 w-4 mr-1.5 text-primary" />
             <span className="text-primary">Share Link</span>
@@ -612,7 +632,7 @@ export default function Catalogue() {
             variant="default"
             size="sm"
             onClick={handlePrint}
-            className="flex-1 sm:flex-none h-9 rounded-xl font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 hover:scale-[1.02]"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.98]"
           >
             <Printer className="h-4 w-4 mr-1.5" />
             <span>Print Catalogue</span>
@@ -663,26 +683,35 @@ export default function Catalogue() {
       {/* ── SEARCH & FILTER CONTROLS (Hidden when printing) ───────────────── */}
       <div className="space-y-3 print:hidden">
         <div className="flex flex-col sm:flex-row gap-2.5">
-          {/* Search Bar */}
+          {/* Search Bar (No icon as requested) */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               id="catalogue-search"
               placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-card/65 backdrop-blur-xs pl-9.5 h-10 border-border/60 focus-visible:ring-primary/20 rounded-xl"
+              className="bg-card/65 backdrop-blur-xs px-3.5 h-11 sm:h-10 border-border/60 focus-visible:ring-primary/20 rounded-xl text-sm"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[32px] min-w-[32px] rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <div className="flex gap-2 justify-end">
             {/* View toggle */}
-            <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5 h-10">
+            <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5 h-11 sm:h-10">
               <button
                 id="view-grid-btn"
                 title="Grid view"
                 onClick={() => setView("grid")}
-                className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                className={`min-h-[36px] sm:min-h-0 min-w-[38px] px-3 py-1.5 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-[0.98] ${
                   view === "grid"
                     ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                     : "text-muted-foreground hover:bg-muted"
@@ -694,7 +723,7 @@ export default function Catalogue() {
                 id="view-list-btn"
                 title="List view"
                 onClick={() => setView("list")}
-                className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                className={`min-h-[36px] sm:min-h-0 min-w-[38px] px-3 py-1.5 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-[0.98] ${
                   view === "list"
                     ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                     : "text-muted-foreground hover:bg-muted"
@@ -709,12 +738,12 @@ export default function Catalogue() {
               id="toggle-filters-btn"
               variant="outline"
               onClick={() => setFiltersOpen((v) => !v)}
-              className={`h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 ${
+              className={`h-11 sm:h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all flex items-center gap-2 active:scale-[0.98] ${
                 filtersOpen ? "border-primary text-primary bg-primary/5" : ""
               }`}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="text-xs font-semibold">Filters</span>
+              <span className="text-xs sm:text-sm font-semibold">Filters</span>
               {hasActiveFilters && (
                 <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
               )}
@@ -725,14 +754,14 @@ export default function Catalogue() {
         {/* Collapsible Filter Panel */}
         {filtersOpen && (
           <div className="rounded-2xl border border-border/40 bg-card/80 p-4 space-y-3.5 shadow-md backdrop-blur-md animate-[fadeIn_0.2s_ease-out] relative">
-            <div className="absolute right-4 top-4">
+            <div className="absolute right-3.5 top-3.5">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setFiltersOpen(false)}
-                className="h-6 w-6 rounded-full hover:bg-muted"
+                className="h-8 w-8 rounded-full hover:bg-muted"
               >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
+                <X className="h-4 w-4 text-muted-foreground" />
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
@@ -745,7 +774,7 @@ export default function Catalogue() {
                   value={sort}
                   onValueChange={(v) => setSort(v as SortKey)}
                 >
-                  <SelectTrigger id="sort-select" className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60">
+                  <SelectTrigger id="sort-select" className="min-h-[40px] text-sm rounded-xl bg-background/50 border-border/60">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -774,7 +803,7 @@ export default function Catalogue() {
                   placeholder="0"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
+                  className="min-h-[40px] text-sm rounded-xl bg-background/50 border-border/60"
                 />
               </div>
 
@@ -790,7 +819,7 @@ export default function Catalogue() {
                   placeholder="Any"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
+                  className="min-h-[40px] text-sm rounded-xl bg-background/50 border-border/60"
                 />
               </div>
 
@@ -804,7 +833,7 @@ export default function Catalogue() {
                   variant={onlyWithImages ? "default" : "outline"}
                   size="sm"
                   onClick={() => setOnlyWithImages((v) => !v)}
-                  className={`w-full h-9.5 text-sm justify-start rounded-xl font-medium ${
+                  className={`w-full min-h-[40px] text-sm justify-start rounded-xl font-medium active:scale-[0.98] ${
                     onlyWithImages
                       ? "bg-primary text-primary-foreground hover:bg-primary/95"
                       : "bg-background/50 hover:bg-muted border-border/60 text-muted-foreground"
@@ -833,7 +862,7 @@ export default function Catalogue() {
                   variant="ghost"
                   size="sm"
                   onClick={clearFilters}
-                  className="text-xs text-muted-foreground h-8 hover:text-foreground font-semibold hover:bg-transparent"
+                  className="text-xs text-muted-foreground min-h-[36px] hover:text-foreground font-semibold hover:bg-transparent"
                 >
                   <X className="h-3.5 w-3.5 mr-1 text-destructive" />
                   Reset all filters
@@ -897,7 +926,7 @@ export default function Catalogue() {
             </p>
           </div>
           {hasActiveFilters && (
-            <Button variant="outline" size="sm" onClick={clearFilters}>
+            <Button variant="outline" size="sm" onClick={clearFilters} className="min-h-[40px] px-4 font-medium">
               Clear filters
             </Button>
           )}
@@ -958,7 +987,7 @@ export default function Catalogue() {
             id="show-more-btn"
             variant="outline"
             onClick={() => setPage((p) => p + 1)}
-            className="w-full sm:w-auto px-6 font-medium"
+            className="w-full sm:w-auto min-h-[44px] px-6 font-medium text-sm rounded-xl active:scale-[0.98]"
           >
             Show more ({filtered.length - paginated.length} remaining)
           </Button>
@@ -1004,7 +1033,7 @@ export default function Catalogue() {
               </div>
 
               {/* Right: Info Panel */}
-              <div className="flex flex-col justify-between p-6 md:p-8 space-y-6 md:overflow-y-auto h-full">
+              <div className="flex flex-col justify-between p-5 sm:p-6 md:p-8 space-y-6 md:overflow-y-auto h-full">
                 <div className="space-y-4">
                   <div>
                     <span className="text-[10px] font-bold tracking-wider uppercase text-primary bg-primary/10 border border-primary/10 px-2 py-0.5 rounded-full font-mono">
@@ -1059,7 +1088,7 @@ export default function Catalogue() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-10 rounded-xl hover:bg-primary/5 border-border/80 transition-all font-semibold flex items-center justify-center gap-1.5"
+                    className="flex-1 min-h-[44px] rounded-xl hover:bg-primary/5 border-border/80 transition-all font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98]"
                     onClick={() => {
                       navigator.clipboard.writeText(
                         `${selectedItem["Item Description"]} - ${formatCurrency(
@@ -1074,7 +1103,7 @@ export default function Catalogue() {
                   <Button
                     variant="default"
                     size="sm"
-                    className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all"
+                    className="min-h-[44px] px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all active:scale-[0.98]"
                     onClick={() => setSelectedItem(null)}
                   >
                     Close
