@@ -186,10 +186,6 @@ const Index = () => {
                   </form>
                 </CardContent>
               </Card>
-
-              /*<p className="text-center text-xs text-muted-foreground mt-4">
-                Powered by <strong className="text-foreground font-medium">Puido Smart Solutions</strong>
-              </p>*/
             </div>
           </div>
         </div>
