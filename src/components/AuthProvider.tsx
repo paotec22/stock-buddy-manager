@@ -10,6 +10,11 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+// Routes that anyone can view without signing in
+const PUBLIC_PATHS = ["/share/catalogue"];
+const isPublicPath = (pathname: string) =>
+  PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
 const AuthContext = createContext<AuthContextType>({ 
   session: null, 
   loading: true, 
