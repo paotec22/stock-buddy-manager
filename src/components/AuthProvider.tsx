@@ -10,6 +10,11 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+// Routes that anyone can view without signing in
+const PUBLIC_PATHS = ["/share/catalogue"];
+const isPublicPath = (pathname: string) =>
+  PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
 const AuthContext = createContext<AuthContextType>({ 
   session: null, 
   loading: true, 
@@ -70,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
 
         // Only handle navigation after we've confirmed the session state
-        if (initialSession && location.pathname === '/') {
+        if (isPublicPath(location.pathname)) {
+          // Public routes never redirect
+        } else if (initialSession && location.pathname === '/') {
           console.log("AuthProvider: Redirecting authenticated user to inventory");
           navigate('/inventory');
         } else if (!initialSession && location.pathname !== '/') {
@@ -105,7 +112,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(currentSession);
 
       // Handle navigation based on new auth state
-      if (currentSession && location.pathname === '/') {
+      if (isPublicPath(location.pathname)) {
+        // Public routes never redirect
+      } else if (currentSession && location.pathname === '/') {
         navigate('/inventory');
       } else if (!currentSession && location.pathname !== '/') {
         navigate('/');
