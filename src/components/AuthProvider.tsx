@@ -112,7 +112,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(currentSession);
 
       // Handle navigation based on new auth state
-      if (currentSession && location.pathname === '/') {
+      if (isPublicPath(location.pathname)) {
+        // Public routes never redirect
+      } else if (currentSession && location.pathname === '/') {
         navigate('/inventory');
       } else if (!currentSession && location.pathname !== '/') {
         navigate('/');
