@@ -75,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
 
         // Only handle navigation after we've confirmed the session state
-        if (initialSession && location.pathname === '/') {
+        if (isPublicPath(location.pathname)) {
+          // Public routes never redirect
+        } else if (initialSession && location.pathname === '/') {
           console.log("AuthProvider: Redirecting authenticated user to inventory");
           navigate('/inventory');
         } else if (!initialSession && location.pathname !== '/') {
