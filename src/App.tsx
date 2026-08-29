@@ -83,6 +83,9 @@ const App = () => {
             <CommandPalette />
             <OnboardingTour />
             <AuthProvider>
+              <ConnectionBanner />
+              <CommandPalette />
+              <OnboardingTour />
               <AnimatedRoutes />
             </AuthProvider>
           </BrowserRouter>
