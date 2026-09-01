@@ -286,6 +286,9 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
         </div>
       )}
 
+      {isMobile ? (
+        renderMobileCards()
+      ) : (
       <div className="rounded-lg border border-border bg-card overflow-auto shadow-sm">
         <Table>
           <TableHeader>
