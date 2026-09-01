@@ -107,7 +107,7 @@ export function InventoryContentContainer({
         />
 
         {filteredItems.length > 0 ? (
-          <Card className="overflow-hidden border rounded-lg shadow-sm">
+          <Card className="overflow-hidden border rounded-lg shadow-sm max-sm:border-0 max-sm:shadow-none max-sm:bg-transparent">
             <CardContent className="p-0">
               <InventoryTable
                 items={filteredItems}
