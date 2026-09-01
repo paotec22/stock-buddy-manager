@@ -450,6 +450,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
           </TableBody>
         </Table>
       </div>
+      )}
     </div>
   );
 }
