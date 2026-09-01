@@ -112,6 +112,149 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
     }
   };
 
+  // Mobile: render a card list instead of the table for a better touch experience
+  const renderMobileCards = () => (
+    <div className="space-y-3">
+      {items.map((item) => {
+        const isSelected = selectedItems.includes(item.id);
+        return (
+          <div
+            key={item.id}
+            onClick={() => toggleSelectItem(item.id)}
+            onPointerDown={startLongPress}
+            onPointerUp={clearLongPress}
+            onPointerLeave={clearLongPress}
+            className={`relative rounded-xl border bg-card p-4 shadow-sm transition-colors cursor-pointer select-none ${
+              isSelected ? "border-primary/50 bg-primary/5" : "border-border"
+            }`}
+            aria-pressed={isSelected}
+          >
+            {isSelected && (
+              <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            )}
+
+            <div className="flex items-start gap-3">
+              <InventoryImageCell item={item} />
+              <div className="min-w-0 flex-1">
+                {editingDescription[item.id] ? (
+                  <input
+                    type="text"
+                    defaultValue={item["Item Description"]}
+                    className="w-full px-2 py-1.5 text-sm border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={(e) => {
+                      const newDescription = e.target.value.trim();
+                      if (newDescription && newDescription !== item["Item Description"]) {
+                        onDescriptionEdit(item, newDescription);
+                      }
+                      setEditingDescription(prev => ({ ...prev, [item.id]: false }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      } else if (e.key === 'Escape') {
+                        setEditingDescription(prev => ({ ...prev, [item.id]: false }));
+                      }
+                    }}
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingDescription(prev => ({ ...prev, [item.id]: true }));
+                    }}
+                    className="text-left font-medium text-sm leading-snug w-full pr-6"
+                  >
+                    {item["Item Description"]}
+                  </button>
+                )}
+                <div className="mt-1.5">
+                  <StatusBadge status={getStockStatus(item.Quantity || 0)} size="sm" />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2" onClick={(e) => e.stopPropagation()}>
+              <div className="rounded-lg bg-muted/50 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Quantity</p>
+                {editingQuantity[item.id] ? (
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    defaultValue={item.Quantity?.toString() || "0"}
+                    className="mt-0.5 w-full min-h-[36px] px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    onBlur={(e) => {
+                      const newQuantity = parseInt(e.target.value) || 0;
+                      if (newQuantity !== item.Quantity) {
+                        onQuantityEdit(item, newQuantity);
+                      }
+                      setEditingQuantity(prev => ({ ...prev, [item.id]: false }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      } else if (e.key === 'Escape') {
+                        setEditingQuantity(prev => ({ ...prev, [item.id]: false }));
+                      }
+                    }}
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    onClick={() => setEditingQuantity(prev => ({ ...prev, [item.id]: true }))}
+                    className="mt-0.5 font-mono tabular-nums text-base font-semibold"
+                  >
+                    {item.Quantity || 0}
+                  </button>
+                )}
+              </div>
+              <div className="rounded-lg bg-muted/50 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Price</p>
+                {editingPrice[item.id] ? (
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={item.Price?.toString() || "0"}
+                    className="mt-0.5 w-full min-h-[36px] px-2 py-1 text-sm font-mono tabular-nums border border-input rounded bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    onBlur={(e) => {
+                      const newPrice = parseFloat(e.target.value) || 0;
+                      if (newPrice !== item.Price) {
+                        onPriceEdit(item, newPrice);
+                      }
+                      setEditingPrice(prev => ({ ...prev, [item.id]: false }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      } else if (e.key === 'Escape') {
+                        setEditingPrice(prev => ({ ...prev, [item.id]: false }));
+                      }
+                    }}
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    onClick={() => setEditingPrice(prev => ({ ...prev, [item.id]: true }))}
+                    className="mt-0.5 font-mono tabular-nums text-base font-semibold"
+                  >
+                    {item.Price ? formatCurrency(item.Price) : "—"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="space-y-4 relative">
       {selectedItems.length > 0 && (
@@ -143,6 +286,9 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
         </div>
       )}
 
+      {isMobile ? (
+        renderMobileCards()
+      ) : (
       <div className="rounded-lg border border-border bg-card overflow-auto shadow-sm">
         <Table>
           <TableHeader>
@@ -304,6 +450,7 @@ export function InventoryTable({ items, onPriceEdit, onQuantityEdit, onDescripti
           </TableBody>
         </Table>
       </div>
+      )}
     </div>
   );
 }
