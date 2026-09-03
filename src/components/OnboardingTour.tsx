@@ -1,13 +1,10 @@
 "use client";
 
-import { Joyride } from "react-joyride";
+import { Joyride, EVENTS, STATUS } from "react-joyride";
 import { useAuth } from "./AuthProvider";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { X, ChevronRight, Check, Zap, Package, ShoppingCart, ImageIcon, BarChart3 } from "lucide-react";
-
-const TOUR_COMPLETED_KEY = "si-manager-tour-completed";
-const TOUR_VERSION = 1;
+import { Zap, Package, ShoppingCart, ImageIcon, BarChart3 } from "lucide-react";
 
 export function OnboardingTour() {
   const { session } = useAuth();
@@ -41,11 +38,42 @@ export function OnboardingTour() {
     checkTourStatus();
   }, [checkTourStatus]);
 
+  const markComplete = useCallback(async () => {
+    localStorage.setItem("si-manager-tour-completed", "true");
+    setRunTour(false);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            tour_completed: true,
+            tour_version: 1,
+          });
+      }
+    } catch (e) {
+      console.error("Failed to save tour completion:", e);
+    }
+  }, []);
+
+  const handleEvent = useCallback(
+    (data: { type: string; status?: string; action?: string }) => {
+      if (data.type === EVENTS.TOUR_END || data.status === STATUS.SKIPPED || data.status === STATUS.FINISHED) {
+        markComplete();
+      }
+    },
+    [markComplete]
+  );
+
   if (!runTour) return null;
 
   return (
     <div>
       <Joyride
+        run={true}
+        continuous={true}
         steps={[
           {
             target: "[data-tour='sidebar-inventory']",
@@ -61,6 +89,7 @@ export function OnboardingTour() {
               </div>
             ),
             placement: "right",
+            skipBeacon: true,
           },
           {
             target: "[data-tour='sidebar-sales']",
@@ -76,6 +105,7 @@ export function OnboardingTour() {
               </div>
             ),
             placement: "right",
+            skipBeacon: true,
           },
           {
             target: "[data-tour='sidebar-catalogue']",
@@ -91,6 +121,7 @@ export function OnboardingTour() {
               </div>
             ),
             placement: "right",
+            skipBeacon: true,
           },
           {
             target: "[data-tour='sidebar-reports']",
@@ -106,6 +137,7 @@ export function OnboardingTour() {
               </div>
             ),
             placement: "right",
+            skipBeacon: true,
           },
           {
             target: "[data-tour='fab']",
@@ -121,6 +153,7 @@ export function OnboardingTour() {
               </div>
             ),
             placement: "top",
+            skipBeacon: true,
           },
           {
             target: "[data-tour='cmd-palette']",
@@ -136,26 +169,15 @@ export function OnboardingTour() {
               </div>
             ),
             placement: "bottom",
+            skipBeacon: true,
           },
         ]}
-        run={true}
-        continuous={true}
-        showSkipButton={true}
-        skipButton={
-          <button
-            className="text-sm text-muted-foreground hover:text-foreground font-medium px-3 py-1.5"
-          >
-            Skip Tour
-          </button>
-        }
-        onComplete={() => {
-          localStorage.setItem("si-manager-tour-completed", "true");
-        }}
-        onSkip={() => {
-          localStorage.setItem("si-manager-tour-completed", "true");
-        }}
-        onClose={() => {
-          localStorage.setItem("si-manager-tour-completed", "true");
+        onEvent={handleEvent}
+        options={{
+          showProgress: true,
+          buttons: ["back", "close", "primary", "skip"],
+          primaryColor: "hsl(var(--primary))",
+          zIndex: 100,
         }}
         styles={{
           tooltip: {
@@ -165,9 +187,6 @@ export function OnboardingTour() {
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",
-          },
-          beacon: {
-            transform: "translate(-50%, -50%)",
           },
         }}
         locale={{
