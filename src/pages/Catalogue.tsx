@@ -487,8 +487,14 @@ export default function Catalogue() {
     setSigned(await getInventoryImageUrls(paths));
   }, [items]);
 
+  const shareLink = useMemo(() => {
+    const base = `${window.location.origin}/share/catalogue`;
+    if (shareAll || shareIds.length === 0) return base;
+    return `${base}?ids=${shareIds.join(",")}`;
+  }, [shareAll, shareIds]);
+
   const handleShare = useCallback(async () => {
-    const link = `${window.location.origin}/share/catalogue`;
+    const link = shareLink;
     try {
       if (navigator.share) {
         await navigator.share({ title: "Product Catalogue", url: link });
@@ -500,7 +506,7 @@ export default function Catalogue() {
       await navigator.clipboard.writeText(link);
       toast.success("Share link copied to clipboard");
     }
-  }, []);
+  }, [shareLink]);
 
   const handlePrint = useCallback(() => {
     const originalTitle = document.title;
