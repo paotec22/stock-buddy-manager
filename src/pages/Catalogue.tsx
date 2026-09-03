@@ -636,7 +636,7 @@ export default function Catalogue() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleShare}
+            onClick={() => setShareOpen(true)}
             title="Share Catalogue Link"
             aria-label="Share Catalogue Link"
             className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98] px-2 sm:px-3"
@@ -1138,7 +1138,7 @@ export default function Catalogue() {
         primaryAction={{
           label: "Share",
           icon: ShareIcon,
-          onClick: handleShare,
+          onClick: () => setShareOpen(true),
           shortcut: "⌘S",
         }}
         secondaryActions={[
