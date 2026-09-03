@@ -51,84 +51,69 @@ const Reports = () => {
   };
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h1 className="text-2xl font-bold">Reports</h1>
-            <div className={`flex items-center gap-2 ${isMobile ? 'w-full mt-3' : 'w-full md:w-auto'}`}>
-              {isMobile ? (
-                <>
-                  <SearchInput
-                    value={searchTerm}
-                    onChange={setSearchTerm}
-                    placeholder="Search reports..."
-                    className="flex-1"
-                  />
-                  <ReportsFilterSheet
-                    dateFrom={dateFrom}
-                    dateTo={dateTo}
-                    onDateFromChange={setDateFrom}
-                    onDateToChange={setDateTo}
-                    onClearDates={clearDates}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    className="h-11 min-w-11"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="w-full md:w-[250px]">
-                    <SearchInput
-                      value={searchTerm}
-                      onChange={setSearchTerm}
-                      placeholder="Search reports..."
-                      className="glass-effect"
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Refresh
-                  </Button>
-                </>
-              )}
-            </div>
+    <div className="space-y-6">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Financial trends, expenses breakdown, and installation logs</p>
           </div>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex-1 md:w-[240px]">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Search reports..."
+                className="h-10 md:h-9 text-sm"
+              />
+            </div>
+            {isMobile && (
+              <ReportsFilterSheet
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                onDateFromChange={setDateFrom}
+                onDateToChange={setDateTo}
+                onClearDates={clearDates}
+              />
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium px-3"
+              title="Refresh reports"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''} md:mr-1.5`} />
+              <span className="hidden md:inline">Refresh</span>
+            </Button>
+          </div>
+        </div>
+      </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className={isMobile ? 'px-4' : ''}>
-            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'} mb-6`}>
-              <TabsTrigger value="overview" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                {!isMobile && "Overview"}
-              </TabsTrigger>
-              <TabsTrigger value="expenses" className="flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
-                {!isMobile && "Expenses"}
-              </TabsTrigger>
-              <TabsTrigger value="installations" className="flex items-center gap-2">
-                <Wrench className="h-4 w-4" />
-                {!isMobile && "Installations"}
-              </TabsTrigger>
-              {!isMobile && (
-                <TabsTrigger value="locations" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Locations
-                </TabsTrigger>
-              )}
-              <TabsTrigger value="activity" className="flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                {!isMobile && "Activity"}
-              </TabsTrigger>
-            </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-5 h-11 p-1 bg-muted rounded-lg">
+          <TabsTrigger value="overview" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="expenses" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
+            <Receipt className="h-4 w-4" />
+            <span className="hidden sm:inline">Expenses</span>
+          </TabsTrigger>
+          <TabsTrigger value="installations" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
+            <Wrench className="h-4 w-4" />
+            <span className="hidden sm:inline">Installations</span>
+          </TabsTrigger>
+          <TabsTrigger value="locations" className="hidden sm:flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
+            <MapPin className="h-4 w-4" />
+            <span>Locations</span>
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Activity</span>
+          </TabsTrigger>
+        </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">

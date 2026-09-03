@@ -138,29 +138,32 @@ const ProfitAnalysis = () => {
   if (salesLoading || expensesLoading) return <ProfitLoadingState />;
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold">Profit Analysis</h1>
-        <div className="w-full md:w-[250px]">
-          <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search sales..." />
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Profit Analysis</h1>
+          <p className="text-sm text-muted-foreground mt-1">Review your product margins, revenue, and operating profits</p>
+        </div>
+        <div className="w-full sm:w-[280px]">
+          <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search sales by product..." />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="card-hover">
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">Total Revenue</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold" style={{ color: 'hsl(var(--success))' }}>{formatCurrency(totalSalesRevenue, currencies[0])}</div></CardContent>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="card-hover rounded-2xl border-border/60">
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Revenue</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold text-success">{formatCurrency(totalSalesRevenue, currencies[0])}</div></CardContent>
         </Card>
-        <Card className="card-hover">
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">Total Purchase Cost</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold" style={{ color: 'hsl(var(--info))' }}>{formatCurrency(totalPurchaseCost, currencies[0])}</div></CardContent>
+        <Card className="card-hover rounded-2xl border-border/60">
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Purchase Cost</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold text-info">{formatCurrency(totalPurchaseCost, currencies[0])}</div></CardContent>
         </Card>
-        <Card className="card-hover">
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">Gross Profit</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold" style={{ color: 'hsl(var(--warning))' }}>{formatCurrency(grossProfit, currencies[0])}</div></CardContent>
+        <Card className="card-hover rounded-2xl border-border/60">
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Gross Profit</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold text-warning">{formatCurrency(grossProfit, currencies[0])}</div></CardContent>
         </Card>
-        <Card className="card-hover">
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">Net Profit</CardTitle></CardHeader>
+        <Card className="card-hover rounded-2xl border-border/60">
+          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Net Profit</CardTitle></CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(netProfit, currencies[0])}</div>
             <p className="text-xs text-muted-foreground mt-1">After expenses: {formatCurrency(totalExpenses, currencies[0])}</p>
@@ -168,22 +171,22 @@ const ProfitAnalysis = () => {
         </Card>
       </div>
 
-      <Card className="card-hover">
-        <CardHeader><CardTitle>Grouped Sales with Profit Analysis</CardTitle></CardHeader>
+      <Card className="card-hover rounded-2xl border-border/60">
+        <CardHeader><CardTitle className="text-base sm:text-lg">Grouped Sales with Profit Analysis</CardTitle></CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm min-w-[700px]">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Item</th>
-                  <th className="text-left p-2">Total Qty</th>
-                  <th className="text-left p-2">Avg Sale Price</th>
-                  <th className="text-left p-2">Avg Purchase Price</th>
-                  <th className="text-left p-2">Profit/Item</th>
-                  <th className="text-left p-2">Total Sale</th>
-                  <th className="text-left p-2">Total Cost</th>
-                  <th className="text-left p-2">Total Profit</th>
-                  <th className="text-left p-2">Location</th>
+                <tr className="border-b text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="text-left py-3 px-2">Item</th>
+                  <th className="text-left py-3 px-2">Total Qty</th>
+                  <th className="text-left py-3 px-2">Avg Sale Price</th>
+                  <th className="text-left py-3 px-2">Avg Purchase Price</th>
+                  <th className="text-left py-3 px-2">Profit/Item</th>
+                  <th className="text-left py-3 px-2">Total Sale</th>
+                  <th className="text-left py-3 px-2">Total Cost</th>
+                  <th className="text-left py-3 px-2">Total Profit</th>
+                  <th className="text-left py-3 px-2">Location</th>
                 </tr>
               </thead>
               <tbody>
@@ -191,11 +194,11 @@ const ProfitAnalysis = () => {
                   const key = `${sale.item_name}-${sale.location}`;
                   const isEditing = editingPrices.hasOwnProperty(key);
                   return (
-                    <tr key={key} className="border-b hover:bg-muted/50">
-                      <td className="p-2">{sale.item_name}</td>
-                      <td className="p-2">{sale.total_quantity}</td>
-                      <td className="p-2">{formatCurrency(sale.avg_sale_price, currencies[0])}</td>
-                      <td className="p-2">
+                    <tr key={key} className="border-b hover:bg-muted/50 transition-colors">
+                      <td className="py-3 px-2 font-medium">{sale.item_name}</td>
+                      <td className="py-3 px-2">{sale.total_quantity}</td>
+                      <td className="py-3 px-2">{formatCurrency(sale.avg_sale_price, currencies[0])}</td>
+                      <td className="py-3 px-2">
                         {isEditing ? (
                           <Input
                             type="number"
@@ -206,20 +209,20 @@ const ProfitAnalysis = () => {
                               if (e.key === 'Enter') handlePurchasePriceUpdate(key, sale.sale_ids, editingPrices[key]);
                               if (e.key === 'Escape') setEditingPrices(prev => { const u = { ...prev }; delete u[key]; return u; });
                             }}
-                            className="w-24 h-8 text-sm"
+                            className="w-28 h-9 text-sm rounded-lg"
                             autoFocus
                           />
                         ) : (
-                          <button onClick={() => handlePurchasePriceEdit(key, sale.avg_purchase_price)} className="text-primary hover:underline">
+                          <button onClick={() => handlePurchasePriceEdit(key, sale.avg_purchase_price)} className="text-primary hover:underline font-medium min-h-[32px] inline-flex items-center">
                             {formatCurrency(sale.avg_purchase_price, currencies[0])}
                           </button>
                         )}
                       </td>
-                      <td className={`p-2 ${sale.profit_per_item >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(sale.profit_per_item, currencies[0])}</td>
-                      <td className="p-2">{formatCurrency(sale.total_sale_amount, currencies[0])}</td>
-                      <td className="p-2">{formatCurrency(sale.total_purchase_amount, currencies[0])}</td>
-                      <td className={`p-2 font-semibold ${sale.total_profit >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(sale.total_profit, currencies[0])}</td>
-                      <td className="p-2">{sale.location}</td>
+                      <td className={`py-3 px-2 ${sale.profit_per_item >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(sale.profit_per_item, currencies[0])}</td>
+                      <td className="py-3 px-2">{formatCurrency(sale.total_sale_amount, currencies[0])}</td>
+                      <td className="py-3 px-2">{formatCurrency(sale.total_purchase_amount, currencies[0])}</td>
+                      <td className={`py-3 px-2 font-semibold ${sale.total_profit >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(sale.total_profit, currencies[0])}</td>
+                      <td className="py-3 px-2">{sale.location}</td>
                     </tr>
                   );
                 })}

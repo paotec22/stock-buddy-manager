@@ -30,23 +30,23 @@ export function InventoryHeader({
   pendingCount = 0,
 }: InventoryHeaderProps) {
   return (
-    <div className="bg-card shadow-sm border rounded-xl p-5 sm:p-6 glass-effect slide-up">
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-5 shadow-sm">
+      <div className="flex flex-col space-y-3.5 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           {isOffline && (
-            <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+            <Badge variant="secondary" className="gap-1.5 bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800">
               <WifiOff className="h-3 w-3" />
               Offline Mode
             </Badge>
           )}
           {pendingCount > 0 && (
-            <Badge variant="outline" className="gap-1 bg-amber-500/10 text-amber-600 border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-400">
+            <Badge variant="outline" className="gap-1.5 bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800">
               <CloudOff className="h-3 w-3" />
               {pendingCount} pending
             </Badge>
           )}
           <Select value={selectedLocation} onValueChange={onLocationChange}>
-            <SelectTrigger className="w-[200px] bg-white/60 dark:bg-black/20 border-gray-200 dark:border-gray-700 rounded-lg">
+            <SelectTrigger className="w-[180px] bg-background border-input rounded-md h-9 text-sm">
               <SelectValue placeholder="Select location" />
             </SelectTrigger>
             <SelectContent>
@@ -58,28 +58,43 @@ export function InventoryHeader({
             </SelectContent>
           </Select>
           
-          <div className="w-full sm:w-[250px]">
+          <div className="w-full sm:w-[260px]">
             <SearchInput 
               value={searchTerm}
               onChange={onSearchChange}
-              placeholder="Search inventory..."
-              className="bg-white/60 dark:bg-black/20"
+              placeholder="Search inventory description..."
+              className="bg-background h-9 text-sm"
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button onClick={onAddItem} className="hover-scale bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-300">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Item
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <Button 
+            onClick={onAddItem} 
+            size="sm" 
+            className="flex-1 md:flex-initial min-h-[40px] md:min-h-0 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium"
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            <span>Add Item</span>
           </Button>
-          <Button variant="outline" onClick={onBulkUpload} className="hover-scale bg-white/60 dark:bg-black/20 border-gray-200 dark:border-gray-700">
-            <Upload className="mr-2 h-4 w-4" />
-            Bulk Upload
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onBulkUpload} 
+            className="flex-1 md:flex-initial min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium"
+          >
+            <Upload className="mr-1.5 h-4 w-4" />
+            <span>Upload</span>
           </Button>
           {onExport && (
-            <Button variant="outline" onClick={onExport} className="hover-scale bg-white/60 dark:bg-black/20 border-gray-200 dark:border-gray-700">
-              <Download className="mr-2 h-4 w-4" />
-              Export
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onExport} 
+              className="min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium px-2.5 sm:px-3"
+              title="Export Inventory"
+            >
+              <Download className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
           )}
         </div>

@@ -1,0 +1,6 @@
+{
+  "name": "SI Manager",
+  "description": "Modern inventory, sales, and invoicing management system with catalogue and reporting tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

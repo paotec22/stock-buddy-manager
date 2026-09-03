@@ -78,10 +78,10 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <ConnectionBanner />
-          <CommandPalette />
-          <OnboardingTour />
           <BrowserRouter>
+            <ConnectionBanner />
+            <CommandPalette />
+            <OnboardingTour />
             <AuthProvider>
               <AnimatedRoutes />
             </AuthProvider>

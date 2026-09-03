@@ -270,40 +270,40 @@ function RequestContent() {
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
                 Installation Requests
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-sm">
                 Track product installations and log completed work
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               {/* Status Filter Toggle */}
-              <div className="flex rounded-lg border border-border overflow-hidden">
+              <div className="flex rounded-xl border border-border overflow-hidden bg-card/65 p-0.5">
                 <Button
                   variant={statusFilter === "Not installed" ? "default" : "ghost"}
                   size="sm"
-                  className="rounded-none"
+                  className="rounded-lg min-h-[38px] px-3.5 active:scale-[0.98]"
                   onClick={() => setStatusFilter("Not installed")}
                 >
-                  <Clock className="h-4 w-4 mr-1" />
+                  <Clock className="h-4 w-4 mr-1.5" />
                   Pending
                 </Button>
                 <Button
                   variant={statusFilter === "Installed" ? "default" : "ghost"}
                   size="sm"
-                  className="rounded-none"
+                  className="rounded-lg min-h-[38px] px-3.5 active:scale-[0.98]"
                   onClick={() => setStatusFilter("Installed")}
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                  <CheckCircle2 className="h-4 w-4 mr-1.5" />
                   Installed
                 </Button>
               </div>
               <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                 <DialogTrigger asChild>
-                  <Button className="gap-2">
+                  <Button className="gap-2 min-h-[40px] rounded-xl font-semibold active:scale-[0.98] flex-1 sm:flex-initial">
                     <Plus className="h-4 w-4" />
                     New Request
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-2xl">
                 <DialogHeader>
                   <DialogTitle>Add Installation Request</DialogTitle>
                 </DialogHeader>
@@ -324,7 +324,7 @@ function RequestContent() {
                         }
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="min-h-[40px] rounded-xl">
                         <SelectValue placeholder="Select a product from inventory" />
                       </SelectTrigger>
                       <SelectContent>
@@ -350,6 +350,7 @@ function RequestContent() {
                           setFormData({ ...formData, price: e.target.value })
                         }
                         placeholder="0"
+                        className="min-h-[40px] rounded-xl"
                       />
                     </div>
                     <div className="space-y-2">
@@ -364,6 +365,7 @@ function RequestContent() {
                           setFormData({ ...formData, installation_cost: e.target.value })
                         }
                         placeholder="0"
+                        className="min-h-[40px] rounded-xl"
                       />
                     </div>
                   </div>
@@ -381,6 +383,7 @@ function RequestContent() {
                           setFormData({ ...formData, quantity: e.target.value })
                         }
                         placeholder="1"
+                        className="min-h-[40px] rounded-xl"
                       />
                     </div>
                     <div className="space-y-2">
@@ -392,6 +395,7 @@ function RequestContent() {
                           setFormData({ ...formData, location: e.target.value })
                         }
                         placeholder="Enter location"
+                        className="min-h-[40px] rounded-xl"
                       />
                     </div>
                   </div>
@@ -406,22 +410,28 @@ function RequestContent() {
                       }
                       placeholder="Additional details..."
                       rows={3}
+                      className="rounded-xl"
                     />
                   </div>
 
-                  <DialogFooter>
+                  <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-2">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setIsAddOpen(false)}
+                      className="min-h-[42px] rounded-xl active:scale-[0.98]"
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Button type="submit" disabled={isSubmitting} className="min-h-[42px] rounded-xl font-semibold active:scale-[0.98]">
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Create Request"
                       )}
-                      Add Request
                     </Button>
                   </DialogFooter>
                 </form>
@@ -562,6 +572,7 @@ function RequestContent() {
                                 <Button
                                   size="sm"
                                   onClick={() => setConfirmInstall(request)}
+                                  className="min-h-[36px] px-3 font-semibold rounded-lg active:scale-[0.98]"
                                 >
                                   Mark Installed
                                 </Button>
@@ -569,8 +580,9 @@ function RequestContent() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                className="min-h-[36px] min-w-[36px] h-9 w-9 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => setConfirmDelete(request)}
+                                aria-label="Delete request"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -591,7 +603,7 @@ function RequestContent() {
           open={!!confirmInstall}
           onOpenChange={() => setConfirmInstall(null)}
         >
-          <AlertDialogContent>
+          <AlertDialogContent className="rounded-2xl">
             <AlertDialogHeader>
               <AlertDialogTitle>Mark as Installed?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -604,11 +616,12 @@ function RequestContent() {
                 . This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+              <AlertDialogCancel className="min-h-[42px] rounded-xl">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => confirmInstall && markInstalled.mutate(confirmInstall)}
                 disabled={markInstalled.isPending}
+                className="min-h-[42px] rounded-xl font-semibold active:scale-[0.98]"
               >
                 {markInstalled.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -624,7 +637,7 @@ function RequestContent() {
           open={!!confirmDelete}
           onOpenChange={() => setConfirmDelete(null)}
         >
-          <AlertDialogContent>
+          <AlertDialogContent className="rounded-2xl">
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Request?</AlertDialogTitle>
               <AlertDialogDescription>
@@ -632,12 +645,12 @@ function RequestContent() {
                 action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+              <AlertDialogCancel className="min-h-[42px] rounded-xl">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => confirmDelete && deleteRequest.mutate(confirmDelete.id)}
                 disabled={deleteRequest.isPending}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="min-h-[42px] rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-semibold active:scale-[0.98]"
               >
                 {deleteRequest.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

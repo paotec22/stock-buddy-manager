@@ -47,7 +47,7 @@ import { toast } from "sonner";
 import { MobileFAB } from "@/components/MobileFAB";
 import { Share2 as ShareIcon, Printer as PrintIcon, Sparkles as SparklesIcon } from "lucide-react";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Constants ─────────────────────────────────────────────────────────
 const PAGE_SIZE = 20;
 const VIEW_KEY = "catalogue_view_mode";
 
@@ -60,7 +60,7 @@ type SortKey =
 
 type ViewMode = "grid" | "list";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────
 function getStockStatus(qty: number) {
   if (qty <= 0)
     return {
@@ -81,7 +81,7 @@ function getStockStatus(qty: number) {
   };
 }
 
-// ─── Skeleton Card ────────────────────────────────────────────────────────────
+// ─── Skeleton Card ────────────────────────────────────────────────────────
 function SkeletonCard({ view }: { view: ViewMode }) {
   if (view === "list") {
     return (
@@ -121,7 +121,7 @@ function GridCard({
   return (
     <Card
       onClick={onClick}
-      className="overflow-hidden group cursor-pointer border border-border/40 bg-card/65 backdrop-blur-xs rounded-2xl shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-primary hover:border-primary/35"
+      className="overflow-hidden group cursor-pointer border border-border/40 bg-card/65 backdrop-blur-sm rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40"
     >
       <div className="aspect-square bg-slate-100 dark:bg-slate-900/40 relative overflow-hidden flex items-center justify-center">
         {url ? (
@@ -136,7 +136,7 @@ function GridCard({
               height={400}
             />
             <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white/95 text-slate-900 shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-background/95 text-foreground shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                 <Eye className="h-3.5 w-3.5 text-primary" /> Quick View
               </span>
             </div>
@@ -179,7 +179,7 @@ function GridCard({
   );
 }
 
-// ─── On-Screen List Row ───────────────────────────────────────────────────────
+// ─── On-Screen List Row ──────────────────────────────────────────────────────
 function ListRow({
   item,
   url,
@@ -193,7 +193,7 @@ function ListRow({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 p-3 rounded-2xl border border-border/40 bg-card/65 backdrop-blur-xs hover:bg-card hover:shadow-md transition-all duration-300 cursor-pointer group hover:border-primary/35"
+      className="flex items-center gap-4 p-3 rounded-2xl border border-border/40 bg-card/65 backdrop-blur-sm hover:bg-card hover:shadow-md transition-all duration-300 cursor-pointer group hover:border-primary/40"
     >
       <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-900/40 overflow-hidden flex-shrink-0 relative flex items-center justify-center">
         {url ? (
@@ -291,7 +291,7 @@ function PrintCard({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────
 export default function Catalogue() {
   const location = "Ikeja";
 
@@ -339,8 +339,8 @@ export default function Catalogue() {
     setPage(1);
   }, [search, onlyWithImages, sort, minPrice, maxPrice]);
 
-  // ── Data Query ──────────────────────────────────────────────────────────────
-  const { data: items = [], isLoading } = useQuery({
+  // ── Data Query ─────────────────────────────────────────────────────────
+  const { data: itemsData, isLoading } = useQuery({
     queryKey: ["catalogue", location],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -353,16 +353,36 @@ export default function Catalogue() {
     },
   });
 
+  const items = useMemo(() => itemsData || [], [itemsData]);
+
+  // Extract a stable serialized key of image URLs so signed URLs are only fetched when actual image paths change
+  const imagePathsKey = useMemo(() => {
+    if (!itemsData || itemsData.length === 0) return "";
+    return itemsData
+      .map((i) => i.image_url)
+      .filter(Boolean)
+      .sort()
+      .join("|");
+  }, [itemsData]);
+
   useEffect(() => {
-    const paths = items.map((i) => i.image_url).filter(Boolean) as string[];
-    if (paths.length === 0) {
-      setSigned({});
+    if (!imagePathsKey) {
+      setSigned((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
-    getInventoryImageUrls(paths).then(setSigned);
-  }, [items]);
+    const paths = imagePathsKey.split("|").filter(Boolean);
+    let isCurrent = true;
+    getInventoryImageUrls(paths).then((map) => {
+      if (isCurrent) {
+        setSigned(map);
+      }
+    });
+    return () => {
+      isCurrent = false;
+    };
+  }, [imagePathsKey]);
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
+  // ── Stats ───────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     if (items.length === 0) return null;
     const prices = items.map((i) => i.Price || 0).filter((p) => p > 0);
@@ -373,7 +393,7 @@ export default function Catalogue() {
     };
   }, [items]);
 
-  // ── Filter + Sort ──────────────────────────────────────────────────────────
+  // ── Filter + Sort ────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let out = items.filter((it) => {
       if (onlyWithImages && !it.image_url) return false;
@@ -413,7 +433,7 @@ export default function Catalogue() {
     return out;
   }, [items, search, onlyWithImages, sort, minPrice, maxPrice]);
 
-  // ── Pagination ─────────────────────────────────────────────────────────────
+  // ── Pagination ─────────────────────────────────────────────────────────
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = page * PAGE_SIZE < filtered.length;
 
@@ -514,7 +534,7 @@ export default function Catalogue() {
     });
   }, []);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-5 fade-in pb-10 print:space-y-0 print:pb-0 catalogue-bg -mx-4 md:-mx-8 lg:-mx-16 xl:-mx-24 px-4 md:px-8 lg:px-16 xl:px-24 pt-4 md:pt-6">
 
@@ -551,13 +571,13 @@ export default function Catalogue() {
       </div>
 
       {/* ── SCREEN HEADER (Hidden when printing) ─────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-card via-card/85 to-card/50 p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        {/* Glow decoration */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-6 md:p-8 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Subtle solid glow decoration */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-secondary/80 blur-3xl opacity-10 pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
         <div className="flex items-center gap-4 relative z-10">
-          <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner">
+          <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
             <img
               src="/Puido_Smart_Solutions.svg"
               alt="Puido Smart Solutions"
@@ -565,7 +585,7 @@ export default function Catalogue() {
             />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-primary">
               Product Catalogue
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">
@@ -575,25 +595,27 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2.5 relative z-10 w-full sm:w-auto">
+        <div className="flex items-center gap-2 relative z-10 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={handleOptimizeImages}
             disabled={optimizing}
-            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-accent/5 hover:text-accent border-border/80 transition-all duration-300 hover:scale-[1.02]"
+            title="Optimize Images"
+            aria-label="Optimize Images"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98] px-2 sm:px-3"
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                <span className="truncate">
+                <Loader2 className="h-4 w-4 animate-spin text-primary sm:mr-1.5" />
+                <span className="hidden sm:inline truncate text-primary">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-1.5 text-amber-500 animate-pulse" />
-                <span>Optimize</span>
+                <Sparkles className="h-4 w-4 text-primary sm:mr-1.5" />
+                <span className="hidden sm:inline text-primary">Optimize</span>
               </>
             )}
           </Button>
@@ -602,29 +624,33 @@ export default function Catalogue() {
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all duration-300 hover:scale-[1.02]"
+            title="Share Catalogue Link"
+            aria-label="Share Catalogue Link"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98] px-2 sm:px-3"
           >
-            <Share2 className="h-4 w-4 mr-1.5 text-primary" />
-            <span>Share Link</span>
+            <Share2 className="h-4 w-4 text-primary sm:mr-1.5" />
+            <span className="hidden sm:inline text-primary">Share Link</span>
           </Button>
 
           <Button
             variant="default"
             size="sm"
             onClick={handlePrint}
-            className="flex-1 sm:flex-none h-9 rounded-xl font-semibold shadow-md bg-gradient-to-r from-primary to-secondary hover:from-primary/95 hover:to-secondary/95 transition-all duration-300 hover:scale-[1.02]"
+            title="Print Catalogue"
+            aria-label="Print Catalogue"
+            className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl font-semibold shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.98] px-2 sm:px-3"
           >
-            <Printer className="h-4 w-4 mr-1.5" />
-            <span>Print Catalogue</span>
+            <Printer className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Print Catalogue</span>
           </Button>
         </div>
       </div>
 
       {/* ── SCREEN STATS BAR (Hidden when printing) ──────────────────────── */}
       {stats && !isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 print:hidden">
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-primary/25 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary-light" />
+        <div className="hidden sm:grid sm:grid-cols-3 gap-3 md:gap-4 print:hidden">
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
               <Package className="h-5 w-5 text-primary" />
             </div>
@@ -634,10 +660,10 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-emerald-500/25 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-400" />
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <Camera className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <Camera className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">With Photos</p>
@@ -645,14 +671,14 @@ export default function Catalogue() {
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-violet-500/25 group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 to-violet-400" />
-            <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-              <TrendingUp className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Highest Price</p>
-              <p className="text-lg font-extrabold mt-1.5 truncate text-primary dark:text-violet-400">
+              <p className="text-lg font-extrabold mt-1.5 truncate text-primary">
                 {formatCurrency(stats.maxPrice)}
               </p>
             </div>
@@ -663,26 +689,35 @@ export default function Catalogue() {
       {/* ── SEARCH & FILTER CONTROLS (Hidden when printing) ───────────────── */}
       <div className="space-y-3 print:hidden">
         <div className="flex flex-col sm:flex-row gap-2.5">
-          {/* Search Bar */}
+          {/* Search Bar (No icon as requested) */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
               id="catalogue-search"
               placeholder="Search by product title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-card/65 backdrop-blur-xs pl-9.5 h-10 border-border/60 focus-visible:ring-primary/20 rounded-xl"
+              className="bg-card/65 backdrop-blur-xs px-3.5 h-11 sm:h-10 border-border/60 focus-visible:ring-primary/20 rounded-xl text-sm"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 min-h-[32px] min-w-[32px] rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <div className="flex gap-2 justify-end">
             {/* View toggle */}
-            <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5 h-10">
+            <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5 h-11 sm:h-10">
               <button
                 id="view-grid-btn"
                 title="Grid view"
                 onClick={() => setView("grid")}
-                className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                className={`min-h-[36px] sm:min-h-0 min-w-[38px] px-3 py-1.5 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-[0.98] ${
                   view === "grid"
                     ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                     : "text-muted-foreground hover:bg-muted"
@@ -694,7 +729,7 @@ export default function Catalogue() {
                 id="view-list-btn"
                 title="List view"
                 onClick={() => setView("list")}
-                className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                className={`min-h-[36px] sm:min-h-0 min-w-[38px] px-3 py-1.5 rounded-lg flex items-center justify-center transition-all duration-200 active:scale-[0.98] ${
                   view === "list"
                     ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                     : "text-muted-foreground hover:bg-muted"
@@ -709,12 +744,12 @@ export default function Catalogue() {
               id="toggle-filters-btn"
               variant="outline"
               onClick={() => setFiltersOpen((v) => !v)}
-              className={`h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 ${
+              className={`h-11 sm:h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all flex items-center gap-2 active:scale-[0.98] ${
                 filtersOpen ? "border-primary text-primary bg-primary/5" : ""
               }`}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="text-xs font-semibold">Filters</span>
+              <span className="text-xs sm:text-sm font-semibold">Filters</span>
               {hasActiveFilters && (
                 <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
               )}
@@ -725,14 +760,14 @@ export default function Catalogue() {
         {/* Collapsible Filter Panel */}
         {filtersOpen && (
           <div className="rounded-2xl border border-border/40 bg-card/80 p-4 space-y-3.5 shadow-md backdrop-blur-md animate-[fadeIn_0.2s_ease-out] relative">
-            <div className="absolute right-4 top-4">
+            <div className="absolute right-3.5 top-3.5">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setFiltersOpen(false)}
-                className="h-6 w-6 rounded-full hover:bg-muted"
+                className="h-8 w-8 rounded-full hover:bg-muted"
               >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
+                <X className="h-4 w-4 text-muted-foreground" />
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
@@ -745,7 +780,7 @@ export default function Catalogue() {
                   value={sort}
                   onValueChange={(v) => setSort(v as SortKey)}
                 >
-                  <SelectTrigger id="sort-select" className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60">
+                  <SelectTrigger id="sort-select" className="min-h-[40px] text-sm rounded-xl bg-background/50 border-border/60">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -774,7 +809,7 @@ export default function Catalogue() {
                   placeholder="0"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
+                  className="min-h-[40px] text-sm rounded-xl bg-background/50 border-border/60"
                 />
               </div>
 
@@ -790,7 +825,7 @@ export default function Catalogue() {
                   placeholder="Any"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
+                  className="min-h-[40px] text-sm rounded-xl bg-background/50 border-border/60"
                 />
               </div>
 
@@ -804,7 +839,7 @@ export default function Catalogue() {
                   variant={onlyWithImages ? "default" : "outline"}
                   size="sm"
                   onClick={() => setOnlyWithImages((v) => !v)}
-                  className={`w-full h-9.5 text-sm justify-start rounded-xl font-medium ${
+                  className={`w-full min-h-[40px] text-sm justify-start rounded-xl font-medium active:scale-[0.98] ${
                     onlyWithImages
                       ? "bg-primary text-primary-foreground hover:bg-primary/95"
                       : "bg-background/50 hover:bg-muted border-border/60 text-muted-foreground"
@@ -833,7 +868,7 @@ export default function Catalogue() {
                   variant="ghost"
                   size="sm"
                   onClick={clearFilters}
-                  className="text-xs text-muted-foreground h-8 hover:text-foreground font-semibold hover:bg-transparent"
+                  className="text-xs text-muted-foreground min-h-[36px] hover:text-foreground font-semibold hover:bg-transparent"
                 >
                   <X className="h-3.5 w-3.5 mr-1 text-destructive" />
                   Reset all filters
@@ -897,7 +932,7 @@ export default function Catalogue() {
             </p>
           </div>
           {hasActiveFilters && (
-            <Button variant="outline" size="sm" onClick={clearFilters}>
+            <Button variant="outline" size="sm" onClick={clearFilters} className="min-h-[40px] px-4 font-medium">
               Clear filters
             </Button>
           )}
@@ -958,7 +993,7 @@ export default function Catalogue() {
             id="show-more-btn"
             variant="outline"
             onClick={() => setPage((p) => p + 1)}
-            className="w-full sm:w-auto px-6 font-medium"
+            className="w-full sm:w-auto min-h-[44px] px-6 font-medium text-sm rounded-xl active:scale-[0.98]"
           >
             Show more ({filtered.length - paginated.length} remaining)
           </Button>
@@ -968,7 +1003,7 @@ export default function Catalogue() {
       {/* ── PRODUCT QUICK VIEW MODAL (ON-SCREEN) ─────────────────────────── */}
       {selectedItem && (
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-          <DialogContent className="max-w-[92vw] sm:max-w-[85vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl animate-[scaleIn_0.3s_ease-out]">
+          <DialogContent className="max-w-[92vw] sm:max-w-[85vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl">
             <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full max-h-[85vh] md:max-h-[70vh] overflow-y-auto md:overflow-hidden">
               
               {/* Left: Image Container */}
@@ -980,7 +1015,7 @@ export default function Catalogue() {
                     className="h-full w-full object-cover md:absolute md:inset-0"
                   />
                 ) : (
-                  <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-12 md:absolute md:inset-0">
+                  <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 py-12">
                     <ImageOff className="h-16 w-16 opacity-20 text-primary" />
                     <span className="text-xs font-semibold text-muted-foreground/60">No image uploaded</span>
                   </div>
@@ -1004,7 +1039,7 @@ export default function Catalogue() {
               </div>
 
               {/* Right: Info Panel */}
-              <div className="flex flex-col justify-between p-6 md:p-8 space-y-6 md:overflow-y-auto h-full">
+              <div className="flex flex-col justify-between p-5 sm:p-6 md:p-8 space-y-6 md:overflow-y-auto h-full">
                 <div className="space-y-4">
                   <div>
                     <span className="text-[10px] font-bold tracking-wider uppercase text-primary bg-primary/10 border border-primary/10 px-2 py-0.5 rounded-full font-mono">
@@ -1059,7 +1094,7 @@ export default function Catalogue() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-10 rounded-xl hover:bg-primary/5 border-border/80 transition-all font-semibold flex items-center justify-center gap-1.5"
+                    className="flex-1 min-h-[44px] rounded-xl hover:bg-primary/5 border-border/80 transition-all font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98]"
                     onClick={() => {
                       navigator.clipboard.writeText(
                         `${selectedItem["Item Description"]} - ${formatCurrency(
@@ -1074,7 +1109,7 @@ export default function Catalogue() {
                   <Button
                     variant="default"
                     size="sm"
-                    className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all"
+                    className="min-h-[44px] px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all active:scale-[0.98]"
                     onClick={() => setSelectedItem(null)}
                   >
                     Close

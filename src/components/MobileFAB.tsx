@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Menu, X, ChevronUp } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,8 @@ export function MobileFAB({
 }: MobileFABProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const primaryActionRef = useRef(primaryAction);
+  primaryActionRef.current = primaryAction;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -46,12 +48,12 @@ export function MobileFAB({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "N") {
         e.preventDefault();
-        primaryAction.onClick();
+        primaryActionRef.current?.onClick();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [primaryAction]);
+  }, []);
 
   // Don't render on desktop unless there are secondary actions (for Sheet)
   if (!isMobile && !secondaryActions.length) return null;
@@ -127,54 +129,56 @@ export function MobileFAB({
   return (
     <div className={cn(positionClasses[position], "flex flex-col-reverse items-end gap-3")}>
       {/* Secondary actions (speed dial) */}
-      {isOpen && secondaryActions.map((action, i) => (
-        <SheetClose
-          key={i}
-          asChild
-          style={{ transitionDelay: `${50 * (i + 1)}ms` }}
-        >
+      {isOpen &&
+        secondaryActions.map((action, i) => (
           <Button
-            onClick={action.onClick}
+            key={i}
+            onClick={() => {
+              action.onClick();
+              setIsOpen(false);
+            }}
             variant="default"
             size="default"
+            style={{ transitionDelay: `${50 * (i + 1)}ms` }}
             className={cn(
               "flex items-center gap-2 h-11 px-4 rounded-full shadow-lg animate-scale-in",
-              "origin-bottom-right"
+              "origin-bottom-right active:scale-95"
             )}
           >
             <action.icon className="h-5 w-5" />
             <span className="text-sm font-medium whitespace-nowrap">{action.label}</span>
           </Button>
-        </SheetClose>
-      ))}
+        ))}
 
       {/* Main FAB */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button
-            onClick={() => !secondaryActions.length && primaryAction.onClick()}
-            variant="default"
-            size="default"
-            className={cn(
-              "h-14 w-14 rounded-full shadow-xl",
-              "transition-all duration-300 hover:scale-105 active:scale-95",
-              "focus-visible:ring-4 focus-visible:ring-primary/30",
-              "bg-primary text-primary-foreground",
-              secondaryActions.length && "rotate-45",
-              isOpen && secondaryActions.length && "rotate-90"
-            )}
-            aria-label={secondaryActions.length ? "Open quick actions" : primaryAction.label}
-            aria-expanded={isOpen}
-            data-tour={tourId}
-          >
-            {isOpen && secondaryActions.length ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <primaryAction.icon className="h-6 w-6" />
-            )}
-          </Button>
-        </SheetTrigger>
-      </Sheet>
+      <Button
+        onClick={() => {
+          if (secondaryActions.length) {
+            setIsOpen((prev) => !prev);
+          } else {
+            primaryAction.onClick();
+          }
+        }}
+        variant="default"
+        size="default"
+        className={cn(
+          "h-14 w-14 rounded-full shadow-xl",
+          "transition-all duration-300 hover:scale-105 active:scale-95",
+          "focus-visible:ring-4 focus-visible:ring-primary/30",
+          "bg-primary text-primary-foreground",
+          secondaryActions.length && "transition-transform",
+          isOpen && secondaryActions.length && "rotate-90"
+        )}
+        aria-label={secondaryActions.length ? "Toggle quick actions menu" : primaryAction.label}
+        aria-expanded={isOpen}
+        data-tour={tourId}
+      >
+        {isOpen && secondaryActions.length ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <primaryAction.icon className="h-6 w-6" />
+        )}
+      </Button>
     </div>
   );
 }
