@@ -306,6 +306,13 @@ export default function Catalogue() {
   // Selected item for preview modal
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
+  // Share link builder state
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareAll, setShareAll] = useState(true);
+  const [shareIds, setShareIds] = useState<number[]>([]);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareCopied, setShareCopied] = useState(false);
+
   // View & pagination state
   const [view, setView] = useState<ViewMode>(() => {
     try {
