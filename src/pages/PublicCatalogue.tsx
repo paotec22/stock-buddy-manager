@@ -277,7 +277,10 @@ export default function PublicCatalogue() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const qs = `?location=${encodeURIComponent(location)}`;
+    const sharedIds = new URLSearchParams(window.location.search).get("ids");
+    const qs =
+      `?location=${encodeURIComponent(location)}` +
+      (sharedIds ? `&ids=${encodeURIComponent(sharedIds)}` : "");
     fetch(`${SUPABASE_URL}/functions/v1/public-catalogue${qs}`, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
