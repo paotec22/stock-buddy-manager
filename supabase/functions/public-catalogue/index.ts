@@ -15,11 +15,20 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url)
+    const idsParam = url.searchParams.get('ids')
+    const ids = (idsParam ?? '')
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n) && n > 0)
+
     let q = supabase
       .from('inventory list')
       .select('id, "Item Description", Price, Quantity, location, image_url, features')
       .eq('location', 'Ikeja')
       .order('Item Description', { ascending: true })
+
+    if (ids.length > 0) q = q.in('id', ids)
 
     const { data, error } = await q
     if (error) throw error
