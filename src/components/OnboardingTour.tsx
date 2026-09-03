@@ -172,41 +172,20 @@ export function OnboardingTour() {
             skipBeacon: true,
           },
         ]}
-<<<<<<< HEAD
         onEvent={handleEvent}
         options={{
           showProgress: true,
           buttons: ["back", "close", "primary", "skip"],
           primaryColor: "hsl(var(--primary))",
           zIndex: 100,
-=======
-        run={true}
-        continuous={true}
-        options={{
-          buttons: ["skip", "back", "primary"],
-        }}
-        onEvent={(event) => {
-          if (
-            event.type === EVENTS.TOUR_END ||
-            event.status === STATUS.SKIPPED ||
-            event.status === STATUS.FINISHED
-          ) {
-            localStorage.setItem(TOUR_COMPLETED_KEY, "true");
-            setRunTour(false);
-          }
->>>>>>> 6437003ddf90ff5b4211acf3d2d68c70a620b7c1
         }}
         styles={{
           tooltip: {
             padding: "1.5rem",
             borderRadius: "1rem",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-<<<<<<< HEAD
             background: "hsl(var(--card))",
             border: "1px solid hsl(var(--border))",
-=======
-            backgroundColor: "hsl(var(--card))",
->>>>>>> 6437003ddf90ff5b4211acf3d2d68c70a620b7c1
           },
         }}
         locale={{
