@@ -306,6 +306,13 @@ export default function Catalogue() {
   // Selected item for preview modal
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
+  // Share link builder state
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareAll, setShareAll] = useState(true);
+  const [shareIds, setShareIds] = useState<number[]>([]);
+  const [shareSearch, setShareSearch] = useState("");
+  const [shareCopied, setShareCopied] = useState(false);
+
   // View & pagination state
   const [view, setView] = useState<ViewMode>(() => {
     try {
@@ -487,8 +494,14 @@ export default function Catalogue() {
     setSigned(await getInventoryImageUrls(paths));
   }, [items]);
 
+  const shareLink = useMemo(() => {
+    const base = `${window.location.origin}/share/catalogue`;
+    if (shareAll || shareIds.length === 0) return base;
+    return `${base}?ids=${shareIds.join(",")}`;
+  }, [shareAll, shareIds]);
+
   const handleShare = useCallback(async () => {
-    const link = `${window.location.origin}/share/catalogue`;
+    const link = shareLink;
     try {
       if (navigator.share) {
         await navigator.share({ title: "Product Catalogue", url: link });
@@ -500,7 +513,7 @@ export default function Catalogue() {
       await navigator.clipboard.writeText(link);
       toast.success("Share link copied to clipboard");
     }
-  }, []);
+  }, [shareLink]);
 
   const handlePrint = useCallback(() => {
     const originalTitle = document.title;
@@ -623,7 +636,7 @@ export default function Catalogue() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleShare}
+            onClick={() => setShareOpen(true)}
             title="Share Catalogue Link"
             aria-label="Share Catalogue Link"
             className="flex-1 sm:flex-initial min-h-[40px] sm:min-h-0 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 transition-all font-medium active:scale-[0.98] px-2 sm:px-3"
@@ -1000,6 +1013,143 @@ export default function Catalogue() {
         </div>
       )}
 
+      {/* ── SHARE LINK BUILDER ───────────────────────────────────────────── */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="max-w-[92vw] sm:max-w-lg rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Share catalogue</DialogTitle>
+            <DialogDescription>
+              Share the whole catalogue or pick only the products you want the
+              recipient to see.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2">
+            <Button
+              variant={shareAll ? "default" : "outline"}
+              size="sm"
+              className="flex-1 rounded-xl"
+              onClick={() => setShareAll(true)}
+            >
+              All products
+            </Button>
+            <Button
+              variant={!shareAll ? "default" : "outline"}
+              size="sm"
+              className="flex-1 rounded-xl"
+              onClick={() => setShareAll(false)}
+            >
+              Selected only
+            </Button>
+          </div>
+
+          {!shareAll && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={shareSearch}
+                  onChange={(e) => setShareSearch(e.target.value)}
+                  placeholder="Search products..."
+                  className="h-9 rounded-xl"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() =>
+                    setShareIds(
+                      shareIds.length === items.length
+                        ? []
+                        : items.map((i) => i.id as number)
+                    )
+                  }
+                >
+                  {shareIds.length === items.length ? "None" : "All"}
+                </Button>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto rounded-xl border border-border/60 divide-y divide-border/40">
+                {items
+                  .filter((i) =>
+                    (i["Item Description"] || "")
+                      .toLowerCase()
+                      .includes(shareSearch.toLowerCase())
+                  )
+                  .map((i) => {
+                    const id = i.id as number;
+                    const checked = shareIds.includes(id);
+                    return (
+                      <label
+                        key={id}
+                        className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted/40"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() =>
+                            setShareIds((prev) =>
+                              checked
+                                ? prev.filter((x) => x !== id)
+                                : [...prev, id]
+                            )
+                          }
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <span className="flex-1 truncate">
+                          {i["Item Description"]}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatCurrency(i.Price || 0)}
+                        </span>
+                      </label>
+                    );
+                  })}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                {shareIds.length} product(s) selected
+              </p>
+            </div>
+          )}
+
+          <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs break-all text-muted-foreground">
+            {shareLink}
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl"
+              disabled={!shareAll && shareIds.length === 0}
+              onClick={async () => {
+                await navigator.clipboard.writeText(shareLink);
+                setShareCopied(true);
+                toast.success("Share link copied");
+                setTimeout(() => setShareCopied(false), 2000);
+              }}
+            >
+              {shareCopied ? (
+                <Check className="h-4 w-4 mr-1.5" />
+              ) : (
+                <Copy className="h-4 w-4 mr-1.5" />
+              )}
+              Copy link
+            </Button>
+            <Button
+              className="flex-1 rounded-xl"
+              disabled={!shareAll && shareIds.length === 0}
+              onClick={() => {
+                handleShare();
+                setShareOpen(false);
+              }}
+            >
+              <Share2 className="h-4 w-4 mr-1.5" />
+              Share
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* ── PRODUCT QUICK VIEW MODAL (ON-SCREEN) ─────────────────────────── */}
       {selectedItem && (
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
@@ -1125,7 +1275,7 @@ export default function Catalogue() {
         primaryAction={{
           label: "Share",
           icon: ShareIcon,
-          onClick: handleShare,
+          onClick: () => setShareOpen(true),
           shortcut: "⌘S",
         }}
         secondaryActions={[
