@@ -18,8 +18,6 @@ interface InvoiceHeaderProps {
   onInvoiceNumberChange: (value: string) => void;
   invoiceDate: Date;
   onInvoiceDateChange: (date: Date) => void;
-  dueDate: Date;
-  onDueDateChange: (date: Date) => void;
   onReset?: () => void;
 }
 
@@ -33,8 +31,6 @@ export const InvoiceHeader = ({
   onInvoiceNumberChange,
   invoiceDate,
   onInvoiceDateChange,
-  dueDate,
-  onDueDateChange,
   onReset
 }: InvoiceHeaderProps) => {
   const handleGenerateNewNumber = () => {
@@ -65,16 +61,13 @@ export const InvoiceHeader = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight">
-                Invoice Generator
+                Invoice
               </h1>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                 <FileCheck className="h-3 w-3" />
                 Active Draft
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Create, preview, save, and print customer bills & receipts
-            </p>
           </div>
         </div>
 
@@ -92,7 +85,7 @@ export const InvoiceHeader = ({
       </div>
 
       {/* Invoice Meta Controls Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-muted/30 p-3.5 rounded-lg border border-border/50">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/30 p-3.5 rounded-lg border border-border/50">
         {/* Invoice Number */}
         <div>
           <Label htmlFor="inv-no" className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1">
@@ -140,32 +133,6 @@ export const InvoiceHeader = ({
                 mode="single"
                 selected={invoiceDate}
                 onSelect={(d) => d && onInvoiceDateChange(d)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        {/* Payment Due Date */}
-        <div>
-          <Label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1">
-            <CalendarIcon className="h-3.5 w-3.5 text-amber-500" />
-            Payment Due Date
-          </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full h-9 justify-start text-left font-normal text-xs sm:text-sm bg-background"
-              >
-                {dueDate ? format(dueDate, "dd/MM/yyyy") : "Select due date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dueDate}
-                onSelect={(d) => d && onDueDateChange(d)}
                 initialFocus
               />
             </PopoverContent>

@@ -59,6 +59,21 @@ export const InvoiceItemsTable = ({
     amount: 0
   });
 
+  const [enableNotes, setEnableNotes] = useState(Boolean(notes && notes.trim() !== ""));
+
+  useEffect(() => {
+    if (notes && notes.trim() !== "") {
+      setEnableNotes(true);
+    }
+  }, [notes]);
+
+  const handleToggleNotes = (enabled: boolean) => {
+    setEnableNotes(enabled);
+    if (!enabled) {
+      onNotesChange?.("");
+    }
+  };
+
   useEffect(() => {
     const amount = (newItem.quantity || 0) * (newItem.unit_price || 0);
     setNewItem(prev => ({ ...prev, amount }));
@@ -388,21 +403,42 @@ export const InvoiceItemsTable = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left Column: Notes & Terms */}
         <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-xs">
-          <Label htmlFor="notes" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-            <Receipt className="h-4 w-4 text-primary" />
-            Terms & Payment Instructions / Notes
-          </Label>
-          <Textarea
-            id="notes"
-            rows={4}
-            placeholder="e.g. Payment due within 14 days. Goods received in good condition are non-refundable."
-            value={notes}
-            onChange={(e) => onNotesChange?.(e.target.value)}
-            className="text-xs sm:text-sm bg-background resize-none"
-          />
-          <p className="text-[11px] text-muted-foreground">
-            These terms will appear at the bottom of the invoice document.
-          </p>
+          <div className="flex items-center justify-between border-b pb-2.5">
+            <Label htmlFor="enable-notes-toggle" className="text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer">
+              <Receipt className="h-4 w-4 text-primary" />
+              Terms & Payment Instructions / Notes
+            </Label>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground font-medium">
+                {enableNotes ? "Enabled" : "Disabled"}
+              </span>
+              <Switch
+                id="enable-notes-toggle"
+                checked={enableNotes}
+                onCheckedChange={handleToggleNotes}
+              />
+            </div>
+          </div>
+
+          {enableNotes ? (
+            <div className="space-y-2 pt-1">
+              <Textarea
+                id="notes"
+                rows={4}
+                placeholder="e.g. Payment due within 14 days. Goods received in good condition are non-refundable."
+                value={notes}
+                onChange={(e) => onNotesChange?.(e.target.value)}
+                className="text-xs sm:text-sm bg-background resize-none"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                These terms will appear at the bottom of the invoice document.
+              </p>
+            </div>
+          ) : (
+            <div className="py-4 text-center border border-dashed rounded-lg bg-muted/20 text-muted-foreground text-xs">
+              <span>Optional: Toggle switch above to include payment instructions or notes.</span>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Calculations & Controls */}

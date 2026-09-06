@@ -140,8 +140,6 @@ const CreateInvoice = () => {
         onInvoiceNumberChange={setInvoiceNumber}
         invoiceDate={invoiceDate}
         onInvoiceDateChange={setInvoiceDate}
-        dueDate={dueDate}
-        onDueDateChange={setDueDate}
         onReset={handleResetForm}
       />
 
