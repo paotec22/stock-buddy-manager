@@ -32,7 +32,7 @@ export function PaymentStatusBadge({ status, className }: PaymentStatusBadgeProp
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border tabular-nums transition-colors",
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border tabular-nums whitespace-nowrap transition-colors",
         c.style,
         className
       )}

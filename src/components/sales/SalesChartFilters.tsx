@@ -22,11 +22,11 @@ export function SalesChartFilters({ filters, onFiltersChange, availableLocations
   };
 
   return (
-    <div className="flex flex-wrap gap-4 p-4 bg-muted/30 rounded-lg border">
+    <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/30 rounded-xl border border-border">
       {/* Chart Type Selector */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-muted-foreground">Chart Type</label>
-        <div className="flex rounded-lg border bg-background p-1">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Chart Type</label>
+        <div className="flex rounded-lg border bg-background p-0.5">
           {(['bar', 'line', 'pie'] as const).map((type) => {
             const Icon = chartTypeIcons[type];
             return (
@@ -35,10 +35,10 @@ export function SalesChartFilters({ filters, onFiltersChange, availableLocations
                 variant={filters.chartType === type ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onFiltersChange({ ...filters, chartType: type })}
-                className="flex items-center gap-2"
+                className="h-8 px-2 sm:px-3 flex items-center gap-1.5 text-xs"
               >
-                <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline capitalize">{type}</span>
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="capitalize">{type}</span>
               </Button>
             );
           })}
@@ -46,16 +46,16 @@ export function SalesChartFilters({ filters, onFiltersChange, availableLocations
       </div>
 
       {/* Time Period Selector */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-muted-foreground">Time Period</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Time Period</label>
         <Select 
           value={filters.timePeriod} 
           onValueChange={(value: ChartFilters['timePeriod']) => 
             onFiltersChange({ ...filters, timePeriod: value })
           }
         >
-          <SelectTrigger className="w-32">
-            <Calendar className="h-4 w-4 mr-2" />
+          <SelectTrigger className="w-[125px] sm:w-32 h-8 text-xs bg-background">
+            <Calendar className="h-3.5 w-3.5 mr-1.5 shrink-0" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -68,16 +68,16 @@ export function SalesChartFilters({ filters, onFiltersChange, availableLocations
       </div>
 
       {/* Location Filter */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-muted-foreground">Location</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Location</label>
         <Select 
           value={filters.location} 
           onValueChange={(value: ChartFilters['location']) => 
             onFiltersChange({ ...filters, location: value })
           }
         >
-          <SelectTrigger className="w-32">
-            <MapPin className="h-4 w-4 mr-2" />
+          <SelectTrigger className="w-[125px] sm:w-32 h-8 text-xs bg-background">
+            <MapPin className="h-3.5 w-3.5 mr-1.5 shrink-0" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

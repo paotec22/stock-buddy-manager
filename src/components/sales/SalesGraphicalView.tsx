@@ -5,6 +5,7 @@ import { format, parseISO, startOfMonth, endOfMonth, startOfQuarter, endOfQuarte
 import { SalesChartFilters, ChartFilters } from "./SalesChartFilters";
 import { formatCurrency } from "@/utils/formatters";
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Sale {
   id: string;
@@ -23,6 +24,7 @@ interface SalesGraphicalViewProps {
 }
 
 export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGraphicalViewProps) {
+  const isMobile = useIsMobile();
   // Get unique locations
   const availableLocations = Array.from(new Set(sales.map(sale => sale.location))).filter(Boolean);
 
@@ -116,18 +118,20 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
     }
   };
 
+  const chartHeight = isMobile ? 280 : 380;
+
   const renderChart = () => {
     if (filters.chartType === 'pie') {
       return (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, value }) => `${name}: ${formatCurrency(value as number)}`}
-              outerRadius={120}
+              label={isMobile ? undefined : ({ name, value }) => `${name}: ${formatCurrency(value as number)}`}
+              outerRadius={isMobile ? 85 : 120}
               fill="hsl(var(--primary))"
               dataKey="value"
             >
@@ -148,18 +152,19 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
       );
     } else if (filters.chartType === 'line') {
       return (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis 
               dataKey="month" 
               stroke="hsl(var(--muted-foreground))"
-              fontSize={12}
+              fontSize={11}
             />
             <YAxis 
               tickFormatter={(value) => formatCurrency(value)}
               stroke="hsl(var(--muted-foreground))"
-              fontSize={12}
+              fontSize={11}
+              width={isMobile ? 65 : 80}
             />
             <Tooltip 
               formatter={(value, name) => [formatCurrency(value as number), name]}
@@ -177,8 +182,8 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
                 dataKey={location}
                 stroke={chartColors[index % chartColors.length]}
                 strokeWidth={3}
-                dot={{ fill: chartColors[index % chartColors.length], strokeWidth: 2, r: 5 }}
-                activeDot={{ r: 7 }}
+                dot={{ fill: chartColors[index % chartColors.length], strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6 }}
               />
             ))}
           </LineChart>
@@ -186,18 +191,19 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
       );
     } else {
       return (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis 
               dataKey="month" 
               stroke="hsl(var(--muted-foreground))"
-              fontSize={12}
+              fontSize={11}
             />
             <YAxis 
               tickFormatter={(value) => formatCurrency(value)}
               stroke="hsl(var(--muted-foreground))"
-              fontSize={12}
+              fontSize={11}
+              width={isMobile ? 65 : 80}
             />
             <Tooltip 
               formatter={(value, name) => [formatCurrency(value as number), name]}
@@ -213,7 +219,7 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
                 key={location}
                 dataKey={location}
                 fill={chartColors[index % chartColors.length]}
-                radius={[8, 8, 0, 0]}
+                radius={[6, 6, 0, 0]}
               />
             ))}
           </BarChart>
@@ -223,7 +229,7 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Filters */}
       <SalesChartFilters
         filters={filters}
@@ -232,68 +238,72 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
       />
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <Card className="p-3 sm:p-5">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total Sales</span>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalSales)}</div>
-            <p className="text-xs text-muted-foreground">
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+              {formatCurrency(totalSales)}
+            </div>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
               {filteredSales.length} transactions
             </p>
-          </CardContent>
+          </div>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Sale</CardTitle>
+        <Card className="p-3 sm:p-5">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">Average Sale</span>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(averageSale)}</div>
-            <p className="text-xs text-muted-foreground">
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+              {formatCurrency(averageSale)}
+            </div>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
               per transaction
             </p>
-          </CardContent>
+          </div>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Quantity</CardTitle>
+        <Card className="p-3 sm:p-5">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total Quantity</span>
             <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalQuantity.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+              {totalQuantity.toLocaleString()}
+            </div>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
               items sold
             </p>
-          </CardContent>
+          </div>
         </Card>
       </div>
 
       {/* Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="p-3 sm:p-5">
+        <div className="pb-3 sm:pb-4">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2">
             {filters.chartType === 'pie' ? 'Sales by Location' : 'Sales Over Time'}
-            <span className="text-sm font-normal text-muted-foreground">
+            <span className="text-xs sm:text-sm font-normal text-muted-foreground">
               ({filters.timePeriod === 'all' ? 'All Time' : `${filters.timePeriod.charAt(0).toUpperCase() + filters.timePeriod.slice(1)}`})
             </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig}>
-            {chartData.length > 0 ? (
-              renderChart()
-            ) : (
-              <div className="flex items-center justify-center h-64 text-muted-foreground">
-                No data available for the selected filters
-              </div>
-            )}
-          </ChartContainer>
-        </CardContent>
+          </h3>
+        </div>
+        <ChartContainer config={chartConfig}>
+          {chartData.length > 0 ? (
+            renderChart()
+          ) : (
+            <div className="flex items-center justify-center h-48 sm:h-64 text-xs sm:text-sm text-muted-foreground">
+              No data available for the selected filters
+            </div>
+          )}
+        </ChartContainer>
       </Card>
     </div>
   );

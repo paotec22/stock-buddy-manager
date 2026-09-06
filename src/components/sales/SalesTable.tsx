@@ -198,34 +198,83 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
           ))}
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-3 text-sm text-muted-foreground border-t border-border mt-3">
-            <span>
-              {startIndex + 1}–{endIndex} of {sortedSales.length}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0"
-                disabled={validCurrentPage <= 1}
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-xs font-medium px-1">
-                {validCurrentPage} / {totalPages}
+        {/* Mobile Pagination */}
+        {sortedSales.length > 0 && (
+          <div className="flex flex-col gap-2.5 pt-3 text-xs text-muted-foreground border-t border-border mt-3">
+            <div className="flex items-center justify-between">
+              <span>
+                Showing <strong className="text-foreground font-mono tabular-nums">{startIndex + 1}–{endIndex}</strong> of <strong className="text-foreground font-mono tabular-nums">{sortedSales.length}</strong>
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0"
-                disabled={validCurrentPage >= totalPages}
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-muted-foreground">Rows:</span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(val) => {
+                    setPageSize(Number(val));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-7 w-[64px] text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-1 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={validCurrentPage <= 1}
+                  onClick={() => setCurrentPage(1)}
+                  title="First page"
+                >
+                  <ChevronsLeft className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2.5 text-xs gap-1"
+                  disabled={validCurrentPage <= 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span>Prev</span>
+                </Button>
+
+                <span className="text-xs font-mono font-medium px-2 tabular-nums">
+                  {validCurrentPage} / {totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2.5 text-xs gap-1"
+                  disabled={validCurrentPage >= totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={validCurrentPage >= totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                  title="Last page"
+                >
+                  <ChevronsRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

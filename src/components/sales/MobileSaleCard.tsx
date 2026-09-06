@@ -105,10 +105,10 @@ export function MobileSaleCard({
               )}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1 ml-2">
-            <Badge variant="secondary" className="shrink-0">
+          <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
+            <span className="font-bold font-mono text-sm sm:text-base text-foreground tabular-nums">
               {formatCurrency(sale.total_amount)}
-            </Badge>
+            </span>
             <PaymentStatusBadge status={sale.payment_status} />
           </div>
         </div>

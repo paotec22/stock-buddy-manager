@@ -37,11 +37,11 @@ const SalesHeader = ({
   totalSalesCount: number;
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-border/60">
       <div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Sales Operations</h1>
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary font-mono tabular-nums">
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary font-mono tabular-nums">
             {totalSalesCount} {totalSalesCount === 1 ? 'record' : 'records'}
           </span>
         </div>
@@ -58,7 +58,7 @@ const SalesHeader = ({
         <Button 
           onClick={onAddSale} 
           size="sm" 
-          className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium h-9 text-xs sm:text-sm px-3.5"
+          className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium h-9 text-xs sm:text-sm px-3 sm:px-3.5"
         >
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           <span>Record Sale</span>
@@ -68,10 +68,11 @@ const SalesHeader = ({
           onClick={onBulkUpload} 
           variant="outline" 
           size="sm" 
-          className="h-9 text-xs sm:text-sm px-3 bg-background border-border hover:bg-muted"
+          className="h-9 text-xs sm:text-sm px-2.5 sm:px-3 bg-background border-border hover:bg-muted"
         >
           <Upload className="mr-1.5 h-3.5 w-3.5" />
-          <span>Bulk Upload</span>
+          <span className="hidden xs:inline sm:inline">Bulk </span>
+          <span>Upload</span>
         </Button>
 
         <Button 
@@ -215,7 +216,7 @@ const Sales = () => {
 
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
-      <div className="space-y-5 animate-fade-in pb-10">
+      <div className="space-y-4 sm:space-y-5 animate-fade-in pb-20 sm:pb-10">
         <SalesHeader 
           onAddSale={() => setShowAddSale(true)}
           onBulkUpload={() => setShowBulkUpload(true)}
