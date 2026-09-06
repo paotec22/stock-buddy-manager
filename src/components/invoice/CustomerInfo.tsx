@@ -1,14 +1,19 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CustomerSelector, type CustomerLite } from "@/components/customers/CustomerSelector";
+import { User, Phone, MapPin, Mail, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerInfoProps {
   customerName: string;
   customerPhone: string;
+  customerAddress?: string;
+  customerEmail?: string;
   onNameChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
+  onAddressChange?: (value: string) => void;
+  onEmailChange?: (value: string) => void;
   selectedCustomerId?: string | null;
   onCustomerSelect?: (customer: CustomerLite | null) => void;
 }
@@ -16,8 +21,12 @@ interface CustomerInfoProps {
 export const CustomerInfo = ({
   customerName,
   customerPhone,
+  customerAddress = "",
+  customerEmail = "",
   onNameChange,
   onPhoneChange,
+  onAddressChange,
+  onEmailChange,
   selectedCustomerId,
   onCustomerSelect,
 }: CustomerInfoProps) => {
@@ -26,35 +35,108 @@ export const CustomerInfo = ({
     if (c) {
       onNameChange(c.name);
       onPhoneChange(c.phone ?? "");
+      if (onAddressChange && c.address) {
+        onAddressChange(c.address);
+      }
+      if (onEmailChange && c.email) {
+        onEmailChange(c.email);
+      }
     }
   };
 
+  const handleClear = () => {
+    onCustomerSelect?.(null);
+    onNameChange("");
+    onPhoneChange("");
+    if (onAddressChange) onAddressChange("");
+    if (onEmailChange) onEmailChange("");
+  };
+
   return (
-    <Card className="mb-6 print:shadow-none">
-      <CardContent className="p-6 space-y-4">
+    <Card className="border border-border/80 shadow-xs print:shadow-none print:border-none">
+      <CardContent className="p-4 sm:p-5 space-y-4">
         {onCustomerSelect && (
-          <div className="print:hidden">
-            <Label className="mb-1.5 block">Select existing customer (optional)</Label>
+          <div className="print:hidden space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Select Existing Customer (Optional)
+              </Label>
+              {(customerName || customerPhone) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  className="h-6 text-xs text-muted-foreground hover:text-destructive px-1.5"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear Fields
+                </Button>
+              )}
+            </div>
             <CustomerSelector value={selectedCustomerId ?? null} onChange={handleSelect} />
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Name */}
           <div>
-            <Label htmlFor="customerName">Invoice to:</Label>
+            <Label htmlFor="customerName" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
+              <User className="h-3.5 w-3.5 text-primary" />
+              Customer Name <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="customerName"
+              placeholder="e.g. Acme Corp / John Doe"
               value={customerName}
               onChange={(e) => onNameChange(e.target.value)}
-              className="mt-1"
+              className="h-9 text-xs sm:text-sm bg-background"
             />
           </div>
+
+          {/* Phone */}
           <div>
-            <Label htmlFor="customerPhone">Phone Number</Label>
+            <Label htmlFor="customerPhone" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
+              <Phone className="h-3.5 w-3.5 text-primary" />
+              Phone Number
+            </Label>
             <Input
               id="customerPhone"
+              placeholder="e.g. 08012345678"
               value={customerPhone}
               onChange={(e) => onPhoneChange(e.target.value)}
-              className="mt-1"
+              className="h-9 text-xs sm:text-sm bg-background font-mono"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <Label htmlFor="customerEmail" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
+              <Mail className="h-3.5 w-3.5 text-primary" />
+              Email Address
+            </Label>
+            <Input
+              id="customerEmail"
+              type="email"
+              placeholder="e.g. client@example.com"
+              value={customerEmail}
+              onChange={(e) => onEmailChange?.(e.target.value)}
+              className="h-9 text-xs sm:text-sm bg-background"
+            />
+          </div>
+
+          {/* Billing Address */}
+          <div>
+            <Label htmlFor="customerAddress" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+              Billing Address
+            </Label>
+            <Input
+              id="customerAddress"
+              placeholder="e.g. 12 Marina St, Victoria Island"
+              value={customerAddress}
+              onChange={(e) => onAddressChange?.(e.target.value)}
+              className="h-9 text-xs sm:text-sm bg-background"
             />
           </div>
         </div>
