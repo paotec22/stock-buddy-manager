@@ -1,41 +1,60 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { format } from "date-fns";
 import { formatCurrency } from "@/utils/formatters";
 import { currencies } from "@/components/invoice/CurrencyChanger";
-import { SearchInput } from "@/components/ui/search-input";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { ProfitLoadingState } from "@/components/profit/ProfitLoadingState";
-
-interface SaleWithProfit {
-  item_name: string;
-  total_quantity: number;
-  avg_sale_price: number;
-  avg_purchase_price: number;
-  total_sale_amount: number;
-  total_purchase_amount: number;
-  profit_per_item: number;
-  total_profit: number;
-  location: string;
-  sale_ids: string[];
-}
+import { ProfitFilterToolbar } from "@/components/profit/ProfitFilterToolbar";
+import { ProfitExecutiveCards } from "@/components/profit/ProfitExecutiveCards";
+import { ProfitCostAlertBanner } from "@/components/profit/ProfitCostAlertBanner";
+import { ProfitCashVsAccrualCard } from "@/components/profit/ProfitCashVsAccrualCard";
+import { ProfitExpensesBreakdown } from "@/components/profit/ProfitExpensesBreakdown";
+import { ProfitProductTable } from "@/components/profit/ProfitProductTable";
+import { SetCostModal } from "@/components/profit/SetCostModal";
+import {
+  type TimeRangePreset,
+  type DateRange,
+  type SaleItemData,
+  type ExpenseItemData,
+  type ProductProfitRow,
+  getDateRangeFromPreset,
+  computeProfitAnalysis,
+  getItemCostCache,
+  setItemCostCache,
+} from "@/utils/profitUtils";
+import { TrendingUp, FileSpreadsheet, ShieldAlert } from "lucide-react";
 
 const ProfitAnalysis = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [editingPrices, setEditingPrices] = useState<Record<string, number>>({});
-  const { session, loading } = useAuth();
-  const navigate = useNavigate();
+  const { session } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: salesWithProfit = [], isLoading: salesLoading } = useQuery({
-    queryKey: ['salesWithProfit'],
+  // Filter States
+  const [preset, setPreset] = useState<TimeRangePreset>("this_month");
+  const [customRange, setCustomRange] = useState<DateRange>({});
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
+  const [tableTab, setTableTab] = useState<string>("all");
+
+  // Cost Modal State
+  const [selectedProductForCost, setSelectedProductForCost] = useState<ProductProfitRow | null>(null);
+  const [isCostModalOpen, setIsCostModalOpen] = useState<boolean>(false);
+
+  // Cost Cache state
+  const [costCache, setCostCache] = useState<Record<string, number>>(() => getItemCostCache());
+
+  // 1. Fetch Sales Data with Inventory Relations
+  const {
+    data: rawSales = [],
+    isLoading: salesLoading,
+    isFetching: salesFetching,
+    refetch: refetchSales,
+  } = useQuery({
+    queryKey: ["salesForProfit"],
     queryFn: async () => {
-      const { data: salesData, error } = await supabase
-        .from('sales')
+      const { data, error } = await supabase
+        .from("sales")
         .select(`
           id,
           quantity,
@@ -44,193 +63,293 @@ const ProfitAnalysis = () => {
           sale_date,
           actual_purchase_price,
           item_id,
+          payment_status,
+          amount_paid,
+          customer_id,
+          notes,
           "inventory list" (
+            id,
             "Item Description",
-            "Price",
+            Price,
             location
           )
         `)
-        .order('sale_date', { ascending: false });
+        .order("sale_date", { ascending: false });
 
-      if (error) throw error;
-
-      const groupedSales: Record<string, SaleWithProfit> = {};
-
-      (salesData || []).forEach((sale: any) => {
-        const itemName = sale["inventory list"]?.["Item Description"] || "Unknown Item";
-        const location = sale["inventory list"]?.location || "Unknown Location";
-        const key = `${itemName}-${location}`;
-        const purchasePrice = sale.actual_purchase_price || sale["inventory list"]?.Price || 0;
-        
-        if (!groupedSales[key]) {
-          groupedSales[key] = {
-            item_name: itemName, total_quantity: 0, avg_sale_price: 0,
-            avg_purchase_price: 0, total_sale_amount: 0, total_purchase_amount: 0,
-            profit_per_item: 0, total_profit: 0, location, sale_ids: []
-          };
-        }
-
-        const group = groupedSales[key];
-        group.total_quantity += sale.quantity;
-        group.total_sale_amount += sale.total_amount;
-        group.total_purchase_amount += sale.quantity * purchasePrice;
-        group.sale_ids.push(sale.id);
-      });
-
-      return Object.values(groupedSales).map(group => {
-        group.avg_sale_price = group.total_sale_amount / group.total_quantity;
-        group.avg_purchase_price = group.total_purchase_amount / group.total_quantity;
-        group.profit_per_item = group.avg_sale_price - group.avg_purchase_price;
-        group.total_profit = group.total_sale_amount - group.total_purchase_amount;
-        return group;
-      });
+      if (error) {
+        console.error("Error fetching sales for profit:", error);
+        throw error;
+      }
+      return (data || []) as SaleItemData[];
     },
-    enabled: !!session
+    enabled: !!session,
   });
 
-  const { data: totalExpenses = 0, isLoading: expensesLoading } = useQuery({
-    queryKey: ['totalExpenses'],
+  // 2. Fetch Operating Expenses
+  const {
+    data: rawExpenses = [],
+    isLoading: expensesLoading,
+    isFetching: expensesFetching,
+    refetch: refetchExpenses,
+  } = useQuery({
+    queryKey: ["expensesForProfit"],
     queryFn: async () => {
-      const { data: expensesData, error } = await supabase
-        .from('expenses')
-        .select('amount');
-      if (error) throw error;
-      return (expensesData || []).reduce((sum, expense) => sum + Number(expense.amount), 0);
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .order("expense_date", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching expenses for profit:", error);
+        throw error;
+      }
+      return (data || []) as ExpenseItemData[];
     },
-    enabled: !!session
+    enabled: !!session,
   });
 
-  const updatePurchasePriceMutation = useMutation({
-    mutationFn: async ({ saleIds, newPrice }: { saleIds: string[], newPrice: number }) => {
-      const { error } = await supabase
-        .from('sales')
-        .update({ actual_purchase_price: newPrice })
-        .in('id', saleIds);
-      if (error) throw error;
+  // 3. Compute Date Range from Preset
+  const dateRange = useMemo(() => {
+    return getDateRangeFromPreset(preset, customRange);
+  }, [preset, customRange]);
+
+  // 4. Compute Comprehensive Profit Metrics & Product Rows
+  const { metrics, productRows, locations } = useMemo(() => {
+    return computeProfitAnalysis(
+      rawSales,
+      rawExpenses,
+      dateRange,
+      selectedLocation,
+      costCache
+    );
+  }, [rawSales, rawExpenses, dateRange, selectedLocation, costCache]);
+
+  // 5. Mutation to Set/Update Purchase Cost
+  const updateCostMutation = useMutation({
+    mutationFn: async ({
+      product,
+      newCost,
+      applyToPastSales,
+    }: {
+      product: ProductProfitRow;
+      newCost: number;
+      applyToPastSales: boolean;
+    }) => {
+      // 1. Update database sales records
+      const targetSaleIds = applyToPastSales
+        ? product.saleIds
+        : [product.saleIds[0]];
+
+      if (targetSaleIds.length > 0) {
+        const { error } = await supabase
+          .from("sales")
+          .update({ actual_purchase_price: newCost })
+          .in("id", targetSaleIds);
+
+        if (error) {
+          console.error("Failed to update sales purchase price in DB:", error);
+          throw error;
+        }
+      }
+
+      // 2. Persist to localStorage item cost memory
+      setItemCostCache(product.itemId, newCost);
+      setCostCache((prev) => ({ ...prev, [String(product.itemId)]: newCost }));
+
+      return { product, newCost, count: targetSaleIds.length };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['salesWithProfit'] });
-      toast.success("Purchase price updated successfully");
+    onSuccess: ({ product, newCost, count }) => {
+      toast.success(
+        `Purchase cost updated to ${formatCurrency(newCost)} for ${product.itemName} (${count} sales updated)`
+      );
+      queryClient.invalidateQueries({ queryKey: ["salesForProfit"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["sales"] });
     },
-    onError: () => toast.error("Failed to update purchase price")
+    onError: (err) => {
+      console.error("Error updating cost:", err);
+      toast.error("Failed to update purchase cost. Please try again.");
+    },
   });
 
-  const handlePurchasePriceUpdate = (key: string, saleIds: string[], newPrice: number) => {
-    updatePurchasePriceMutation.mutate({ saleIds, newPrice });
-    setEditingPrices(prev => { const u = { ...prev }; delete u[key]; return u; });
+  // Handlers
+  const handleOpenCostModal = (product: ProductProfitRow) => {
+    setSelectedProductForCost(product);
+    setIsCostModalOpen(true);
   };
 
-  const handlePurchasePriceEdit = (key: string, currentPrice: number) => {
-    setEditingPrices(prev => ({ ...prev, [key]: currentPrice }));
+  const handleReviewUncosted = () => {
+    setTableTab("needs_cost");
+    const tableEl = document.getElementById("product-profit-table");
+    if (tableEl) {
+      tableEl.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
-  const filteredSales = searchTerm.trim()
-    ? salesWithProfit.filter(sale => sale.item_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    : salesWithProfit;
+  const handleRefresh = async () => {
+    await Promise.all([refetchSales(), refetchExpenses()]);
+    toast.success("Profit and sales data refreshed");
+  };
 
-  const totalSalesRevenue = filteredSales.reduce((sum, sale) => sum + sale.total_sale_amount, 0);
-  const totalPurchaseCost = filteredSales.reduce((sum, sale) => sum + sale.total_purchase_amount, 0);
-  const grossProfit = totalSalesRevenue - totalPurchaseCost;
-  const netProfit = grossProfit - totalExpenses;
+  // Export CSV Handler
+  const handleExportCsv = () => {
+    try {
+      const headers = [
+        "Product Description",
+        "Location",
+        "Quantity Sold",
+        "Avg Selling Price (NGN)",
+        "Unit Purchase Cost (NGN)",
+        "Unit Profit (NGN)",
+        "Total Revenue (NGN)",
+        "Total COGS (NGN)",
+        "Total Gross Profit (NGN)",
+        "Gross Margin %",
+        "Cash Collected (NGN)",
+        "Receivables (NGN)",
+        "Cost Status",
+      ];
 
-  if (loading) return <div>Loading...</div>;
-  if (!session) { navigate("/"); return null; }
-  if (salesLoading || expensesLoading) return <ProfitLoadingState />;
+      const rows = productRows.map((p) => [
+        `"${p.itemName.replace(/"/g, '""')}"`,
+        `"${p.location}"`,
+        p.totalQuantity,
+        p.avgSalePrice.toFixed(2),
+        p.unitCost.toFixed(2),
+        p.profitPerUnit.toFixed(2),
+        p.totalRevenue.toFixed(2),
+        p.totalCost.toFixed(2),
+        p.totalGrossProfit.toFixed(2),
+        `${p.marginPct.toFixed(1)}%`,
+        p.cashCollected.toFixed(2),
+        p.receivables.toFixed(2),
+        p.hasCost ? "Costed" : "Pending Cost",
+      ]);
+
+      // Summary Header block
+      const summaryHeader = [
+        ["PROFIT & LOSS ANALYSIS REPORT"],
+        ["Generated At", format(new Date(), "yyyy-MM-dd HH:mm:ss")],
+        ["Period Preset", preset],
+        ["Selected Location", selectedLocation === "all" ? "All Locations" : selectedLocation],
+        ["Total Revenue (NGN)", metrics.totalRevenue.toFixed(2)],
+        ["Cash Collected (NGN)", metrics.cashCollected.toFixed(2)],
+        ["Accounts Receivable (NGN)", metrics.accountsReceivable.toFixed(2)],
+        ["Total COGS (NGN)", metrics.totalCogs.toFixed(2)],
+        ["Gross Profit (NGN)", metrics.grossProfit.toFixed(2)],
+        ["Gross Margin %", `${metrics.grossMarginPct.toFixed(1)}%`],
+        ["Operating Expenses (NGN)", metrics.totalExpenses.toFixed(2)],
+        ["Net Operating Profit (NGN)", metrics.netProfit.toFixed(2)],
+        ["Net Margin %", `${metrics.netMarginPct.toFixed(1)}%`],
+        [],
+      ];
+
+      const csvContent =
+        "data:text/csv;charset=utf-8," +
+        summaryHeader.map((e) => e.join(",")).join("\n") +
+        [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute(
+        "download",
+        `profit-analysis-${preset}-${format(new Date(), "yyyy-MM-dd")}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Profit analysis CSV downloaded");
+    } catch (err) {
+      console.error("Export CSV failed:", err);
+      toast.error("Failed to generate CSV export");
+    }
+  };
+
+  if (salesLoading || expensesLoading) {
+    return <ProfitLoadingState />;
+  }
+
+  const isRefreshing = salesFetching || expensesFetching;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 pb-12 animate-in fade-in-50 duration-300">
+      {/* ── HEADER ────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Profit Analysis</h1>
-          <p className="text-sm text-muted-foreground mt-1">Review your product margins, revenue, and operating profits</p>
-        </div>
-        <div className="w-full sm:w-[280px]">
-          <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search sales by product..." />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="card-hover rounded-2xl border-border/60">
-          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Revenue</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-success">{formatCurrency(totalSalesRevenue, currencies[0])}</div></CardContent>
-        </Card>
-        <Card className="card-hover rounded-2xl border-border/60">
-          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Purchase Cost</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-info">{formatCurrency(totalPurchaseCost, currencies[0])}</div></CardContent>
-        </Card>
-        <Card className="card-hover rounded-2xl border-border/60">
-          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Gross Profit</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-warning">{formatCurrency(grossProfit, currencies[0])}</div></CardContent>
-        </Card>
-        <Card className="card-hover rounded-2xl border-border/60">
-          <CardHeader className="pb-2"><CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">Net Profit</CardTitle></CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(netProfit, currencies[0])}</div>
-            <p className="text-xs text-muted-foreground mt-1">After expenses: {formatCurrency(totalExpenses, currencies[0])}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="card-hover rounded-2xl border-border/60">
-        <CardHeader><CardTitle className="text-base sm:text-lg">Grouped Sales with Profit Analysis</CardTitle></CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[700px]">
-              <thead>
-                <tr className="border-b text-muted-foreground text-xs uppercase tracking-wider">
-                  <th className="text-left py-3 px-2">Item</th>
-                  <th className="text-left py-3 px-2">Total Qty</th>
-                  <th className="text-left py-3 px-2">Avg Sale Price</th>
-                  <th className="text-left py-3 px-2">Avg Purchase Price</th>
-                  <th className="text-left py-3 px-2">Profit/Item</th>
-                  <th className="text-left py-3 px-2">Total Sale</th>
-                  <th className="text-left py-3 px-2">Total Cost</th>
-                  <th className="text-left py-3 px-2">Total Profit</th>
-                  <th className="text-left py-3 px-2">Location</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSales.map((sale) => {
-                  const key = `${sale.item_name}-${sale.location}`;
-                  const isEditing = editingPrices.hasOwnProperty(key);
-                  return (
-                    <tr key={key} className="border-b hover:bg-muted/50 transition-colors">
-                      <td className="py-3 px-2 font-medium">{sale.item_name}</td>
-                      <td className="py-3 px-2">{sale.total_quantity}</td>
-                      <td className="py-3 px-2">{formatCurrency(sale.avg_sale_price, currencies[0])}</td>
-                      <td className="py-3 px-2">
-                        {isEditing ? (
-                          <Input
-                            type="number"
-                            value={editingPrices[key]}
-                            onChange={(e) => setEditingPrices(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))}
-                            onBlur={() => handlePurchasePriceUpdate(key, sale.sale_ids, editingPrices[key])}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handlePurchasePriceUpdate(key, sale.sale_ids, editingPrices[key]);
-                              if (e.key === 'Escape') setEditingPrices(prev => { const u = { ...prev }; delete u[key]; return u; });
-                            }}
-                            className="w-28 h-9 text-sm rounded-lg"
-                            autoFocus
-                          />
-                        ) : (
-                          <button onClick={() => handlePurchasePriceEdit(key, sale.avg_purchase_price)} className="text-primary hover:underline font-medium min-h-[32px] inline-flex items-center">
-                            {formatCurrency(sale.avg_purchase_price, currencies[0])}
-                          </button>
-                        )}
-                      </td>
-                      <td className={`py-3 px-2 ${sale.profit_per_item >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(sale.profit_per_item, currencies[0])}</td>
-                      <td className="py-3 px-2">{formatCurrency(sale.total_sale_amount, currencies[0])}</td>
-                      <td className="py-3 px-2">{formatCurrency(sale.total_purchase_amount, currencies[0])}</td>
-                      <td className={`py-3 px-2 font-semibold ${sale.total_profit >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(sale.total_profit, currencies[0])}</td>
-                      <td className="py-3 px-2">{sale.location}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Profit Analysis & Unit Economics
+            </h1>
+            <span className="hidden md:inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary">
+              <TrendingUp className="h-3.5 w-3.5" /> Live P&L
+            </span>
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+            Accurate revenue, cost of goods sold (COGS), gross margins, operating expenses, and net profitability
+          </p>
+        </div>
+      </div>
+
+      {/* ── FILTER TOOLBAR ────────────────────────────────── */}
+      <ProfitFilterToolbar
+        preset={preset}
+        onPresetChange={setPreset}
+        customRange={customRange}
+        onCustomRangeChange={setCustomRange}
+        selectedLocation={selectedLocation}
+        onLocationChange={setSelectedLocation}
+        locations={locations}
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+        onExportCsv={handleExportCsv}
+      />
+
+      {/* ── AUDIT & COST WARNING BANNER ───────────────────── */}
+      <ProfitCostAlertBanner
+        metrics={metrics}
+        onReviewUncosted={handleReviewUncosted}
+      />
+
+      {/* ── 4 EXECUTIVE FINANCIAL CARDS ───────────────────── */}
+      <ProfitExecutiveCards
+        metrics={metrics}
+        onViewUncosted={handleReviewUncosted}
+      />
+
+      {/* ── CASH FLOW VS BOOKED PROFIT & OPERATING EXPENSES ─ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
+          <ProfitCashVsAccrualCard metrics={metrics} />
+        </div>
+        <div className="lg:col-span-1">
+          <ProfitExpensesBreakdown
+            totalExpenses={metrics.totalExpenses}
+            breakdown={metrics.expenseBreakdown}
+          />
+        </div>
+      </div>
+
+      {/* ── PRODUCT PROFITABILITY TABLE ───────────────────── */}
+      <div id="product-profit-table">
+        <ProfitProductTable
+          products={productRows}
+          activeTab={tableTab}
+          onActiveTabChange={setTableTab}
+          onEditCost={handleOpenCostModal}
+        />
+      </div>
+
+      {/* ── MODAL: SET OR EDIT UNIT PURCHASE COST ─────────── */}
+      <SetCostModal
+        open={isCostModalOpen}
+        onOpenChange={setIsCostModalOpen}
+        product={selectedProductForCost}
+        onSaveCost={async (params) => {
+          await updateCostMutation.mutateAsync(params);
+        }}
+        isSaving={updateCostMutation.isPending}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 
 import { supabase } from "@/lib/supabase";
+import { getItemCostCache } from "@/utils/profitUtils";
 
 interface ValidationParams {
   itemId: string;
@@ -49,12 +50,21 @@ export const recordSale = async (
   notes?: string,
   paymentStatus: string = 'paid',
   amountPaid?: number,
-  customerId?: string | null
+  customerId?: string | null,
+  actualPurchasePrice?: number | null
 ) => {
-  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem, notes, paymentStatus, amountPaid, customerId });
+  console.log('Recording sale:', { userId, itemId, quantity, salePrice, selectedItem, notes, paymentStatus, amountPaid, customerId, actualPurchasePrice });
 
   const totalAmount = quantity * salePrice;
   const finalAmountPaid = paymentStatus === 'paid' ? totalAmount : (paymentStatus === 'unpaid' ? 0 : (amountPaid ?? 0));
+
+  // If purchase cost is not explicitly provided, check item cost cache
+  const costCache = getItemCostCache();
+  const cachedCost = itemId && costCache[String(itemId)] ? costCache[String(itemId)] : null;
+  const resolvedPurchasePrice =
+    actualPurchasePrice !== undefined && actualPurchasePrice !== null
+      ? actualPurchasePrice
+      : cachedCost;
 
   const sale = {
     item_id: itemId,
@@ -67,6 +77,7 @@ export const recordSale = async (
     payment_status: paymentStatus,
     amount_paid: finalAmountPaid,
     customer_id: customerId || null,
+    actual_purchase_price: resolvedPurchasePrice,
   };
 
   // Record the sale - inventory will be updated automatically by database trigger

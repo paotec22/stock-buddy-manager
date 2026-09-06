@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { startOfDay, subDays, format, isAfter } from "date-fns";
+import { getItemCostCache } from "@/utils/profitUtils";
 
 export const useDashboardData = () => {
   const { session } = useAuth();
@@ -15,7 +16,7 @@ export const useDashboardData = () => {
       // Fetch Sales
       const { data: sales, error: salesError } = await supabase
         .from('sales')
-        .select('total_amount, sale_date, actual_purchase_price, quantity, "inventory list"("Price")')
+        .select('total_amount, sale_date, actual_purchase_price, quantity, item_id')
         .gte('sale_date', thirtyDaysAgo)
         .order('sale_date', { ascending: true });
 
@@ -37,18 +38,6 @@ export const useDashboardData = () => {
 
       if (installationsError) throw installationsError;
 
-      // Fetch Low Stock
-      // Assuming low stock means less than 5 items in inventory, though the DB structure isn't entirely clear.
-      // Let's check inventory. The "inventory list" usually has a quantity field, let's see. Let's just fetch all inventory for now.
-      const { data: inventory, error: inventoryError } = await supabase
-        .from('inventory list')
-        .select('id, "Item Description", location');
-      
-      // Wait, inventory in Inventory.tsx uses a custom hook, let me not overcomplicate the inventory DB schema without knowing it.
-      // I'll grab all items from "inventory list", wait, the location stock might be a different structure or just rows. I'll omit low stock calculation if it's too complex or will check how Inventory.tsx does it.
-
-      if (inventoryError) console.error(inventoryError);
-
       let todaysSalesAmount = 0;
       let totalSales30Days = 0;
       let totalExpenses30Days = 0;
@@ -63,6 +52,8 @@ export const useDashboardData = () => {
         chartDataMap.set(dateStr, 0);
       }
 
+      const costCache = getItemCostCache();
+
       sales?.forEach(sale => {
         const amount = Number(sale.total_amount || 0);
         totalSales30Days += amount;
@@ -75,14 +66,15 @@ export const useDashboardData = () => {
         if (sale.sale_date) {
             const dateStr = format(new Date(sale.sale_date), 'MMM dd');
             if (chartDataMap.has(dateStr)) {
-            chartDataMap.set(dateStr, (chartDataMap.get(dateStr) || 0) + amount);
+              chartDataMap.set(dateStr, (chartDataMap.get(dateStr) || 0) + amount);
             }
         }
         
         // Calculate Profit (Sale price - Purchase cost)
-        const inventoryData = sale["inventory list"] as any;
-        const inventoryPrice = Array.isArray(inventoryData) ? inventoryData[0]?.Price : inventoryData?.Price;
-        const purchaseCost = Number(sale.actual_purchase_price || inventoryPrice || 0) * Number(sale.quantity || 1);
+        const itemId = sale.item_id ? String(sale.item_id) : "";
+        const cachedCost = itemId && costCache[itemId] ? costCache[itemId] : 0;
+        const unitCost = Number(sale.actual_purchase_price || cachedCost || 0);
+        const purchaseCost = unitCost * Number(sale.quantity || 1);
         netProfit30Days += (amount - purchaseCost);
       });
 
