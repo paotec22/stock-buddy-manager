@@ -52,18 +52,20 @@ export function SalesTableRow({
   const truncatedNotes = hasLongNotes ? `${sale.notes!.substring(0, 30)}...` : sale.notes;
 
   return (
-    <TableRow className="group hover:bg-muted/50 transition-colors">
-      <TableCell>
+    <TableRow className="group hover:bg-muted/40 transition-colors">
+      <TableCell className="py-2.5">
         <SalesDateCell
           date={sale.sale_date}
           isAdmin={canEditDates}
           onDateUpdate={(date) => onDateUpdate(sale.id, date)}
         />
       </TableCell>
-      <TableCell className="font-medium">{sale.item_name}</TableCell>
-      <TableCell>{sale.location}</TableCell>
-      <TableCell>{sale.quantity}</TableCell>
-      <TableCell>
+      <TableCell className="font-medium text-foreground py-2.5">{sale.item_name}</TableCell>
+      <TableCell className="text-muted-foreground py-2.5">{sale.location}</TableCell>
+      <TableCell className="text-right font-mono tabular-nums py-2.5 text-foreground">
+        {sale.quantity.toLocaleString()}
+      </TableCell>
+      <TableCell className="text-right font-mono tabular-nums py-2.5">
         <SalesPriceCell
           price={sale.sale_price}
           isAdmin={isAdmin}
@@ -71,17 +73,17 @@ export function SalesTableRow({
           onPriceUpdate={(price) => onPriceUpdate(sale.id, price)}
         />
       </TableCell>
-      <TableCell>
-        <span className="font-semibold text-primary">{formatCurrency(sale.total_amount)}</span>
+      <TableCell className="text-right font-mono tabular-nums font-semibold text-foreground py-2.5">
+        {formatCurrency(sale.total_amount)}
       </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2">
+      <TableCell className="py-2.5">
+        <div className="flex items-center gap-1.5">
           <PaymentStatusBadge status={sale.payment_status} />
           {sale.payment_status !== 'paid' && canEditDates && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
               onClick={() => onUpdatePayment?.(sale)}
               title="Update payment"
             >
@@ -90,7 +92,7 @@ export function SalesTableRow({
           )}
         </div>
       </TableCell>
-      <TableCell className="max-w-[200px]">
+      <TableCell className="max-w-[180px] py-2.5">
         {sale.notes ? (
           hasLongNotes ? (
             <Popover open={notesOpen} onOpenChange={setNotesOpen}>
@@ -116,7 +118,7 @@ export function SalesTableRow({
         )}
       </TableCell>
       {isAdmin && (
-        <TableCell className="w-16">
+        <TableCell className="w-16 text-right py-2.5">
           <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <AlertDialogTrigger asChild>
               <Button

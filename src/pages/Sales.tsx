@@ -6,85 +6,84 @@ import { SalesViewToggle } from "@/components/sales/SalesViewToggle";
 import { SalesGraphicalView } from "@/components/sales/SalesGraphicalView";
 import { SalesTableView } from "@/components/sales/SalesTableView";
 import { SalesLoadingState } from "@/components/sales/SalesLoadingState";
+import { SalesExecutiveCards } from "@/components/sales/SalesExecutiveCards";
+import { SalesFilterToolbar } from "@/components/sales/SalesFilterToolbar";
 import { ChartFilters } from "@/components/sales/SalesChartFilters";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Plus, Upload, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
-import { SearchInput } from "@/components/ui/search-input";
 import { Sale } from "@/components/sales/types";
 import { MobileFAB } from "@/components/MobileFAB";
+import { DateRange } from "react-day-picker";
+import { parseISO, startOfDay, endOfDay, isWithinInterval } from "date-fns";
 
 const SalesHeader = ({ 
   onAddSale, 
   onBulkUpload, 
   onExport, 
-  searchTerm, 
-  onSearchChange,
   currentView,
-  onViewChange
+  onViewChange,
+  totalSalesCount,
 }: { 
   onAddSale: () => void;
   onBulkUpload: () => void;
   onExport: () => void;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
   currentView: 'table' | 'chart';
   onViewChange: (view: 'table' | 'chart') => void;
+  totalSalesCount: number;
 }) => {
   return (
-    <div className="flex flex-col gap-4 mb-6">
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Sales Management</h1>
-            <div className="w-full sm:w-[240px]">
-              <SearchInput 
-                value={searchTerm}
-                onChange={onSearchChange}
-                placeholder="Search sales..."
-                className="h-9 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-            <Button 
-              onClick={onAddSale} 
-              size="sm" 
-              className="flex-1 md:flex-initial min-h-[40px] md:min-h-0 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium"
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              <span>Record Sale</span>
-            </Button>
-            <Button 
-              onClick={onBulkUpload} 
-              variant="outline" 
-              size="sm" 
-              className="flex-1 md:flex-initial min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium"
-            >
-              <Upload className="mr-1.5 h-4 w-4" />
-              <span>Upload</span>
-            </Button>
-            <Button 
-              onClick={onExport} 
-              variant="outline" 
-              size="sm" 
-              className="min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium px-2.5 sm:px-3"
-              title="Export Sales"
-            >
-              <FileSpreadsheet className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-          </div>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
+      <div>
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Sales Operations</h1>
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary font-mono tabular-nums">
+            {totalSalesCount} {totalSalesCount === 1 ? 'record' : 'records'}
+          </span>
         </div>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          Track customer transactions, receivables, and branch performance
+        </p>
       </div>
 
-      <div className="flex justify-start">
+      <div className="flex flex-wrap items-center gap-2">
         <SalesViewToggle currentView={currentView} onViewChange={onViewChange} />
+
+        <div className="h-4 w-px bg-border hidden sm:block mx-1" />
+
+        <Button 
+          onClick={onAddSale} 
+          size="sm" 
+          className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium h-9 text-xs sm:text-sm px-3.5"
+        >
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
+          <span>Record Sale</span>
+        </Button>
+
+        <Button 
+          onClick={onBulkUpload} 
+          variant="outline" 
+          size="sm" 
+          className="h-9 text-xs sm:text-sm px-3 bg-background border-border hover:bg-muted"
+        >
+          <Upload className="mr-1.5 h-3.5 w-3.5" />
+          <span>Bulk Upload</span>
+        </Button>
+
+        <Button 
+          onClick={onExport} 
+          variant="outline" 
+          size="sm" 
+          className="h-9 text-xs sm:text-sm px-2.5 sm:px-3 bg-background border-border hover:bg-muted"
+          title="Export Sales Data"
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5 sm:mr-1.5" />
+          <span className="hidden sm:inline">Export</span>
+        </Button>
       </div>
     </div>
   );
@@ -94,13 +93,20 @@ const Sales = () => {
   const [showAddSale, setShowAddSale] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showExport, setShowExport] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [currentView, setCurrentView] = useState<'table' | 'chart'>('table');
+  
+  // Unified Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [paymentStatus, setPaymentStatus] = useState("all");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+
   const [chartFilters, setChartFilters] = useState<ChartFilters>({
     chartType: 'bar',
     timePeriod: 'year',
     location: 'all'
   });
+
   const { session, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -144,9 +150,59 @@ const Sales = () => {
     enabled: !!session
   });
 
-  const filteredSales = searchTerm.trim()
-    ? sales.filter(sale => sale.item_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    : sales;
+  // Extract unique locations from all sales
+  const locations = useMemo(() => {
+    return Array.from(new Set(sales.map(s => s.location).filter(Boolean))).sort();
+  }, [sales]);
+
+  // Apply unified filter criteria
+  const filteredSales = useMemo(() => {
+    return sales.filter((sale) => {
+      // Search term matching item name or notes
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        const matchName = sale.item_name.toLowerCase().includes(term);
+        const matchNotes = sale.notes ? sale.notes.toLowerCase().includes(term) : false;
+        if (!matchName && !matchNotes) return false;
+      }
+
+      // Location filter
+      if (selectedLocation !== "all" && sale.location !== selectedLocation) {
+        return false;
+      }
+
+      // Payment status filter
+      if (paymentStatus !== "all" && sale.payment_status !== paymentStatus) {
+        return false;
+      }
+
+      // Date range filter
+      if (dateRange?.from) {
+        const saleDate = parseISO(sale.sale_date);
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        if (!isWithinInterval(saleDate, { start: from, end: to })) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [sales, searchTerm, selectedLocation, paymentStatus, dateRange]);
+
+  const hasActiveFilters = Boolean(
+    searchTerm.trim() ||
+    selectedLocation !== "all" ||
+    paymentStatus !== "all" ||
+    dateRange?.from
+  );
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedLocation("all");
+    setPaymentStatus("all");
+    setDateRange(undefined);
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -159,17 +215,39 @@ const Sales = () => {
 
   return (
     <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'user']}>
-      <div className="animate-fade-in">
+      <div className="space-y-5 animate-fade-in pb-10">
         <SalesHeader 
           onAddSale={() => setShowAddSale(true)}
           onBulkUpload={() => setShowBulkUpload(true)}
           onExport={() => setShowExport(true)}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
           currentView={currentView}
           onViewChange={setCurrentView}
+          totalSalesCount={sales.length}
         />
 
+        {/* Executive KPI Summary Cards */}
+        <SalesExecutiveCards
+          sales={filteredSales}
+          totalSalesCount={sales.length}
+          hasActiveFilters={hasActiveFilters}
+        />
+
+        {/* Unified Filter Toolbar */}
+        <SalesFilterToolbar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedLocation={selectedLocation}
+          onLocationChange={setSelectedLocation}
+          locations={locations}
+          paymentStatus={paymentStatus}
+          onPaymentStatusChange={setPaymentStatus}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
+
+        {/* View Switcher: Table vs Chart */}
         {currentView === 'chart' ? (
           <SalesGraphicalView
             sales={filteredSales}
@@ -177,9 +255,14 @@ const Sales = () => {
             onFiltersChange={setChartFilters}
           />
         ) : (
-          <SalesTableView sales={filteredSales} />
+          <SalesTableView 
+            sales={filteredSales} 
+            hasFilters={hasActiveFilters}
+            onClearFilters={handleResetFilters}
+          />
         )}
 
+        {/* Modals */}
         <AddSaleForm
           open={showAddSale}
           onOpenChange={setShowAddSale}
@@ -198,7 +281,7 @@ const Sales = () => {
         <SalesExportModal
           open={showExport}
           onOpenChange={setShowExport}
-          sales={sales}
+          sales={filteredSales}
         />
 
         <MobileFAB

@@ -1,96 +1,53 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { SalesTable } from "./SalesTable";
 import { SalesSummaryTable } from "./SalesSummaryTable";
-import { TotalSalesSummary } from "./TotalSalesSummary";
-import { SalesDateRangeFilter } from "./SalesDateRangeFilter";
-import { SalesExportModal } from "./SalesExportModal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { DateRange } from "react-day-picker";
-import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
-import { FileSpreadsheet } from "lucide-react";
 import { Sale } from "./types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Receipt, CalendarRange } from "lucide-react";
 
 interface SalesTableViewProps {
   sales: Sale[];
+  hasFilters?: boolean;
+  onClearFilters?: () => void;
 }
 
-export function SalesTableView({ sales }: SalesTableViewProps) {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [showExport, setShowExport] = useState(false);
-
-  const filteredSales = useMemo(() => {
-    if (!dateRange?.from) return sales;
-    
-    return sales.filter(sale => {
-      const saleDate = parseISO(sale.sale_date);
-      const from = startOfDay(dateRange.from!);
-      const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from!);
-      
-      return isWithinInterval(saleDate, { start: from, end: to });
-    });
-  }, [sales, dateRange]);
-
-  const hasFilters = !!dateRange?.from;
+export function SalesTableView({ sales, hasFilters = false, onClearFilters }: SalesTableViewProps) {
+  const [activeTab, setActiveTab] = useState<"transactions" | "monthly">("transactions");
 
   return (
-    <div className="space-y-6">
-      {/* Total Sales Summary */}
-      <div className="summary-card">
-        <TotalSalesSummary />
-      </div>
-
-      {/* Date Range Filter */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <SalesDateRangeFilter 
-          dateRange={dateRange} 
-          onDateRangeChange={setDateRange} 
-        />
-        {hasFilters && (
-          <span className="text-sm text-muted-foreground">
-            Showing {filteredSales.length} of {sales.length} sales
-          </span>
-        )}
-      </div>
-
-      {/* Sales Summary Table */}
-      <Card className="card-hover">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Sales Summary</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SalesSummaryTable sales={filteredSales} />
-        </CardContent>
-      </Card>
-
-      {/* Detailed Sales Table */}
-      <Card className="card-hover">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Sales Details</span>
-            <Button 
-              onClick={() => setShowExport(true)} 
-              variant="outline" 
-              size="sm"
-              className="btn-with-icon"
+    <div className="space-y-4">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "transactions" | "monthly")} className="w-full">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <TabsList className="h-9 p-1 bg-muted/60 border border-border">
+            <TabsTrigger
+              value="transactions"
+              className="flex items-center gap-2 text-xs font-medium px-3 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
             >
-              <FileSpreadsheet className="h-4 w-4" />
-              <span>Export</span>
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SalesTable sales={filteredSales} hasFilters={hasFilters} />
-        </CardContent>
-      </Card>
+              <Receipt className="h-3.5 w-3.5" />
+              <span>All Transactions ({sales.length})</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="monthly"
+              className="flex items-center gap-2 text-xs font-medium px-3 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            >
+              <CalendarRange className="h-3.5 w-3.5" />
+              <span>Monthly & Branch Summary</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-      <SalesExportModal
-        open={showExport}
-        onOpenChange={setShowExport}
-        sales={filteredSales}
-      />
+        <TabsContent value="transactions" className="mt-0 space-y-4">
+          <SalesTable 
+            sales={sales} 
+            hasFilters={hasFilters} 
+            onClearFilters={onClearFilters} 
+          />
+        </TabsContent>
+
+        <TabsContent value="monthly" className="mt-0">
+          <SalesSummaryTable sales={sales} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

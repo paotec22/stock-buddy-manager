@@ -108,37 +108,39 @@ export function SalesSummaryTable({ sales }: SalesSummaryTableProps) {
   }
 
   return (
-    <div className="min-h-[300px] overflow-auto rounded-md border">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <Accordion 
         type="multiple" 
         defaultValue={[currentYear.toString()]}
         className="w-full"
       >
         {yearGroups.map((group) => (
-          <AccordionItem key={group.year} value={group.year.toString()} className="border-b last:border-b-0">
-            <AccordionTrigger className="px-4 hover:no-underline hover:bg-muted/50">
+          <AccordionItem key={group.year} value={group.year.toString()} className="border-b last:border-b-0 border-border">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40 transition-colors">
               <div className="flex items-center justify-between w-full pr-4">
-                <span className="font-semibold text-lg">{group.year}</span>
-                <span className="text-sm text-muted-foreground">
+                <span className="font-semibold text-base text-foreground">Fiscal Year {group.year}</span>
+                <span className="text-sm font-semibold font-mono tabular-nums text-foreground">
                   {formatCurrency(group.totalAmount)}
                 </span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pb-0">
+            <AccordionContent className="pb-0 border-t border-border/60">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Month</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead className="text-right">Total Sales</TableHead>
+                <TableHeader className="bg-muted/30">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Month</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Branch / Location</TableHead>
+                    <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Revenue</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {group.summaries.map((summary, index) => (
-                    <TableRow key={`${summary.month}-${summary.location}-${index}`}>
-                      <TableCell>{format(summary.sortDate, 'MMMM')}</TableCell>
-                      <TableCell>{summary.location}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(summary.total_amount)}</TableCell>
+                    <TableRow key={`${summary.month}-${summary.location}-${index}`} className="hover:bg-muted/40 transition-colors">
+                      <TableCell className="font-medium text-foreground py-2.5">{format(summary.sortDate, 'MMMM')}</TableCell>
+                      <TableCell className="text-muted-foreground py-2.5">{summary.location}</TableCell>
+                      <TableCell className="text-right font-mono tabular-nums font-semibold text-foreground py-2.5">
+                        {formatCurrency(summary.total_amount)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
