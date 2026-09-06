@@ -291,7 +291,6 @@ export const useInvoiceOperations = (
               <div class="info-block" style="text-align: right;">
                 <h4>Payment Details</h4>
                 <p>Status: <span style="color: #16a34a; font-weight: 700;">ISSUED</span></p>
-                ${invoice.due_date ? `<p>Due Date: ${new Date(invoice.due_date).toLocaleDateString('en-GB')}</p>` : ''}
               </div>
             </div>
 
@@ -325,6 +324,13 @@ export const useInvoiceOperations = (
                 <span>₦${Number(invoice.total_amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
+
+            ${invoice.notes && invoice.notes.trim() ? `
+              <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; color: #475569;">
+                <strong style="color: #0f172a; display: block; margin-bottom: 4px; text-transform: uppercase; font-size: 11px;">Terms & Notes:</strong>
+                ${invoice.notes.replace(/\n/g, '<br/>')}
+              </div>
+            ` : ''}
 
             <div class="bank-card">
               <p style="margin: 0 0 4px 0; font-weight: 700; text-transform: uppercase;">Payment Method (Bank Transfer):</p>

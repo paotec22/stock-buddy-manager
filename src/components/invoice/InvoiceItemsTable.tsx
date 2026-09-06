@@ -401,9 +401,9 @@ export const InvoiceItemsTable = ({
 
       {/* Grid: Notes / Terms on Left, Totals / VAT / Balance on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Left Column: Notes & Terms */}
-        <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-xs">
-          <div className="flex items-center justify-between border-b pb-2.5">
+        {/* Left Column: Notes & Terms (Screen edit control) */}
+        <div className={`rounded-xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-xs ${!enableNotes ? 'print:hidden' : (notes && notes.trim() ? '' : 'print:hidden')}`}>
+          <div className="flex items-center justify-between border-b pb-2.5 print:hidden">
             <Label htmlFor="enable-notes-toggle" className="text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer">
               <Receipt className="h-4 w-4 text-primary" />
               Terms & Payment Instructions / Notes
@@ -420,8 +420,8 @@ export const InvoiceItemsTable = ({
             </div>
           </div>
 
-          {enableNotes ? (
-            <div className="space-y-2 pt-1">
+          {enableNotes && (
+            <div className="space-y-2 pt-1 print:hidden">
               <Textarea
                 id="notes"
                 rows={4}
@@ -434,9 +434,13 @@ export const InvoiceItemsTable = ({
                 These terms will appear at the bottom of the invoice document.
               </p>
             </div>
-          ) : (
-            <div className="py-4 text-center border border-dashed rounded-lg bg-muted/20 text-muted-foreground text-xs">
-              <span>Optional: Toggle switch above to include payment instructions or notes.</span>
+          )}
+
+          {/* Print representation if notes enabled and filled */}
+          {enableNotes && notes && notes.trim().length > 0 && (
+            <div className="hidden print:block text-xs pt-1">
+              <span className="font-bold text-foreground block mb-1 uppercase tracking-wider text-[11px]">Terms & Payment Notes:</span>
+              <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{notes}</p>
             </div>
           )}
         </div>
