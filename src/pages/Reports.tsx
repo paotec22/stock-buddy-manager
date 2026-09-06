@@ -5,12 +5,13 @@ import { LocationPerformanceTable } from "@/components/reports/LocationPerforman
 import { ActivityTimeline } from "@/components/reports/ActivityTimeline";
 import { ExpenseTrendChart } from "@/components/reports/ExpenseTrendChart";
 import { ExpenseCategoryChart } from "@/components/reports/ExpenseCategoryChart";
+import { ReportsOverviewKpis } from "@/components/reports/ReportsOverviewKpis";
+import { ReportsDateRangePicker } from "@/components/reports/ReportsDateRangePicker";
 import { SearchInput } from "@/components/ui/search-input";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ReportsFilterSheet } from "@/components/reports/ReportsFilterSheet";
-import { RefreshCw, BarChart3, Receipt, Wrench, MapPin, Activity } from "lucide-react";
+import { RefreshCw, BarChart3, Receipt, Wrench, MapPin, Activity, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -36,13 +37,21 @@ const Reports = () => {
         queryClient.invalidateQueries({ queryKey: ['activity-logs'] }),
         queryClient.invalidateQueries({ queryKey: ['expense-trends'] }),
         queryClient.invalidateQueries({ queryKey: ['expense-categories'] }),
+        queryClient.invalidateQueries({ queryKey: ['kpi-expenses'] }),
+        queryClient.invalidateQueries({ queryKey: ['kpi-installations'] }),
+        queryClient.invalidateQueries({ queryKey: ['kpi-sales'] }),
       ]);
       toast.success("Reports refreshed");
     } catch (error) {
-      toast.error("Failed to refresh");
+      toast.error("Failed to refresh reports");
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);
     }
+  };
+
+  const handleDateRangeChange = (from?: Date, to?: Date) => {
+    setDateFrom(from);
+    setDateTo(to);
   };
 
   const clearDates = () => {
@@ -51,23 +60,46 @@ const Reports = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+    <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-12 max-w-7xl mx-auto">
+      {/* Top Header Card */}
+      <div className="rounded-xl border border-border/80 bg-card p-3.5 sm:p-5 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Financial trends, expenses breakdown, and installation logs</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
+                Reports & Analytics
+              </h1>
+              <span className="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary font-mono">
+                Executive Portal
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Financial trends, expenses breakdown, branch metrics, and installation records
+            </p>
           </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <div className="flex-1 md:w-[240px]">
+
+          {/* Unified Actions Toolbar */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <div className="flex-1 md:w-[220px] min-w-[150px]">
               <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
-                placeholder="Search reports..."
-                className="h-10 md:h-9 text-sm"
+                placeholder="Search across reports..."
+                className="h-9 text-xs sm:text-sm"
               />
             </div>
-            {isMobile && (
+
+            {/* Desktop / Tablet Date Range Picker */}
+            <div className="hidden sm:block">
+              <ReportsDateRangePicker
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                onDateRangeChange={handleDateRangeChange}
+              />
+            </div>
+
+            {/* Mobile Filter Sheet */}
+            <div className="sm:hidden">
               <ReportsFilterSheet
                 dateFrom={dateFrom}
                 dateTo={dateTo}
@@ -75,111 +107,166 @@ const Reports = () => {
                 onDateToChange={setDateTo}
                 onClearDates={clearDates}
               />
-            )}
+            </div>
+
+            {/* Refresh Button */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="min-h-[40px] md:min-h-0 bg-background border-input hover:bg-muted font-medium px-3"
+              className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm"
               title="Refresh reports"
             >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''} md:mr-1.5`} />
-              <span className="hidden md:inline">Refresh</span>
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''} sm:mr-1.5`} />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-5 h-11 p-1 bg-muted rounded-lg">
-          <TabsTrigger value="overview" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Overview</span>
+      {/* Tabs Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-5 h-10 sm:h-11 p-1 bg-muted rounded-lg border border-border/60">
+          <TabsTrigger 
+            value="overview" 
+            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
+          >
+            <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="expenses" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
-            <Receipt className="h-4 w-4" />
-            <span className="hidden sm:inline">Expenses</span>
+          <TabsTrigger 
+            value="expenses" 
+            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
+          >
+            <Receipt className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Expenses</span>
           </TabsTrigger>
-          <TabsTrigger value="installations" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
-            <Wrench className="h-4 w-4" />
-            <span className="hidden sm:inline">Installations</span>
+          <TabsTrigger 
+            value="installations" 
+            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
+          >
+            <Wrench className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Install<span className="hidden sm:inline">ations</span></span>
           </TabsTrigger>
-          <TabsTrigger value="locations" className="hidden sm:flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
-            <MapPin className="h-4 w-4" />
-            <span>Locations</span>
+          <TabsTrigger 
+            value="locations" 
+            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
+          >
+            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Branches</span>
           </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center justify-center gap-1.5 min-h-[36px] text-xs sm:text-sm font-medium">
-            <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Activity</span>
+          <TabsTrigger 
+            value="activity" 
+            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
+          >
+            <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Activity</span>
           </TabsTrigger>
         </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-                <ExpenseTrendChart dateFrom={dateFrom} dateTo={dateTo} />
-                <ExpenseCategoryChart dateFrom={dateFrom} dateTo={dateTo} />
-              </div>
-              <Card className="card-hover">
-                <MonthlyExpensesTable 
-                  searchTerm={searchTerm} 
-                  isCollapsed={expensesCollapsed}
-                  onToggleCollapse={() => setExpensesCollapsed(!expensesCollapsed)}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  onDateFromChange={setDateFrom}
-                  onDateToChange={setDateTo}
-                  onClearDates={clearDates}
-                />
-              </Card>
-            </TabsContent>
+        {/* OVERVIEW TAB */}
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6 focus-visible:outline-none">
+          {/* Executive KPIs */}
+          <ReportsOverviewKpis dateFrom={dateFrom} dateTo={dateTo} />
 
-            <TabsContent value="expenses" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-                <ExpenseTrendChart dateFrom={dateFrom} dateTo={dateTo} />
-                <ExpenseCategoryChart dateFrom={dateFrom} dateTo={dateTo} />
-              </div>
-              <Card className="card-hover">
-                <MonthlyExpensesTable 
-                  searchTerm={searchTerm} 
-                  isCollapsed={expensesCollapsed}
-                  onToggleCollapse={() => setExpensesCollapsed(!expensesCollapsed)}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  onDateFromChange={setDateFrom}
-                  onDateToChange={setDateTo}
-                  onClearDates={clearDates}
-                />
-              </Card>
-            </TabsContent>
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-6">
+            <ExpenseTrendChart dateFrom={dateFrom} dateTo={dateTo} />
+            <ExpenseCategoryChart dateFrom={dateFrom} dateTo={dateTo} />
+          </div>
 
-            <TabsContent value="installations" className="space-y-6">
-              <Card className="card-hover">
-                <InstallationsTable 
-                  searchTerm={searchTerm} 
-                  isCollapsed={installationsCollapsed}
-                  onToggleCollapse={() => setInstallationsCollapsed(!installationsCollapsed)}
-                  dateFrom={dateFrom}
-                  dateTo={dateTo}
-                  onDateFromChange={setDateFrom}
-                  onDateToChange={setDateTo}
-                  onClearDates={clearDates}
-                />
-              </Card>
-            </TabsContent>
+          {/* Branch Performance Snapshot */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Operating Branches
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveTab("locations")}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                Full Branch Report
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+            <LocationPerformanceTable searchTerm={searchTerm} />
+          </div>
 
-            <TabsContent value="locations" className="space-y-6">
-              <Card className="card-hover">
-                <LocationPerformanceTable searchTerm={searchTerm} />
-              </Card>
-            </TabsContent>
+          {/* Detailed Monthly Expenses Accordion */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Expense Records
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveTab("expenses")}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                Manage All Expenses
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+            <MonthlyExpensesTable 
+              searchTerm={searchTerm} 
+              isCollapsed={expensesCollapsed}
+              onToggleCollapse={() => setExpensesCollapsed(!expensesCollapsed)}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+              onClearDates={clearDates}
+            />
+          </div>
+        </TabsContent>
 
-            <TabsContent value="activity" className="space-y-6">
-              <Card className="p-6">
-                <ActivityTimeline searchTerm={searchTerm} />
-              </Card>
-            </TabsContent>
-          </Tabs>
+        {/* EXPENSES TAB */}
+        <TabsContent value="expenses" className="space-y-4 sm:space-y-6 focus-visible:outline-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-6">
+            <ExpenseTrendChart dateFrom={dateFrom} dateTo={dateTo} />
+            <ExpenseCategoryChart dateFrom={dateFrom} dateTo={dateTo} />
+          </div>
+
+          <MonthlyExpensesTable 
+            searchTerm={searchTerm} 
+            isCollapsed={expensesCollapsed}
+            onToggleCollapse={() => setExpensesCollapsed(!expensesCollapsed)}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onClearDates={clearDates}
+          />
+        </TabsContent>
+
+        {/* INSTALLATIONS TAB */}
+        <TabsContent value="installations" className="space-y-4 sm:space-y-6 focus-visible:outline-none">
+          <InstallationsTable 
+            searchTerm={searchTerm} 
+            isCollapsed={installationsCollapsed}
+            onToggleCollapse={() => setInstallationsCollapsed(!installationsCollapsed)}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onClearDates={clearDates}
+          />
+        </TabsContent>
+
+        {/* LOCATIONS TAB */}
+        <TabsContent value="locations" className="space-y-4 sm:space-y-6 focus-visible:outline-none">
+          <LocationPerformanceTable searchTerm={searchTerm} />
+        </TabsContent>
+
+        {/* ACTIVITY TAB */}
+        <TabsContent value="activity" className="space-y-4 sm:space-y-6 focus-visible:outline-none">
+          <div className="rounded-xl border border-border/80 bg-card p-3.5 sm:p-5 shadow-xs">
+            <ActivityTimeline searchTerm={searchTerm} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

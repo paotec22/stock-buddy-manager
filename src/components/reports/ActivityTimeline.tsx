@@ -123,20 +123,20 @@ export function ActivityTimeline({ searchTerm = "" }: ActivityTimelineProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between pb-2 border-b">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Filter className="h-4 w-4" />
-          <span>Filter activity</span>
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:items-center sm:justify-between pb-3 border-b border-border/60">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+          <Filter className="h-3.5 w-3.5" />
+          <span className="font-medium">Filter Activity Feed</span>
           {hasActiveFilters && (
-            <Badge variant="secondary" className="ml-1">
+            <Badge variant="secondary" className="ml-1 text-[11px] font-mono">
               {(tableFilter !== "all" ? 1 : 0) + (actionFilter !== "all" ? 1 : 0)} active
             </Badge>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <div className="grid grid-cols-2 sm:flex gap-2 sm:items-center">
           <Select value={tableFilter} onValueChange={setTableFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Type" />
+            <SelectTrigger className="w-full sm:w-[170px] h-9 text-xs sm:text-sm bg-background">
+              <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
               {TABLE_OPTIONS.map(opt => (
@@ -145,7 +145,7 @@ export function ActivityTimeline({ searchTerm = "" }: ActivityTimelineProps) {
             </SelectContent>
           </Select>
           <Select value={actionFilter} onValueChange={setActionFilter}>
-            <SelectTrigger className="w-full sm:w-[160px]">
+            <SelectTrigger className="w-full sm:w-[150px] h-9 text-xs sm:text-sm bg-background">
               <SelectValue placeholder="Action" />
             </SelectTrigger>
             <SelectContent>
@@ -162,62 +162,70 @@ export function ActivityTimeline({ searchTerm = "" }: ActivityTimelineProps) {
                 setTableFilter("all");
                 setActionFilter("all");
               }}
+              className="col-span-2 sm:col-span-1 h-8 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
             >
-              Clear
+              Clear filters
             </Button>
           )}
         </div>
       </div>
 
       {isLoading ? (
-        <div className="py-8 text-center text-muted-foreground">Loading activity...</div>
+        <div className="py-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span className="text-xs sm:text-sm">Loading activity logs...</span>
+        </div>
       ) : !filteredLogs.length ? (
-        <div className="py-8 text-center text-muted-foreground">No activity found</div>
+        <div className="py-12 text-center text-muted-foreground space-y-2">
+          <Clock className="h-8 w-8 mx-auto opacity-30" />
+          <p className="text-sm font-medium">No activity records found</p>
+          <p className="text-xs text-muted-foreground">Try adjusting your filters or search query.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {filteredLogs.map((log, index) => (
             <div key={log.id} className="relative">
               {index < filteredLogs.length - 1 && (
-                <div className="absolute left-6 top-12 w-0.5 h-full bg-border" />
+                <div className="absolute left-4 sm:left-5 top-10 sm:top-12 w-0.5 h-[calc(100%-0.5rem)] bg-border/60" />
               )}
 
-              <div className="flex gap-4 pb-4">
-                <div className={`flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center ${getActionColor(log.action_type)}`}>
+              <div className="flex gap-2.5 sm:gap-4 pb-2">
+                <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center ${getActionColor(log.action_type)}`}>
                   {getActionIcon(log.table_name)}
                 </div>
 
-                <div className="flex-1 min-w-0 bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">
+                <div className="flex-1 min-w-0 bg-card border border-border/80 rounded-lg p-3 sm:p-4 shadow-xs hover:border-border transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                      <h4 className="font-semibold text-xs sm:text-sm text-foreground truncate max-w-[240px] sm:max-w-md">
                         {log.item_description}
                       </h4>
-                      <Badge variant="outline" className={getActionColor(log.action_type)}>
+                      <Badge variant="outline" className={`text-[10px] sm:text-xs font-medium py-0 px-1.5 ${getActionColor(log.action_type)}`}>
                         {getActionLabel(log.action_type, log.table_name)}
                       </Badge>
                     </div>
-                    <time className="text-xs text-muted-foreground whitespace-nowrap">
+                    <time className="text-[11px] sm:text-xs text-muted-foreground whitespace-nowrap font-mono shrink-0">
                       {format(new Date(log.created_at), 'MMM dd, h:mm a')}
                     </time>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 text-xs pt-1 border-t border-border/40">
                     {log.location && (
                       <div>
-                        <span className="text-muted-foreground">Location:</span>
-                        <p className="font-medium">{log.location}</p>
+                        <span className="text-muted-foreground text-[10px] block">Location</span>
+                        <p className="font-medium text-foreground truncate">{log.location}</p>
                       </div>
                     )}
                     {log.quantity !== null && (
                       <div>
-                        <span className="text-muted-foreground">Quantity:</span>
-                        <p className="font-medium">{log.quantity}</p>
+                        <span className="text-muted-foreground text-[10px] block">Quantity</span>
+                        <p className="font-medium font-mono text-foreground">{log.quantity}</p>
                       </div>
                     )}
                     {log.amount !== null && (
                       <div>
-                        <span className="text-muted-foreground">Amount:</span>
-                        <p className="font-medium text-primary">{formatCurrency(log.amount)}</p>
+                        <span className="text-muted-foreground text-[10px] block">Amount</span>
+                        <p className="font-semibold font-mono text-primary tabular-nums">{formatCurrency(log.amount)}</p>
                       </div>
                     )}
                   </div>
