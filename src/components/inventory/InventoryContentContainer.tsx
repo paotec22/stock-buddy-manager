@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { InventoryHeader } from "@/components/inventory/InventoryHeader";
+import { InventorySubNav } from "@/components/inventory/InventorySubNav";
 import { AddInventoryForm } from "@/components/inventory/AddInventoryForm";
 import { BulkUploadModal } from "@/components/inventory/BulkUploadModal";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
@@ -56,6 +57,7 @@ export function InventoryContentContainer({
 
   return (
     <div className="space-y-6 fade-in">
+      <InventorySubNav activeTab="inventory" />
       <InventoryHeader
         selectedLocation={selectedLocation}
         onLocationChange={setSelectedLocation}

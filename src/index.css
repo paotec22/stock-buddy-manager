@@ -79,146 +79,146 @@
 
 @layer base {
 :root {
-    /* Industrial Executive SaaS Palette (Slate & Cobalt) */
-    --background: 220 14% 97%;
-    --foreground: 222.2 47% 11%;
+    /* Refined Executive SaaS Palette (Soft slate neutral & Deep Enterprise Indigo) */
+    --background: 220 18% 97.5%;
+    --foreground: 224 45% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47% 11%;
+    --card-foreground: 224 45% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47% 11%;
+    --popover-foreground: 224 45% 12%;
     
-    /* Focused Professional Primary - Enterprise Cobalt */
-    --primary: 221 83% 53%;
+    /* Focused Professional Primary - Deep Enterprise Indigo/Cobalt (Linear/Stripe polish) */
+    --primary: 226 70% 48%;
     --primary-foreground: 210 40% 98%;
-    --primary-light: 221 83% 65%;
-    --primary-glow: 221 83% 60%;
+    --primary-light: 226 70% 58%;
+    --primary-glow: 226 70% 52%;
     
     /* Subtle secondary accent */
-    --secondary: 215 16% 92%;
-    --secondary-foreground: 222.2 47% 11%;
-    --secondary-light: 215 16% 96%;
+    --secondary: 220 14% 93.5%;
+    --secondary-foreground: 224 45% 14%;
+    --secondary-light: 220 14% 96%;
     
     /* Muted tones */
     --muted: 220 14% 93%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 220 12% 46%;
     
     /* Accent */
-    --accent: 221 83% 96%;
-    --accent-foreground: 221 83% 53%;
-    --accent-light: 221 83% 98%;
+    --accent: 226 70% 96%;
+    --accent-foreground: 226 70% 48%;
+    --accent-light: 226 70% 98%;
     
-    /* Status colors - Industrial Clean (WCAG AA Compliant) */
-    --destructive: 0 72% 51%;
+    /* Status colors - Sophisticated Muted/Tinted (WCAG AA Compliant) */
+    --destructive: 350 80% 54%;
     --destructive-foreground: 0 0% 100%;
-    --success: 158 64% 40%;
+    --success: 160 60% 36%;
     --success-foreground: 0 0% 100%;
-    --success-light: 158 64% 50%;
-    --warning: 38 92% 50%;
-    --warning-light: 38 92% 60%;
-    --info: 221 83% 53%;
-    --info-light: 221 83% 65%;
+    --success-light: 160 60% 46%;
+    --warning: 38 90% 46%;
+    --warning-light: 38 90% 56%;
+    --info: 226 70% 48%;
+    --info-light: 226 70% 60%;
     
-    /* Clean, crisp borders and inputs */
-    --border: 220 13% 90%;
-    --input: 220 13% 88%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
+    /* Clean, crisp 1px borders and inputs */
+    --border: 220 13% 89%;
+    --input: 220 13% 86%;
+    --ring: 226 70% 48%;
+    --radius: 0.625rem;
     
     /* Subtle functional gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(224 76% 48%));
-    --gradient-accent: linear-gradient(135deg, hsl(221 83% 96%), hsl(220 14% 97%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 97%));
+    --gradient-primary: linear-gradient(135deg, hsl(226 70% 48%), hsl(226 75% 42%));
+    --gradient-accent: linear-gradient(135deg, hsl(226 70% 96%), hsl(220 18% 97.5%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 18% 97.5%));
     
-    /* Crisp elevation shadows (no blurry neon glow) */
-    --shadow-primary: 0 2px 8px -2px hsl(221 83% 53% / 0.15);
-    --shadow-accent: 0 2px 8px -2px hsl(222.2 47% 11% / 0.08);
+    /* Very soft, clean 1px border elevation shadows (no heavy blur) */
+    --shadow-primary: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-accent: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
     --shadow-glow: none;
     
     /* Table colors with clean alternating neutrality */
     --table-row-even: 0 0% 100%;
-    --table-row-odd: 220 14% 98.5%;
-    --table-row-hover: 220 14% 95%;
+    --table-row-odd: 220 16% 98.5%;
+    --table-row-hover: 220 16% 95.5%;
     
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222.2 47.4% 11.2%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-foreground: 224 45% 12%;
+    --sidebar-primary: 226 70% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-    --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-accent-foreground: 224 45% 12%;
+    --sidebar-border: 220 13% 89%;
+    --sidebar-ring: 226 70% 48%;
   }
 
 .dark {
-    /* Dark mode - Deep Slate Enterprise Canvas */
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
+    /* Dark mode - True Slate Carbon (not pitch black) */
+    --background: 224 35% 8%;
+    --foreground: 210 30% 96%;
+    --card: 224 35% 10.5%;
+    --card-foreground: 210 30% 96%;
+    --popover: 224 35% 10.5%;
+    --popover-foreground: 210 30% 96%;
     
-    /* Vibrant yet professional cobalt in dark mode */
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 6%;
-    --primary-light: 217 91% 70%;
-    --primary-glow: 217 91% 65%;
+    /* Vibrant yet disciplined indigo in dark mode */
+    --primary: 224 75% 62%;
+    --primary-foreground: 224 35% 8%;
+    --primary-light: 224 75% 72%;
+    --primary-glow: 224 75% 66%;
     
     /* Dark secondary */
-    --secondary: 217 32% 16%;
-    --secondary-foreground: 210 40% 98%;
-    --secondary-light: 217 32% 22%;
+    --secondary: 224 25% 16%;
+    --secondary-foreground: 210 30% 96%;
+    --secondary-light: 224 25% 21%;
     
     /* Muted tones */
-    --muted: 217 32% 14%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 224 25% 14.5%;
+    --muted-foreground: 220 14% 64%;
     
     /* Accent */
-    --accent: 217 32% 16%;
-    --accent-foreground: 217 91% 65%;
-    --accent-light: 217 32% 20%;
+    --accent: 224 25% 17%;
+    --accent-foreground: 224 75% 68%;
+    --accent-light: 224 25% 20%;
     
     /* Status colors */
-    --destructive: 0 72% 58%;
+    --destructive: 350 75% 60%;
     --destructive-foreground: 0 0% 100%;
-    --success: 158 64% 46%;
+    --success: 160 55% 44%;
     --success-foreground: 0 0% 100%;
-    --success-light: 158 64% 56%;
-    --warning: 38 92% 54%;
-    --warning-light: 38 92% 64%;
-    --info: 217 91% 60%;
-    --info-light: 217 91% 70%;
+    --success-light: 160 55% 54%;
+    --warning: 38 85% 52%;
+    --warning-light: 38 85% 62%;
+    --info: 224 75% 62%;
+    --info-light: 224 75% 70%;
     
     /* Borders and inputs */
-    --border: 217 32% 18%;
-    --input: 217 32% 18%;
-    --ring: 217 91% 60%;
+    --border: 224 25% 17%;
+    --input: 224 25% 19%;
+    --ring: 224 75% 62%;
     
     /* Dark gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(221 83% 53%));
-    --gradient-accent: linear-gradient(135deg, hsl(217 32% 18%), hsl(222 47% 9%));
-    --gradient-subtle: linear-gradient(180deg, hsl(222 47% 9%), hsl(222 47% 6%));
+    --gradient-primary: linear-gradient(135deg, hsl(224 75% 62%), hsl(226 70% 48%));
+    --gradient-accent: linear-gradient(135deg, hsl(224 25% 16%), hsl(224 35% 10.5%));
+    --gradient-subtle: linear-gradient(180deg, hsl(224 35% 10.5%), hsl(224 35% 8%));
     
     /* Dark shadows */
-    --shadow-primary: 0 2px 8px -2px hsl(217 91% 60% / 0.2);
-    --shadow-accent: 0 2px 8px -2px hsl(0 0% 0% / 0.4);
+    --shadow-primary: 0 1px 3px 0 rgb(0 0 0 / 0.35);
+    --shadow-accent: 0 2px 4px -1px rgb(0 0 0 / 0.4);
     --shadow-glow: none;
     
     /* Dark table colors */
-    --table-row-even: 222 47% 9%;
-    --table-row-odd: 222 47% 7.5%;
-    --table-row-hover: 217 32% 14%;
+    --table-row-even: 224 35% 10.5%;
+    --table-row-odd: 224 35% 9%;
+    --table-row-hover: 224 25% 15%;
     
     /* Dark sidebar */
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-background: 224 35% 9.5%;
+    --sidebar-foreground: 210 30% 96%;
+    --sidebar-primary: 224 75% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 32% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 32% 16%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 224 25% 15%;
+    --sidebar-accent-foreground: 210 30% 96%;
+    --sidebar-border: 224 25% 16%;
+    --sidebar-ring: 224 75% 62%;
   }
 }
 

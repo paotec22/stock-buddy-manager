@@ -17,9 +17,10 @@ import {
   Users,
   ImageIcon,
   X,
+  Wrench,
 } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -32,39 +33,48 @@ interface NavItemProps {
   children: React.ReactNode;
   onClick?: () => void;
   tourId?: string;
+  end?: boolean;
 }
 
-function NavItem({ to, icon: Icon, children, onClick, tourId }: NavItemProps) {
+function NavItem({ to, icon: Icon, children, onClick, tourId, end }: NavItemProps) {
+  const location = useLocation();
+  const isInventoryGroup = to === "/inventory" && location.pathname.startsWith("/inventory");
+
   return (
     <NavLink
       to={to}
+      end={end}
       onClick={onClick}
       data-tour={tourId}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150",
-          isActive
-            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+          "relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium tracking-tight transition-all duration-150 select-none",
+          isActive || (isInventoryGroup && to === "/inventory")
+            ? "bg-primary text-primary-foreground font-semibold shadow-xs ring-1 ring-primary/30"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
         )
       }
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-3.5 w-3.5" />
       <span>{children}</span>
     </NavLink>
   );
 }
 
-function MobileNavItem({ to, icon: Icon, children, onClick, tourId }: NavItemProps) {
+function MobileNavItem({ to, icon: Icon, children, onClick, tourId, end }: NavItemProps) {
+  const location = useLocation();
+  const isInventoryGroup = to === "/inventory" && location.pathname === "/inventory";
+
   return (
     <NavLink
       to={to}
+      end={end}
       onClick={onClick}
       data-tour={tourId}
       className={({ isActive }) =>
         cn(
           "flex items-center gap-3 rounded-md px-3.5 py-3 text-sm font-medium transition-colors duration-150 min-h-[44px]",
-          isActive
+          isActive || (isInventoryGroup && to === "/inventory")
             ? "bg-primary text-primary-foreground font-semibold shadow-sm"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/70 active:bg-muted"
         )
@@ -228,8 +238,11 @@ export function TopNavbar() {
 
                 {/* Mobile nav items */}
                 <nav className="flex-1 flex flex-col gap-1 p-3 overflow-y-auto">
-                  <MobileNavItem to="/inventory" icon={Package} onClick={closeMobile} tourId="sidebar-inventory">
+                  <MobileNavItem to="/inventory" icon={Package} onClick={closeMobile} tourId="sidebar-inventory" end>
                     Inventory
+                  </MobileNavItem>
+                  <MobileNavItem to="/inventory/accessories" icon={Wrench} onClick={closeMobile}>
+                    Accessories (Spares)
                   </MobileNavItem>
                   <MobileNavItem to="/catalogue" icon={ImageIcon} onClick={closeMobile} tourId="sidebar-catalogue">
                     Catalogue

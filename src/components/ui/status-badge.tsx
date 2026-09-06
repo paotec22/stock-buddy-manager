@@ -13,31 +13,31 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, quantity, showIcon = true, size = "md", variant = "default" }: StatusBadgeProps) {
   const sizeClasses = {
-    sm: "text-xs px-2 py-0.5",
-    md: "text-xs px-2.5 py-1",
-    lg: "text-sm px-3 py-1.5"
+    sm: "text-[11px] px-2 py-0.5 tracking-tight",
+    md: "text-xs px-2.5 py-0.5 tracking-tight font-medium",
+    lg: "text-xs px-3 py-1 font-medium"
   };
 
   const statusConfig = {
     "in-stock": {
       label: "In Stock",
       icon: CheckCircle2,
-      className: "bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60"
+      className: "bg-emerald-500/10 text-emerald-800 border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/25"
     },
     "low-stock": {
       label: "Low Stock",
       icon: AlertTriangle,
-      className: "bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/60"
+      className: "bg-amber-500/10 text-amber-800 border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/25"
     },
     "out-of-stock": {
       label: "Out of Stock",
       icon: XCircle,
-      className: "bg-rose-50 text-rose-700 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/60"
+      className: "bg-rose-500/10 text-rose-800 border-rose-500/20 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/25"
     },
     "normal": {
       label: "Normal",
       icon: Package,
-      className: "bg-muted text-muted-foreground border-border"
+      className: "bg-muted/70 text-muted-foreground border-border/80"
     }
   };
 

@@ -65,18 +65,18 @@ function getStockStatus(qty: number) {
   if (qty <= 0)
     return {
       label: "Out of Stock",
-      badgeColor: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-900/50",
-      dotColor: "bg-red-500",
+      badgeColor: "bg-rose-500/10 text-rose-700 border-rose-500/20 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/25",
+      dotColor: "bg-rose-500",
     };
   if (qty <= 10)
     return {
       label: "Low Stock",
-      badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-900/50",
+      badgeColor: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/25",
       dotColor: "bg-amber-500",
     };
   return {
     label: "In Stock",
-    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-900/50",
+    badgeColor: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/25",
     dotColor: "bg-emerald-500",
   };
 }
@@ -121,7 +121,7 @@ function GridCard({
   return (
     <Card
       onClick={onClick}
-      className="overflow-hidden group cursor-pointer border border-border/40 bg-card/65 backdrop-blur-sm rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40"
+      className="overflow-hidden group cursor-pointer border border-border/80 bg-card rounded-xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40"
     >
       <div className="aspect-square bg-slate-100 dark:bg-slate-900/40 relative overflow-hidden flex items-center justify-center">
         {url ? (
@@ -193,7 +193,7 @@ function ListRow({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 p-3 rounded-2xl border border-border/40 bg-card/65 backdrop-blur-sm hover:bg-card hover:shadow-md transition-all duration-300 cursor-pointer group hover:border-primary/40"
+      className="flex items-center gap-4 p-3 rounded-xl border border-border/80 bg-card hover:bg-card/90 hover:shadow-sm transition-all duration-200 cursor-pointer group hover:border-primary/40"
     >
       <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-900/40 overflow-hidden flex-shrink-0 relative flex items-center justify-center">
         {url ? (
@@ -662,36 +662,33 @@ export default function Catalogue() {
       {/* ── SCREEN STATS BAR (Hidden when printing) ──────────────────────── */}
       {stats && !isLoading && (
         <div className="hidden sm:grid sm:grid-cols-3 gap-3 md:gap-4 print:hidden">
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <div className="flex items-center gap-3.5 rounded-xl border border-border/80 bg-card p-4 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
               <Package className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Total Products</p>
-              <p className="text-lg font-extrabold mt-1.5 truncate text-foreground">{stats.total}</p>
+              <p className="text-xl font-bold font-mono tabular-nums mt-1 truncate text-foreground">{stats.total}</p>
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <div className="flex items-center gap-3.5 rounded-xl border border-border/80 bg-card p-4 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
               <Camera className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">With Photos</p>
-              <p className="text-lg font-extrabold mt-1.5 truncate text-foreground">{stats.withImages}</p>
+              <p className="text-xl font-bold font-mono tabular-nums mt-1 truncate text-foreground">{stats.withImages}</p>
             </div>
           </div>
 
-          <div className="relative overflow-hidden flex items-center gap-4 rounded-2xl border border-border/40 bg-card/65 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+          <div className="flex items-center gap-3.5 rounded-xl border border-border/80 bg-card p-4 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Highest Price</p>
-              <p className="text-lg font-extrabold mt-1.5 truncate text-primary">
+              <p className="text-xl font-bold font-mono tabular-nums mt-1 truncate text-foreground">
                 {formatCurrency(stats.maxPrice)}
               </p>
             </div>

@@ -221,34 +221,34 @@ export default function Customers() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="rounded-2xl border-border/60">
+        <Card className="rounded-xl border-border/80 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Total customers
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{customers.length}</div>
+            <div className="text-2xl font-bold font-mono tracking-tight tabular-nums">{customers.length}</div>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl border-border/60">
+        <Card className="rounded-xl border-border/80 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Customers with sales
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Object.keys(salesByCustomer).length}</div>
+            <div className="text-2xl font-bold font-mono tracking-tight tabular-nums">{Object.keys(salesByCustomer).length}</div>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl border-border/60">
+        <Card className="rounded-xl border-border/80 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Outstanding balance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">
+            <div className="text-2xl font-bold font-mono tracking-tight tabular-nums text-destructive">
               ₦{totalOutstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
           </CardContent>
@@ -261,7 +261,7 @@ export default function Customers() {
           placeholder="Search by name, phone, or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-11 sm:h-10 text-sm rounded-xl bg-card/65 border-border/60"
+          className="pl-9 h-10 text-xs rounded-xl bg-card border-border/80"
         />
       </div>
 
@@ -282,7 +282,7 @@ export default function Customers() {
             return (
               <Card
                 key={c.id}
-                className="hover:shadow-md transition-all cursor-pointer rounded-2xl border-border/60 group"
+                className="hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer rounded-xl border-border/80 group"
                 onClick={() => setSelected(c)}
               >
                 <CardHeader className="pb-2">

@@ -27,6 +27,7 @@ import Request from "./pages/Request";
 import Customers from "./pages/Customers";
 import Catalogue from "./pages/Catalogue";
 import PublicCatalogue from "./pages/PublicCatalogue";
+import Accessories from "./pages/Accessories";
 
 // Animated Routes Component
 function AnimatedRoutes() {
@@ -38,6 +39,8 @@ function AnimatedRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
         <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
+        <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />
+        <Route path="/accessories" element={<Navigate to="/inventory/accessories" replace />} />
         <Route path="/sales" element={<AppLayout><Sales /></AppLayout>} />
         <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
         <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />

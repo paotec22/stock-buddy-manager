@@ -44,103 +44,123 @@ export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, se
   const totalItems = items.length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Total Value Card */}
-      <Card className="border border-border bg-card shadow-sm rounded-lg">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Inventory Value</span>
-                <button
-                  onClick={() => setShowValue(!showValue)}
-                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showValue ? "Hide value" : "Show value"}
-                >
-                  {showValue ? (
-                    <Eye className="h-3.5 w-3.5" />
-                  ) : (
-                    <EyeOff className="h-3.5 w-3.5" />
-                  )}
-                </button>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-foreground tracking-tight">
-                {showValue ? formatCurrency(calculateGrandTotal()) : "••••••••"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Location: <span className="font-medium text-foreground">{selectedLocation}</span> • {totalItems} total SKU items
-              </p>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Primary Stat Card: Total Value (dominates visually, spans 2 cols on lg) */}
+      <div className="lg:col-span-2 rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)] transition-all duration-200">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Total Inventory Value
+              </span>
+              <button
+                onClick={() => setShowValue(!showValue)}
+                className="p-1 rounded-md hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showValue ? "Hide value" : "Show value"}
+              >
+                {showValue ? (
+                  <Eye className="h-3.5 w-3.5" />
+                ) : (
+                  <EyeOff className="h-3.5 w-3.5" />
+                )}
+              </button>
             </div>
-            <div className="flex items-center justify-center w-10 h-10 rounded-md bg-muted text-foreground border border-border">
-              <TrendingUp className="h-5 w-5 text-primary" />
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground tabular-nums">
+                {showValue ? formatCurrency(calculateGrandTotal()) : "••••••••"}
+              </h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 font-medium text-foreground">
+                Location: {selectedLocation}
+              </span>
+              <span>•</span>
+              <span className="font-mono tabular-nums font-semibold text-foreground">{totalItems}</span> total active SKUs
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Status Summary Card */}
-      <Card className="border border-border bg-card shadow-xs rounded-lg">
-        <CardContent className="p-5">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stock Status Filters</span>
-              {selectedStatus && (
-                <button
-                  onClick={() => onStatusClick?.(selectedStatus)}
-                  className="text-xs text-primary hover:underline font-medium"
-                >
-                  Clear filter
-                </button>
-              )}
+          <div className="hidden sm:flex flex-col items-end justify-between self-stretch">
+            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 text-primary border border-primary/20">
+              <TrendingUp className="h-5 w-5" />
             </div>
-            
-            <div className="grid grid-cols-3 gap-2.5">
-              <button
-                onClick={() => onStatusClick?.("in-stock")}
-                className={`text-center p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  selectedStatus === "in-stock"
-                    ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary"
-                    : "border-border bg-background hover:bg-muted/50"
-                }`}
-              >
-                <div className="text-xs font-medium text-muted-foreground mb-1">In Stock</div>
-                <p className="text-xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400">{statusCounts.inStock}</p>
-              </button>
-              <button
-                onClick={() => onStatusClick?.("low-stock")}
-                className={`text-center p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  selectedStatus === "low-stock"
-                    ? "border-amber-500 bg-amber-500/5 text-foreground ring-1 ring-amber-500"
-                    : "border-border bg-background hover:bg-muted/50"
-                }`}
-              >
-                <div className="text-xs font-medium text-muted-foreground mb-1">Low Stock</div>
-                <p className="text-xl font-bold font-mono tabular-nums text-amber-600 dark:text-amber-400">{statusCounts.lowStock}</p>
-              </button>
-              <button
-                onClick={() => onStatusClick?.("out-of-stock")}
-                className={`text-center p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  selectedStatus === "out-of-stock"
-                    ? "border-rose-500 bg-rose-500/5 text-foreground ring-1 ring-rose-500"
-                    : "border-border bg-background hover:bg-muted/50"
-                }`}
-              >
-                <div className="text-xs font-medium text-muted-foreground mb-1">Out of Stock</div>
-                <p className="text-xl font-bold font-mono tabular-nums text-rose-600 dark:text-rose-400">{statusCounts.outOfStock}</p>
-              </button>
-            </div>
+            <span className="text-[11px] text-muted-foreground font-mono">Live Valuation</span>
+          </div>
+        </div>
+      </div>
 
-            {statusCounts.lowStock > 0 && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200/80 rounded-md dark:bg-amber-950/30 dark:border-amber-800/50">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 flex-shrink-0" />
-                <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
-                  {statusCounts.lowStock} item{statusCounts.lowStock > 1 ? 's' : ''} requires replenishment
-                </p>
-              </div>
+      {/* Secondary Card: Stock Health Breakdown */}
+      <div className="rounded-xl border border-border/80 bg-card p-5 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Stock Health Status
+            </span>
+            {selectedStatus && (
+              <button
+                onClick={() => onStatusClick?.(selectedStatus)}
+                className="text-xs text-primary hover:underline font-medium"
+              >
+                Reset filter
+              </button>
             )}
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => onStatusClick?.("in-stock")}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-lg border transition-all cursor-pointer ${
+                selectedStatus === "in-stock"
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-foreground ring-1 ring-emerald-500/40"
+                  : "border-border/80 bg-muted/30 hover:bg-muted/60"
+              }`}
+            >
+              <span className="text-[11px] font-medium text-muted-foreground mb-1">In Stock</span>
+              <span className="text-xl font-bold font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
+                {statusCounts.inStock}
+              </span>
+            </button>
+            <button
+              onClick={() => onStatusClick?.("low-stock")}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-lg border transition-all cursor-pointer ${
+                selectedStatus === "low-stock"
+                  ? "border-amber-500/40 bg-amber-500/10 text-foreground ring-1 ring-amber-500/40"
+                  : "border-border/80 bg-muted/30 hover:bg-muted/60"
+              }`}
+            >
+              <span className="text-[11px] font-medium text-muted-foreground mb-1">Low Stock</span>
+              <span className="text-xl font-bold font-mono tabular-nums text-amber-700 dark:text-amber-400">
+                {statusCounts.lowStock}
+              </span>
+            </button>
+            <button
+              onClick={() => onStatusClick?.("out-of-stock")}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-lg border transition-all cursor-pointer ${
+                selectedStatus === "out-of-stock"
+                  ? "border-rose-500/40 bg-rose-500/10 text-foreground ring-1 ring-rose-500/40"
+                  : "border-border/80 bg-muted/30 hover:bg-muted/60"
+              }`}
+            >
+              <span className="text-[11px] font-medium text-muted-foreground mb-1">Out</span>
+              <span className="text-xl font-bold font-mono tabular-nums text-rose-700 dark:text-rose-400">
+                {statusCounts.outOfStock}
+              </span>
+            </button>
+          </div>
+
+          {statusCounts.lowStock > 0 ? (
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg dark:bg-amber-500/15">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
+              <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
+                {statusCounts.lowStock} item{statusCounts.lowStock > 1 ? 's' : ''} below threshold
+              </p>
+            </div>
+          ) : (
+            <p className="text-[11px] text-muted-foreground text-center py-1">
+              All active inventory levels healthy
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

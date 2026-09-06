@@ -47,8 +47,8 @@ const PAGE_SIZE = 20;
 const VIEW_KEY = "pub_catalogue_view_mode";
 
 // Business contact — powers the enquiry CTAs on the public page
-const BUSINESS_PHONE = "07035339641";
-const WHATSAPP_NUMBER = "2347035339641";
+const BUSINESS_PHONE = "08131927116";
+const WHATSAPP_NUMBER = "2348131927116";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
   "Hello! I just viewed your product catalogue online and would like to make an enquiry."
 )}`;
