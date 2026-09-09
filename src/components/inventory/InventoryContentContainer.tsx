@@ -66,6 +66,10 @@ export function InventoryContentContainer({
         onExport={() => setShowExportModal(true)}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        totalItemsCount={inventoryItems.length}
+        filteredItemsCount={filteredItems.length}
         isOffline={isOffline}
         pendingCount={pendingCount}
       />

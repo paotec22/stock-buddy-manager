@@ -96,18 +96,18 @@ export function InventoryMobileCard({
         }`}
       >
         {/* Top Header: Select Checkbox, Image, Description, and 3-dot Menu */}
-        <div className="flex items-start gap-3">
-          {/* Checkbox with large touch target */}
-          <div className="pt-1 shrink-0">
+        <div className="flex items-start gap-2.5 sm:gap-3">
+          {/* Checkbox with generous touch target */}
+          <div className="shrink-0 -ml-1 -mt-1">
             <div
               onClick={() => onToggleSelect(item.id)}
-              className="h-7 w-7 flex items-center justify-center cursor-pointer rounded-md hover:bg-muted/80 transition-colors"
+              className="min-h-[44px] min-w-[40px] flex items-center justify-center cursor-pointer rounded-lg hover:bg-muted/80 transition-colors touch-manipulation"
               aria-label={isSelected ? "Deselect item" : "Select item"}
             >
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onToggleSelect(item.id)}
-                className="h-4 w-4 rounded data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                className="h-4 w-4 rounded data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground pointer-events-none"
               />
             </div>
           </div>
@@ -278,18 +278,18 @@ export function InventoryMobileCard({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-l-lg rounded-r-none hover:bg-muted active:scale-95 touch-manipulation disabled:opacity-30"
+                className="h-9 w-9 rounded-l-lg rounded-r-none hover:bg-muted active:scale-95 touch-manipulation disabled:opacity-30"
                 onClick={() => handleStepQuantity(-1)}
                 disabled={isUpdatingQty || (item.Quantity || 0) <= 0}
                 aria-label="Decrease quantity by 1"
               >
-                <Minus className="h-3.5 w-3.5" />
+                <Minus className="h-4 w-4" />
               </Button>
 
               <button
                 type="button"
                 onClick={() => onOpenEditDialog(item)}
-                className="min-w-[40px] px-1.5 text-center font-mono font-bold text-xs text-foreground hover:text-primary transition-colors"
+                className="min-w-[44px] px-2 py-1 text-center font-mono font-bold text-xs text-foreground hover:text-primary transition-colors touch-manipulation"
                 title="Tap to enter exact quantity"
               >
                 {isUpdatingQty ? (
@@ -303,12 +303,12 @@ export function InventoryMobileCard({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-r-lg rounded-l-none hover:bg-muted active:scale-95 touch-manipulation"
+                className="h-9 w-9 rounded-r-lg rounded-l-none hover:bg-muted active:scale-95 touch-manipulation"
                 onClick={() => handleStepQuantity(1)}
                 disabled={isUpdatingQty}
                 aria-label="Increase quantity by 1"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
           </div>

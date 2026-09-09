@@ -75,6 +75,21 @@
   /* Price pill in print */
   .bg-primary\/10 { background-color: #eff6ff !important; }
   .text-primary   { color: #1d4ed8 !important; }
+
+  /* Invoice Print Layout: Anchors Payment Instructions and Footer to the bottom of the page */
+  .invoice-print-container {
+    min-height: calc(100vh - 20mm) !important;
+    min-height: 255mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .invoice-print-bottom {
+    margin-top: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
 }
 
 @layer base {
@@ -527,4 +542,35 @@
     );
   mask-image: radial-gradient(ellipse at 50% 0%, black 50%, transparent 90%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 50%, transparent 90%);
+}
+
+/* Print layout optimizations */
+@media print {
+  @page {
+    size: auto;
+    margin: 12mm 10mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  .invoice-print-container {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: calc(100vh - 24mm) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .invoice-print-bottom {
+    margin-top: auto !important;
+    padding-top: 1rem !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
 }

@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
+import type { Currency } from "@/components/invoice/CurrencyChanger";
+import { printInvoiceDocument, exportInvoiceToPdf } from "@/utils/invoicePrint";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceItemRow = Database['public']['Tables']['invoice_items']['Row'];
@@ -38,7 +40,9 @@ export const useInvoiceOperations = (
     includeVat: boolean;
     discountPercent: number;
     selectedCustomerId: string | null;
-  }) => void
+  }) => void,
+  amountPaid: number = 0,
+  selectedCurrency?: Currency
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedInvoices, setSavedInvoices] = useState<Invoice[]>([]);
@@ -56,6 +60,8 @@ export const useInvoiceOperations = (
     const afterDiscount = subtotal - discountAmount;
     const taxAmount = includeVat ? (afterDiscount * VAT_RATE) / 100 : 0;
     const totalAmount = afterDiscount + taxAmount;
+    const balance = Math.max(0, totalAmount - amountPaid);
+    const isPaidInFull = totalAmount > 0 && amountPaid >= totalAmount;
     
     return {
       subtotal,
@@ -65,6 +71,9 @@ export const useInvoiceOperations = (
       discount_amount: discountAmount,
       total_amount: totalAmount,
       total: subtotal,
+      amount_paid: amountPaid,
+      balance,
+      isPaidInFull,
       invoice_number: invoiceNumber || `INV-${format(new Date(), "yyyyMMddHHmmss")}`
     };
   };
@@ -127,7 +136,8 @@ export const useInvoiceOperations = (
 
       if (itemsError) throw itemsError;
 
-      toast.success(`Invoice ${totals.invoice_number} saved successfully!`);
+      const docType = totals.isPaidInFull ? "Receipt" : "Invoice";
+      toast.success(`${docType} ${totals.invoice_number} saved successfully!`);
       fetchSavedInvoices();
     } catch (error: any) {
       console.error('Error creating invoice:', error);
@@ -138,12 +148,53 @@ export const useInvoiceOperations = (
   };
 
   const handlePrint = () => {
-    window.print();
+    const totals = calculateTotals();
+    printInvoiceDocument({
+      invoiceNumber: totals.invoice_number,
+      invoiceDate,
+      dueDate,
+      customerName: customerName || "Valued Customer",
+      customerPhone: customerPhone || undefined,
+      customerAddress: customerAddress || undefined,
+      customerEmail: customerEmail || undefined,
+      items: validItems,
+      currency: selectedCurrency,
+      subtotal: totals.subtotal,
+      discountPercent,
+      discountAmount: totals.discount_amount,
+      vatRate: totals.tax_rate,
+      vatAmount: totals.tax_amount,
+      grandTotal: totals.total_amount,
+      amountPaid,
+      balance: totals.balance,
+      isPaidInFull: totals.isPaidInFull,
+      notes: notes || undefined,
+    });
   };
 
   const handleDownload = () => {
-    toast.info("Preparing print/PDF preview...");
-    window.print();
+    const totals = calculateTotals();
+    exportInvoiceToPdf({
+      invoiceNumber: totals.invoice_number,
+      invoiceDate,
+      dueDate,
+      customerName: customerName || "Valued Customer",
+      customerPhone: customerPhone || undefined,
+      customerAddress: customerAddress || undefined,
+      customerEmail: customerEmail || undefined,
+      items: validItems,
+      currency: selectedCurrency,
+      subtotal: totals.subtotal,
+      discountPercent,
+      discountAmount: totals.discount_amount,
+      vatRate: totals.tax_rate,
+      vatAmount: totals.tax_amount,
+      grandTotal: totals.total_amount,
+      amountPaid,
+      balance: totals.balance,
+      isPaidInFull: totals.isPaidInFull,
+      notes: notes || undefined,
+    });
   };
 
   const fetchSavedInvoices = async () => {
@@ -230,132 +281,40 @@ export const useInvoiceOperations = (
 
   const handlePrintSavedInvoice = async (invoice: Invoice) => {
     try {
-      const { data: itemsData } = await supabase
+      const { data: itemsData, error } = await supabase
         .from('invoice_items')
         .select('*')
         .eq('invoice_id', invoice.id);
 
-      const itemsList = itemsData || [];
+      if (error) throw error;
 
-      const itemsHtml = itemsList.map((item, idx) => `
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="padding: 10px 12px; font-size: 13px;">${item.description}</td>
-          <td style="padding: 10px 12px; font-size: 13px; text-align: center;">${item.quantity}</td>
-          <td style="padding: 10px 12px; font-size: 13px; text-align: right; font-family: monospace;">₦${Number(item.unit_price).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
-          <td style="padding: 10px 12px; font-size: 13px; text-align: right; font-weight: 600; font-family: monospace;">₦${Number(item.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
-        </tr>
-      `).join('');
+      const itemsList = (itemsData || []).map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: Number(item.unit_price),
+        amount: Number(item.amount)
+      }));
 
-      const printContents = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Invoice ${invoice.invoice_number}</title>
-          <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; margin: 0; padding: 24px; }
-            .invoice-box { max-width: 800px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; }
-            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #081def; padding-bottom: 16px; margin-bottom: 20px; }
-            .title { font-size: 24px; font-weight: 800; color: #081def; margin: 0; }
-            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; font-size: 13px; }
-            .info-block h4 { margin: 0 0 6px 0; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-            .info-block p { margin: 2px 0; font-weight: 500; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-            th { background: #f8fafc; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #475569; border-bottom: 1px solid #cbd5e1; }
-            .totals { margin-left: auto; width: 280px; font-size: 13px; }
-            .totals-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
-            .totals-row.grand { border-top: 2px solid #081def; border-bottom: none; font-size: 16px; font-weight: 700; color: #081def; padding-top: 10px; }
-            .bank-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px; font-size: 12px; color: #1e40af; margin-top: 24px; }
-            .footer { margin-top: 32px; background: #081def; color: #ffffff; padding: 12px 20px; border-radius: 6px; display: flex; justify-content: space-between; font-size: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="invoice-box">
-            <div class="header">
-              <div>
-                <h1 class="title">INVOICE</h1>
-                <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Puido Smart Solutions Ltd</p>
-              </div>
-              <div style="text-align: right;">
-                <p style="margin:0; font-size: 16px; font-weight: 700;"># ${invoice.invoice_number}</p>
-                <p style="margin:4px 0 0 0; font-size: 12px; color: #64748b;">Date: ${new Date(invoice.created_at).toLocaleDateString('en-GB')}</p>
-              </div>
-            </div>
+      const grandTotal = Number(invoice.total_amount || 0);
 
-            <div class="info-grid">
-              <div class="info-block">
-                <h4>Invoice To</h4>
-                <p style="font-size: 15px; font-weight: 700; color: #0f172a;">${invoice.customer_name || 'Valued Customer'}</p>
-                ${invoice.customer_phone ? `<p>Phone: ${invoice.customer_phone}</p>` : ''}
-                ${invoice.customer_address ? `<p>Address: ${invoice.customer_address}</p>` : ''}
-              </div>
-              <div class="info-block" style="text-align: right;">
-                <h4>Payment Details</h4>
-                <p>Status: <span style="color: #16a34a; font-weight: 700;">ISSUED</span></p>
-              </div>
-            </div>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th style="text-align: center;">Qty</th>
-                  <th style="text-align: right;">Unit Price</th>
-                  <th style="text-align: right;">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHtml}
-              </tbody>
-            </table>
-
-            <div class="totals">
-              <div class="totals-row">
-                <span>Subtotal:</span>
-                <span>₦${Number(invoice.subtotal).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
-              </div>
-              ${Number(invoice.tax_amount) > 0 ? `
-                <div class="totals-row">
-                  <span>VAT (${invoice.tax_rate}%):</span>
-                  <span>₦${Number(invoice.tax_amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
-                </div>
-              ` : ''}
-              <div class="totals-row grand">
-                <span>Total Amount:</span>
-                <span>₦${Number(invoice.total_amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
-              </div>
-            </div>
-
-            ${invoice.notes && invoice.notes.trim() ? `
-              <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; color: #475569;">
-                <strong style="color: #0f172a; display: block; margin-bottom: 4px; text-transform: uppercase; font-size: 11px;">Terms & Notes:</strong>
-                ${invoice.notes.replace(/\n/g, '<br/>')}
-              </div>
-            ` : ''}
-
-            <div class="bank-card">
-              <p style="margin: 0 0 4px 0; font-weight: 700; text-transform: uppercase;">Payment Method (Bank Transfer):</p>
-              <p style="margin: 2px 0;">Bank Name: <strong>Globus Bank</strong></p>
-              <p style="margin: 2px 0;">Account Number: <strong>1000145362</strong></p>
-              <p style="margin: 2px 0;">Account Name: <strong>Puido Smart Solution Ltd.</strong></p>
-            </div>
-
-            <div class="footer">
-              <span>Phone: 07035339641, 08131927116</span>
-              <span>41, Olowu Street, Ikeja, Lagos</span>
-            </div>
-          </div>
-          <script>
-            window.onload = function() { window.print(); };
-          </script>
-        </body>
-        </html>
-      `;
-
-      const newWindow = window.open("", "_blank");
-      if (newWindow) {
-        newWindow.document.write(printContents);
-        newWindow.document.close();
-      }
+      printInvoiceDocument({
+        invoiceNumber: invoice.invoice_number || `INV-${invoice.id}`,
+        invoiceDate: invoice.invoice_date ? new Date(invoice.invoice_date) : new Date(invoice.created_at),
+        dueDate: invoice.due_date ? new Date(invoice.due_date) : undefined,
+        customerName: invoice.customer_name || 'Valued Customer',
+        customerPhone: invoice.customer_phone || undefined,
+        customerAddress: invoice.customer_address || undefined,
+        items: itemsList,
+        currency: selectedCurrency,
+        subtotal: Number(invoice.subtotal || grandTotal),
+        vatRate: Number(invoice.tax_rate || 0),
+        vatAmount: Number(invoice.tax_amount || 0),
+        grandTotal,
+        amountPaid: 0,
+        balance: grandTotal,
+        isPaidInFull: false,
+        notes: invoice.notes || undefined
+      });
     } catch (error) {
       console.error("Error printing invoice:", error);
       toast.error("Failed to generate print view");

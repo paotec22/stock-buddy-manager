@@ -22,8 +22,8 @@ export const BankDetails = () => {
   };
 
   return (
-    <Card className="mt-3 border border-blue-200 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 print:shadow-none print:border-none print:rounded-none print:bg-transparent print:mt-1">
-      <CardContent className="p-3 sm:p-3.5 print:p-0">
+    <Card className="mt-3 border border-blue-200 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 print:shadow-none print:border print:border-blue-300 print:rounded-lg print:bg-blue-50/30 print:break-inside-avoid print:mt-1">
+      <CardContent className="p-3 sm:p-3.5 print:p-2.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-900/40">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-[#081def]" />

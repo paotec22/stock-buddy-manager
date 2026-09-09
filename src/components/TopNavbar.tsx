@@ -129,7 +129,7 @@ export function TopNavbar() {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-card/95 backdrop-blur-md supports-[backdrop-filter]:bg-card/80">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-card/95 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 print:hidden">
       <div className="flex h-14 items-center px-4 md:px-6 lg:px-8 w-full">
         {/* Logo */}
         <NavLink to="/inventory" className="flex items-center gap-2.5 mr-6 group">

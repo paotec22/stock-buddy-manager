@@ -8,6 +8,7 @@ interface InvoiceActionsProps {
   onShowSavedInvoices: () => void;
   isSubmitting: boolean;
   onReset?: () => void;
+  isPaidInFull?: boolean;
 }
 
 export const InvoiceActions = ({
@@ -16,7 +17,8 @@ export const InvoiceActions = ({
   onSave,
   onShowSavedInvoices,
   isSubmitting,
-  onReset
+  onReset,
+  isPaidInFull = false
 }: InvoiceActionsProps) => {
   return (
     <div className="flex flex-wrap items-center gap-2 print:hidden w-full sm:w-auto">
@@ -40,10 +42,14 @@ export const InvoiceActions = ({
         onClick={onSave} 
         disabled={isSubmitting}
         size="sm"
-        className="h-9 px-3 sm:px-4 bg-primary text-primary-foreground font-semibold shadow-xs hover:bg-primary/90 text-xs sm:text-sm flex-1 sm:flex-initial"
+        className={`h-9 px-3 sm:px-4 text-primary-foreground font-semibold shadow-xs text-xs sm:text-sm flex-1 sm:flex-initial ${
+          isPaidInFull 
+            ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600" 
+            : "bg-primary hover:bg-primary/90"
+        }`}
       >
         <Save className="w-3.5 h-3.5 mr-1.5" />
-        <span>{isSubmitting ? "Saving..." : "Save Invoice"}</span>
+        <span>{isSubmitting ? "Saving..." : isPaidInFull ? "Save Receipt" : "Save Invoice"}</span>
       </Button>
 
       <Button 
@@ -53,10 +59,11 @@ export const InvoiceActions = ({
         onClick={onPrint} 
         disabled={isSubmitting}
         className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm"
-        title="Print Invoice"
+        title={isPaidInFull ? "Print Official Receipt" : "Print Invoice"}
       >
         <Printer className="w-3.5 h-3.5 sm:mr-1.5 text-foreground" />
-        <span className="hidden sm:inline">Print</span>
+        <span className="hidden sm:inline">{isPaidInFull ? "Print Receipt" : "Print"}</span>
+        <span className="sm:hidden">Print</span>
       </Button>
 
       <Button 
@@ -66,7 +73,7 @@ export const InvoiceActions = ({
         onClick={onDownload} 
         disabled={isSubmitting}
         className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm"
-        title="PDF Download Preview"
+        title={isPaidInFull ? "Download Receipt PDF" : "Download Invoice PDF"}
       >
         <Download className="w-3.5 h-3.5 sm:mr-1.5 text-foreground" />
         <span className="hidden sm:inline">PDF</span>

@@ -108,8 +108,13 @@ const CreateInvoice = () => {
     includeVat,
     discountPercent,
     selectedCustomerId,
-    handleLoadInvoiceData
+    handleLoadInvoiceData,
+    amountPaid,
+    selectedCurrency
   );
+
+  const totals = calculateTotals();
+  const isPaidInFull = totals.isPaidInFull;
 
   useEffect(() => {
     if (!loading && !session) {
@@ -128,62 +133,72 @@ const CreateInvoice = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-3.5 pb-16 sm:pb-10 print:space-y-2 print:pb-0">
-      {/* Top Invoice Config Header */}
-      <InvoiceHeader 
-        onPrint={handlePrint} 
-        onDownload={handleDownload} 
-        isSubmitting={isSubmitting}
-        onSave={handleSubmit}
-        onShowSavedInvoices={handleShowSavedInvoices}
-        invoiceNumber={invoiceNumber}
-        onInvoiceNumberChange={setInvoiceNumber}
-        invoiceDate={invoiceDate}
-        onInvoiceDateChange={setInvoiceDate}
-        onReset={handleResetForm}
-      />
+    <div className="max-w-6xl mx-auto space-y-3.5 pb-16 sm:pb-10 print:space-y-2 print:pb-0 invoice-print-container">
+      {/* Top Invoice Main Content */}
+      <div className="space-y-3.5 print:space-y-2 print:flex-1">
+        {/* Top Invoice Config Header */}
+        <InvoiceHeader 
+          onPrint={handlePrint} 
+          onDownload={handleDownload} 
+          isSubmitting={isSubmitting}
+          onSave={handleSubmit}
+          onShowSavedInvoices={handleShowSavedInvoices}
+          invoiceNumber={invoiceNumber}
+          onInvoiceNumberChange={setInvoiceNumber}
+          invoiceDate={invoiceDate}
+          onInvoiceDateChange={setInvoiceDate}
+          onReset={handleResetForm}
+          isPaidInFull={isPaidInFull}
+        />
 
-      {/* Customer Information Card */}
-      <CustomerInfo
-        customerName={customerName}
-        onNameChange={setCustomerName}
-        customerPhone={customerPhone}
-        onPhoneChange={setCustomerPhone}
-        customerAddress={customerAddress}
-        onAddressChange={setCustomerAddress}
-        customerEmail={customerEmail}
-        onEmailChange={setCustomerEmail}
-        selectedCustomerId={selectedCustomerId}
-        onCustomerSelect={(c) => setSelectedCustomerId(c?.id ?? null)}
-      />
+        {/* Customer Information Card */}
+        <CustomerInfo
+          customerName={customerName}
+          onNameChange={setCustomerName}
+          customerPhone={customerPhone}
+          onPhoneChange={setCustomerPhone}
+          customerAddress={customerAddress}
+          onAddressChange={setCustomerAddress}
+          customerEmail={customerEmail}
+          onEmailChange={setCustomerEmail}
+          selectedCustomerId={selectedCustomerId}
+          onCustomerSelect={(c) => setSelectedCustomerId(c?.id ?? null)}
+        />
 
-      {/* Currency Selector Toolbar */}
-      <div className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-border/80 shadow-xs print:hidden">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-          Invoice Pricing Currency
-        </span>
-        <CurrencyChanger
-          selectedCurrency={selectedCurrency}
-          onCurrencyChange={setSelectedCurrency}
+        {/* Currency Selector Toolbar */}
+        <div className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-border/80 shadow-xs print:hidden">
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Invoice Pricing Currency
+          </span>
+          <CurrencyChanger
+            selectedCurrency={selectedCurrency}
+            onCurrencyChange={setSelectedCurrency}
+          />
+        </div>
+
+        {/* Line Items Table & Summary */}
+        <InvoiceItemsTable
+          items={validItems}
+          setItems={setItems}
+          totals={calculateTotals()}
+          currency={selectedCurrency}
+          amountPaid={amountPaid}
+          onAmountPaidChange={setAmountPaid}
+          includeVat={includeVat}
+          onVatChange={setIncludeVat}
+          discountPercent={discountPercent}
+          onDiscountChange={setDiscountPercent}
         />
       </div>
 
-      {/* Line Items Table & Summary */}
-      <InvoiceItemsTable
-        items={validItems}
-        setItems={setItems}
-        totals={calculateTotals()}
-        currency={selectedCurrency}
-        amountPaid={amountPaid}
-        onAmountPaidChange={setAmountPaid}
-        includeVat={includeVat}
-        onVatChange={setIncludeVat}
-        discountPercent={discountPercent}
-        onDiscountChange={setDiscountPercent}
-      />
+      {/* Bottom Section: Official Payment Instructions & Printable Footer */}
+      <div className="invoice-print-bottom print:mt-auto print:pt-4 space-y-3 print:space-y-2">
+        {/* Bank Payment Instructions (Official Payment Instructions) */}
+        <BankDetails />
 
-      {/* Bank Payment Instructions */}
-      <BankDetails />
+        {/* Printable Footer */}
+        <InvoiceFooter />
+      </div>
 
       {/* Saved Invoices History Modal */}
       <SavedInvoicesModal
@@ -195,9 +210,6 @@ const CreateInvoice = () => {
         onDeleteInvoice={handleDeleteSavedInvoice}
         loadingInvoiceId={loadingInvoiceId}
       />
-
-      {/* Printable Footer */}
-      <InvoiceFooter />
     </div>
   );
 };

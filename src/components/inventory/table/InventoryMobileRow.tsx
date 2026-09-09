@@ -58,12 +58,12 @@ export function InventoryMobileRow({
       {/* Checkbox */}
       <div
         onClick={() => onToggleSelect(item.id)}
-        className="shrink-0 cursor-pointer h-7 w-7 flex items-center justify-center -ml-0.5"
+        className="shrink-0 cursor-pointer h-9 w-9 flex items-center justify-center -ml-1 touch-manipulation"
       >
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelect(item.id)}
-          className="h-4 w-4 rounded"
+          className="h-4 w-4 rounded pointer-events-none"
         />
       </div>
 
@@ -96,12 +96,12 @@ export function InventoryMobileRow({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-7 w-7 rounded-l-md rounded-r-none hover:bg-muted active:scale-95 disabled:opacity-30"
+          className="h-8 w-8 rounded-l-md rounded-r-none hover:bg-muted active:scale-95 touch-manipulation disabled:opacity-30"
           onClick={() => handleStepQuantity(-1)}
           disabled={isUpdatingQty || (item.Quantity || 0) <= 0}
           aria-label="Decrease quantity"
         >
-          <Minus className="h-3 w-3" />
+          <Minus className="h-3.5 w-3.5" />
         </Button>
 
         <span className="min-w-[28px] text-center font-mono font-bold text-xs">
@@ -116,12 +116,12 @@ export function InventoryMobileRow({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-7 w-7 rounded-r-md rounded-l-none hover:bg-muted active:scale-95"
+          className="h-8 w-8 rounded-r-md rounded-l-none hover:bg-muted active:scale-95 touch-manipulation"
           onClick={() => handleStepQuantity(1)}
           disabled={isUpdatingQty}
           aria-label="Increase quantity"
         >
-          <Plus className="h-3 w-3" />
+          <Plus className="h-3.5 w-3.5" />
         </Button>
       </div>
 
@@ -132,9 +132,9 @@ export function InventoryMobileRow({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-full"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full touch-manipulation"
             >
-              <MoreVertical className="h-3.5 w-3.5" />
+              <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40 text-xs">

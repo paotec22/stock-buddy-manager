@@ -12,7 +12,7 @@ import { ChartFilters } from "@/components/sales/SalesChartFilters";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Plus, Upload, FileSpreadsheet } from "lucide-react";
+import { Plus, Upload, FileSpreadsheet, Filter } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
@@ -28,6 +28,9 @@ const SalesHeader = ({
   currentView,
   onViewChange,
   totalSalesCount,
+  isFilterVisible,
+  onToggleFilter,
+  hasActiveFilters,
 }: { 
   onAddSale: () => void;
   onBulkUpload: () => void;
@@ -35,6 +38,9 @@ const SalesHeader = ({
   currentView: 'table' | 'chart';
   onViewChange: (view: 'table' | 'chart') => void;
   totalSalesCount: number;
+  isFilterVisible?: boolean;
+  onToggleFilter?: () => void;
+  hasActiveFilters?: boolean;
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-border/60">
@@ -54,6 +60,27 @@ const SalesHeader = ({
         <SalesViewToggle currentView={currentView} onViewChange={onViewChange} />
 
         <div className="h-4 w-px bg-border hidden sm:block mx-1" />
+
+        {onToggleFilter && (
+          <Button
+            type="button"
+            variant={isFilterVisible ? "secondary" : "outline"}
+            size="sm"
+            onClick={onToggleFilter}
+            className={`h-9 text-xs sm:text-sm px-2.5 sm:px-3 rounded-lg gap-1.5 transition-all cursor-pointer ${
+              isFilterVisible
+                ? "bg-secondary text-secondary-foreground border-border"
+                : "bg-background border-border hover:bg-muted"
+            }`}
+            title={isFilterVisible ? "Hide filter bar" : "Show filter bar"}
+          >
+            <Filter className="h-3.5 w-3.5" />
+            <span>{isFilterVisible ? "Hide Filters" : "Show Filters"}</span>
+            {hasActiveFilters && (
+              <span className="h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+            )}
+          </Button>
+        )}
 
         <Button 
           onClick={onAddSale} 
@@ -97,6 +124,19 @@ const Sales = () => {
   const [currentView, setCurrentView] = useState<'table' | 'chart'>('table');
   
   // Unified Filters
+  const [isFilterVisible, setIsFilterVisible] = useState<boolean>(() => {
+    const saved = localStorage.getItem("sales_filter_visible");
+    return saved !== null ? saved === "true" : false; // Hidden by default
+  });
+
+  const handleToggleFilter = () => {
+    setIsFilterVisible((prev) => {
+      const next = !prev;
+      localStorage.setItem("sales_filter_visible", String(next));
+      return next;
+    });
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
@@ -224,6 +264,9 @@ const Sales = () => {
           currentView={currentView}
           onViewChange={setCurrentView}
           totalSalesCount={sales.length}
+          isFilterVisible={isFilterVisible}
+          onToggleFilter={handleToggleFilter}
+          hasActiveFilters={hasActiveFilters}
         />
 
         {/* Executive KPI Summary Cards */}
@@ -246,6 +289,8 @@ const Sales = () => {
           onDateRangeChange={setDateRange}
           onResetFilters={handleResetFilters}
           hasActiveFilters={hasActiveFilters}
+          isVisible={isFilterVisible}
+          onToggleVisibility={handleToggleFilter}
         />
 
         {/* View Switcher: Table vs Chart */}

@@ -193,13 +193,13 @@ export function InventoryTable({
       {/* ========================================================================= */}
       {/* MOBILE CONTROLS HEADER (Sort, View Mode Toggle, and Select All Header)     */}
       {/* ========================================================================= */}
-      <div className="md:hidden flex flex-col gap-2.5 pb-1">
-        <div className="flex items-center justify-between gap-2 bg-card border border-border/80 rounded-xl p-2.5 shadow-2xs">
+      <div className="md:hidden flex flex-col gap-2 pb-1">
+        <div className="flex items-center justify-between gap-1.5 bg-card border border-border/80 rounded-xl p-2 sm:p-2.5 shadow-2xs">
           {/* Select All Toggle on Mobile */}
           <button
             type="button"
             onClick={() => handleSelectAll(!allSelected)}
-            className="flex items-center gap-2 text-xs font-medium text-foreground py-1 px-1.5 rounded hover:bg-muted transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-foreground py-1 px-1.5 rounded hover:bg-muted transition-colors cursor-pointer touch-manipulation min-w-0"
           >
             {allSelected ? (
               <CheckSquare className="h-4 w-4 text-primary shrink-0" />
@@ -210,19 +210,19 @@ export function InventoryTable({
             ) : (
               <Square className="h-4 w-4 text-muted-foreground shrink-0" />
             )}
-            <span>
+            <span className="truncate">
               {selectedItems.length > 0
-                ? `${selectedItems.length} selected`
-                : `Select all (${items.length})`}
+                ? `${selectedItems.length} sel`
+                : `All (${items.length})`}
             </span>
           </button>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Sort Selector */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-8 text-xs px-2.5 gap-1.5 bg-background border-border/80 w-[125px]">
+              <SelectTrigger className="h-8 text-xs px-2 gap-1 bg-background border-border/80 w-[105px] sm:w-[125px]">
                 <ArrowUpDown className="h-3 w-3 text-muted-foreground shrink-0" />
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent align="end" className="text-xs">
                 <SelectItem value="default">Default Order</SelectItem>
@@ -236,11 +236,11 @@ export function InventoryTable({
             </Select>
 
             {/* View Mode Toggle: Cards vs Compact List */}
-            <div className="inline-flex rounded-lg border border-border/80 p-0.5 bg-muted/40">
+            <div className="inline-flex rounded-lg border border-border/80 p-0.5 bg-muted/40 shrink-0">
               <button
                 type="button"
                 onClick={() => setMobileViewMode("cards")}
-                className={`p-1.5 rounded-md text-xs transition-colors ${
+                className={`p-1.5 rounded-md text-xs transition-colors touch-manipulation ${
                   mobileViewMode === "cards"
                     ? "bg-background text-foreground shadow-2xs font-medium"
                     : "text-muted-foreground hover:text-foreground"
@@ -253,7 +253,7 @@ export function InventoryTable({
               <button
                 type="button"
                 onClick={() => setMobileViewMode("compact")}
-                className={`p-1.5 rounded-md text-xs transition-colors ${
+                className={`p-1.5 rounded-md text-xs transition-colors touch-manipulation ${
                   mobileViewMode === "compact"
                     ? "bg-background text-foreground shadow-2xs font-medium"
                     : "text-muted-foreground hover:text-foreground"
@@ -273,7 +273,7 @@ export function InventoryTable({
       {/* ========================================================================= */}
       <div
         className={`md:hidden space-y-2.5 ${
-          selectedItems.length > 0 ? "pb-24" : "pb-6"
+          selectedItems.length > 0 ? "pb-32" : "pb-12"
         }`}
       >
         {sortedItems.map((item) => {
@@ -313,7 +313,7 @@ export function InventoryTable({
       {/* MOBILE STICKY FLOATING SELECTION BAR                                      */}
       {/* ========================================================================= */}
       {selectedItems.length > 0 && (
-        <div className="md:hidden fixed bottom-4 left-3 right-3 sm:left-6 sm:right-6 z-50 bg-background/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl p-3 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="md:hidden fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-6 sm:right-6 z-40 bg-background/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl p-3 flex items-center justify-between gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">
               {selectedItems.length}
@@ -321,7 +321,7 @@ export function InventoryTable({
             <span className="text-xs font-semibold">selected</span>
             <button
               onClick={() => handleSelectAll(false)}
-              className="text-xs text-muted-foreground hover:text-foreground underline ml-1"
+              className="text-xs text-muted-foreground hover:text-foreground underline ml-1 touch-manipulation cursor-pointer"
             >
               Clear
             </button>
@@ -330,7 +330,7 @@ export function InventoryTable({
           <Button
             variant="destructive"
             size="sm"
-            className="h-8.5 text-xs font-semibold px-3 shadow-xs"
+            className="h-9 text-xs font-semibold px-3.5 shadow-xs touch-manipulation cursor-pointer"
             onClick={() => setShowBulkDeleteConfirm(true)}
             disabled={isDeleting}
           >

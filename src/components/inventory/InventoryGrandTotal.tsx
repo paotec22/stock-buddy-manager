@@ -13,7 +13,7 @@ interface InventoryGrandTotalProps {
 }
 
 export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, selectedStatus }: InventoryGrandTotalProps) {
-  const [showValue, setShowValue] = useState(true);
+  const [showValue, setShowValue] = useState(false);
   const calculateGrandTotal = () => {
     return items.reduce((sum, item) => {
       const itemTotal = item.Price * item.Quantity;
@@ -46,31 +46,51 @@ export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, se
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Primary Stat Card: Total Value (dominates visually, spans 2 cols on lg) */}
-      <div className="lg:col-span-2 rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)] transition-all duration-200">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="space-y-2">
+      <div className="lg:col-span-2 rounded-xl border border-border/80 bg-card p-4 sm:p-6 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)] transition-all duration-200">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+          <div className="space-y-1.5 sm:space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Total Inventory Value
               </span>
               <button
+                type="button"
                 onClick={() => setShowValue(!showValue)}
-                className="p-1 rounded-md hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label={showValue ? "Hide value" : "Show value"}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border/70 hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors text-xs font-medium cursor-pointer touch-manipulation min-h-[28px]"
+                aria-label={showValue ? "Hide total value" : "Unhide total value"}
+                title={showValue ? "Hide total value" : "Unhide total value"}
               >
                 {showValue ? (
-                  <Eye className="h-3.5 w-3.5" />
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    <span className="text-[11px]">Hide</span>
+                  </>
                 ) : (
-                  <EyeOff className="h-3.5 w-3.5" />
+                  <>
+                    <Eye className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[11px] text-foreground font-semibold">Unhide</span>
+                  </>
                 )}
               </button>
             </div>
             <div className="flex items-baseline gap-2">
-              <h2 className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground tabular-nums">
-                {showValue ? formatCurrency(calculateGrandTotal()) : "••••••••"}
+              <h2
+                onClick={() => !showValue && setShowValue(true)}
+                className={`text-2xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground tabular-nums select-none ${
+                  !showValue ? "cursor-pointer hover:opacity-85 transition-opacity" : ""
+                }`}
+                title={!showValue ? "Click to unhide total valuation" : undefined}
+              >
+                {showValue ? (
+                  formatCurrency(calculateGrandTotal())
+                ) : (
+                  <span className="text-muted-foreground/60 tracking-widest text-xl sm:text-3xl">
+                    ••••••••••••
+                  </span>
+                )}
               </h2>
             </div>
-            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 pt-0.5 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 font-medium text-foreground">
                 Location: {selectedLocation}
               </span>
@@ -89,7 +109,7 @@ export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, se
       </div>
 
       {/* Secondary Card: Stock Health Breakdown */}
-      <div className="rounded-xl border border-border/80 bg-card p-5 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
+      <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-5 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)]">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -98,7 +118,7 @@ export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, se
             {selectedStatus && (
               <button
                 onClick={() => onStatusClick?.(selectedStatus)}
-                className="text-xs text-primary hover:underline font-medium"
+                className="text-xs text-primary hover:underline font-medium touch-manipulation"
               >
                 Reset filter
               </button>
@@ -108,40 +128,40 @@ export function InventoryGrandTotal({ items, selectedLocation, onStatusClick, se
           <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => onStatusClick?.("in-stock")}
-              className={`flex flex-col items-center justify-center p-2.5 rounded-lg border transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-lg border transition-all cursor-pointer touch-manipulation ${
                 selectedStatus === "in-stock"
                   ? "border-emerald-500/40 bg-emerald-500/10 text-foreground ring-1 ring-emerald-500/40"
                   : "border-border/80 bg-muted/30 hover:bg-muted/60"
               }`}
             >
-              <span className="text-[11px] font-medium text-muted-foreground mb-1">In Stock</span>
-              <span className="text-xl font-bold font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
+              <span className="text-[11px] font-medium text-muted-foreground mb-0.5 sm:mb-1">In Stock</span>
+              <span className="text-lg sm:text-xl font-bold font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
                 {statusCounts.inStock}
               </span>
             </button>
             <button
               onClick={() => onStatusClick?.("low-stock")}
-              className={`flex flex-col items-center justify-center p-2.5 rounded-lg border transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-lg border transition-all cursor-pointer touch-manipulation ${
                 selectedStatus === "low-stock"
                   ? "border-amber-500/40 bg-amber-500/10 text-foreground ring-1 ring-amber-500/40"
                   : "border-border/80 bg-muted/30 hover:bg-muted/60"
               }`}
             >
-              <span className="text-[11px] font-medium text-muted-foreground mb-1">Low Stock</span>
-              <span className="text-xl font-bold font-mono tabular-nums text-amber-700 dark:text-amber-400">
+              <span className="text-[11px] font-medium text-muted-foreground mb-0.5 sm:mb-1">Low Stock</span>
+              <span className="text-lg sm:text-xl font-bold font-mono tabular-nums text-amber-700 dark:text-amber-400">
                 {statusCounts.lowStock}
               </span>
             </button>
             <button
               onClick={() => onStatusClick?.("out-of-stock")}
-              className={`flex flex-col items-center justify-center p-2.5 rounded-lg border transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-lg border transition-all cursor-pointer touch-manipulation ${
                 selectedStatus === "out-of-stock"
                   ? "border-rose-500/40 bg-rose-500/10 text-foreground ring-1 ring-rose-500/40"
                   : "border-border/80 bg-muted/30 hover:bg-muted/60"
               }`}
             >
-              <span className="text-[11px] font-medium text-muted-foreground mb-1">Out</span>
-              <span className="text-xl font-bold font-mono tabular-nums text-rose-700 dark:text-rose-400">
+              <span className="text-[11px] font-medium text-muted-foreground mb-0.5 sm:mb-1">Out</span>
+              <span className="text-lg sm:text-xl font-bold font-mono tabular-nums text-rose-700 dark:text-rose-400">
                 {statusCounts.outOfStock}
               </span>
             </button>

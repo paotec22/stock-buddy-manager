@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { InvoiceActions } from "./InvoiceActions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, Hash, FileCheck, RefreshCw } from "lucide-react";
+import { CalendarIcon, Hash, FileCheck, RefreshCw, CheckCircle2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
@@ -19,6 +19,7 @@ interface InvoiceHeaderProps {
   invoiceDate: Date;
   onInvoiceDateChange: (date: Date) => void;
   onReset?: () => void;
+  isPaidInFull?: boolean;
 }
 
 export const InvoiceHeader = ({
@@ -31,11 +32,13 @@ export const InvoiceHeader = ({
   onInvoiceNumberChange,
   invoiceDate,
   onInvoiceDateChange,
-  onReset
+  onReset,
+  isPaidInFull = false
 }: InvoiceHeaderProps) => {
   const handleGenerateNewNumber = () => {
     const now = new Date();
-    onInvoiceNumberChange(`INV-${format(now, "yyyyMMddHHmmss")}`);
+    const prefix = isPaidInFull ? "REC" : "INV";
+    onInvoiceNumberChange(`${prefix}-${format(now, "yyyyMMddHHmmss")}`);
   };
 
   return (
@@ -60,13 +63,26 @@ export const InvoiceHeader = ({
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-xl font-bold text-foreground tracking-tight">
-                Invoice
+              <h1 className="text-base sm:text-xl font-bold tracking-tight transition-colors">
+                {isPaidInFull ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    Receipt
+                  </span>
+                ) : (
+                  <span className="text-foreground">Invoice</span>
+                )}
               </h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                <FileCheck className="h-3 w-3" />
-                Active Draft
-              </span>
+              {isPaidInFull ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Paid in Full
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <FileCheck className="h-3 w-3" />
+                  Active Draft
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -80,6 +96,7 @@ export const InvoiceHeader = ({
             onShowSavedInvoices={onShowSavedInvoices}
             isSubmitting={isSubmitting}
             onReset={onReset}
+            isPaidInFull={isPaidInFull}
           />
         </div>
       </div>
@@ -90,7 +107,7 @@ export const InvoiceHeader = ({
         <div>
           <Label htmlFor="inv-no" className="text-[11px] font-medium text-muted-foreground mb-1 flex items-center gap-1">
             <Hash className="h-3 w-3 text-primary" />
-            Invoice Number
+            {isPaidInFull ? "Receipt Number" : "Invoice Number"}
           </Label>
           <div className="flex items-center gap-1.5">
             <Input
@@ -98,7 +115,7 @@ export const InvoiceHeader = ({
               value={invoiceNumber}
               onChange={(e) => onInvoiceNumberChange(e.target.value)}
               className="!min-h-0 h-8 font-mono text-xs sm:text-sm font-semibold bg-background"
-              placeholder="e.g. INV-20260906"
+              placeholder={isPaidInFull ? "e.g. REC-20260906" : "e.g. INV-20260906"}
             />
             <Button
               type="button"
@@ -106,7 +123,7 @@ export const InvoiceHeader = ({
               size="icon"
               className="!min-h-0 h-8 w-8 shrink-0 bg-background"
               onClick={handleGenerateNewNumber}
-              title="Generate fresh number"
+              title={isPaidInFull ? "Generate fresh receipt number" : "Generate fresh invoice number"}
             >
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>

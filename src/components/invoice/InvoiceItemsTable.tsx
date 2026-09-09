@@ -455,26 +455,43 @@ export const InvoiceItemsTable = ({
             </div>
 
             {/* Amount Paid */}
-            <div className="flex justify-between items-center pt-1.5 print:hidden">
-              <Label htmlFor="amountPaid" className="text-xs font-semibold text-foreground">
-                Amount Paid
-              </Label>
-              <Input
-                id="amountPaid"
-                type="number"
-                min="0"
-                step="any"
-                value={amountPaid || ""}
-                onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
-                className="w-28 !min-h-0 h-7 text-right font-mono font-semibold text-xs bg-background"
-                placeholder="0.00"
-              />
+            <div className="flex justify-between items-center pt-1.5">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="amountPaid" className="text-xs font-semibold text-foreground">
+                  Amount Paid
+                </Label>
+                {grandTotal > 0 && balance > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onAmountPaidChange(grandTotal)}
+                    className="print:hidden text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline bg-emerald-500/10 hover:bg-emerald-500/20 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                    title="Mark invoice as paid in full (switches to Receipt)"
+                  >
+                    Pay in Full
+                  </button>
+                )}
+              </div>
+              <div className="print:hidden">
+                <Input
+                  id="amountPaid"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={amountPaid || ""}
+                  onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
+                  className="w-28 !min-h-0 h-7 text-right font-mono font-semibold text-xs bg-background"
+                  placeholder="0.00"
+                />
+              </div>
+              <span className="hidden print:inline font-mono font-medium text-foreground">
+                {formatCurrency(amountPaid, currency)}
+              </span>
             </div>
 
             {/* Balance */}
             <div className="flex justify-between items-center font-bold text-xs sm:text-sm border-t pt-1.5">
-              <span>Outstanding Balance</span>
-              <span className={`font-mono text-sm sm:text-base ${balance <= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+              <span>{balance <= 0 && grandTotal > 0 ? "Balance Settled" : "Outstanding Balance"}</span>
+              <span className={`font-mono text-sm sm:text-base ${balance <= 0 && grandTotal > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                 {formatCurrency(balance, currency)}
               </span>
             </div>
