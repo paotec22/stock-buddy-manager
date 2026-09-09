@@ -22,12 +22,12 @@ export const BankDetails = () => {
   };
 
   return (
-    <Card className="mt-6 border border-blue-200 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 print:shadow-none print:border-none print:bg-transparent">
-      <CardContent className="p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-blue-200/60 dark:border-blue-900/40">
+    <Card className="mt-3 border border-blue-200 dark:border-blue-900/40 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 print:shadow-none print:border-none print:rounded-none print:bg-transparent print:mt-1">
+      <CardContent className="p-3 sm:p-3.5 print:p-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-900/40">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-[#081def]" />
-            <h4 className="font-bold text-xs sm:text-sm tracking-wider uppercase" style={{ color: "#081def" }}>
+            <h4 className="font-bold text-xs tracking-wider uppercase" style={{ color: "#081def" }}>
               Official Payment Instructions
             </h4>
           </div>
@@ -36,31 +36,31 @@ export const BankDetails = () => {
             variant="outline"
             size="sm"
             onClick={handleCopy}
-            className="h-7 text-xs border-blue-300 dark:border-blue-800 text-[#081def] hover:bg-blue-100 dark:hover:bg-blue-950 print:hidden self-start sm:self-auto"
+            className="!min-h-0 h-6 text-xs border-blue-300 dark:border-blue-800 text-[#081def] hover:bg-blue-100 dark:hover:bg-blue-950 print:hidden self-start sm:self-auto px-2"
           >
             {copied ? <Check className="h-3 w-3 mr-1 text-emerald-600" /> : <Copy className="h-3 w-3 mr-1" />}
             <span>{copied ? "Copied" : "Copy Account Details"}</span>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 text-xs sm:text-sm font-medium" style={{ color: "#081def" }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 text-xs font-medium" style={{ color: "#081def" }}>
           <div>
-            <span className="text-[11px] opacity-75 uppercase block">Bank Name</span>
-            <span className="font-bold text-foreground text-xs sm:text-sm">{bankInfo.bankName}</span>
+            <span className="text-[10px] opacity-75 uppercase block">Bank Name</span>
+            <span className="font-bold text-foreground text-xs">{bankInfo.bankName}</span>
           </div>
           <div>
-            <span className="text-[11px] opacity-75 uppercase block">Account Number</span>
-            <span className="font-bold font-mono text-foreground text-xs sm:text-sm tracking-wide">{bankInfo.accountNumber}</span>
+            <span className="text-[10px] opacity-75 uppercase block">Account Number</span>
+            <span className="font-bold font-mono text-foreground text-xs tracking-wide">{bankInfo.accountNumber}</span>
           </div>
           <div>
-            <span className="text-[11px] opacity-75 uppercase block">Account Name</span>
-            <span className="font-bold text-foreground text-xs sm:text-sm">{bankInfo.accountName}</span>
+            <span className="text-[10px] opacity-75 uppercase block">Account Name</span>
+            <span className="font-bold text-foreground text-xs">{bankInfo.accountName}</span>
           </div>
         </div>
 
-        <div className="mt-3 pt-2 text-xs font-semibold border-t border-blue-200/40 dark:border-blue-900/30 flex items-center justify-between" style={{ color: "#081def" }}>
-          <span>Thank you for your patronage!</span>
-          <span className="text-[11px] font-normal text-muted-foreground hidden sm:inline">Please specify Invoice # in bank reference</span>
+        <div className="mt-2 pt-1.5 text-xs font-semibold border-t border-blue-200/40 dark:border-blue-900/30 flex items-center justify-between" style={{ color: "#081def" }}>
+          <span className="text-xs">Thank you for your patronage!</span>
+          <span className="text-[10px] font-normal text-muted-foreground hidden sm:inline">Please specify Invoice # in bank reference</span>
         </div>
       </CardContent>
     </Card>

@@ -53,12 +53,12 @@ export const CustomerInfo = ({
   };
 
   return (
-    <Card className="border border-border/80 shadow-xs print:shadow-none print:border-none">
-      <CardContent className="p-4 sm:p-5 space-y-4">
+    <Card className="border border-border/80 shadow-xs print:shadow-none print:border-none print:rounded-none">
+      <CardContent className="p-3 sm:p-3.5 space-y-2.5 print:p-0 print:space-y-1">
         {onCustomerSelect && (
-          <div className="print:hidden space-y-1.5">
+          <div className="print:hidden space-y-1">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Select Existing Customer (Optional)
               </Label>
               {(customerName || customerPhone) && (
@@ -67,7 +67,7 @@ export const CustomerInfo = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleClear}
-                  className="h-6 text-xs text-muted-foreground hover:text-destructive px-1.5"
+                  className="!min-h-0 h-5 text-[11px] text-muted-foreground hover:text-destructive px-1.5"
                 >
                   <X className="h-3 w-3 mr-1" />
                   Clear Fields
@@ -78,11 +78,11 @@ export const CustomerInfo = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* Name */}
           <div>
-            <Label htmlFor="customerName" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
-              <User className="h-3.5 w-3.5 text-primary" />
+            <Label htmlFor="customerName" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1">
+              <User className="h-3 w-3 text-primary" />
               Customer Name <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -90,14 +90,14 @@ export const CustomerInfo = ({
               placeholder="e.g. Acme Corp / John Doe"
               value={customerName}
               onChange={(e) => onNameChange(e.target.value)}
-              className="h-9 text-xs sm:text-sm bg-background"
+              className="!min-h-0 h-8 text-xs sm:text-sm bg-background print:border-none print:shadow-none print:p-0 print:h-auto print:font-semibold print:text-xs"
             />
           </div>
 
           {/* Phone */}
           <div>
-            <Label htmlFor="customerPhone" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
-              <Phone className="h-3.5 w-3.5 text-primary" />
+            <Label htmlFor="customerPhone" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1">
+              <Phone className="h-3 w-3 text-primary" />
               Phone Number
             </Label>
             <Input
@@ -105,14 +105,14 @@ export const CustomerInfo = ({
               placeholder="e.g. 08012345678"
               value={customerPhone}
               onChange={(e) => onPhoneChange(e.target.value)}
-              className="h-9 text-xs sm:text-sm bg-background font-mono"
+              className="!min-h-0 h-8 text-xs sm:text-sm bg-background font-mono print:border-none print:shadow-none print:p-0 print:h-auto print:font-semibold print:text-xs"
             />
           </div>
 
           {/* Email */}
           <div>
-            <Label htmlFor="customerEmail" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
-              <Mail className="h-3.5 w-3.5 text-primary" />
+            <Label htmlFor="customerEmail" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1">
+              <Mail className="h-3 w-3 text-primary" />
               Email Address
             </Label>
             <Input
@@ -121,14 +121,14 @@ export const CustomerInfo = ({
               placeholder="e.g. client@example.com"
               value={customerEmail}
               onChange={(e) => onEmailChange?.(e.target.value)}
-              className="h-9 text-xs sm:text-sm bg-background"
+              className="!min-h-0 h-8 text-xs sm:text-sm bg-background print:border-none print:shadow-none print:p-0 print:h-auto print:font-semibold print:text-xs"
             />
           </div>
 
           {/* Billing Address */}
           <div>
-            <Label htmlFor="customerAddress" className="text-xs font-medium text-muted-foreground mb-1 block flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 text-primary" />
+            <Label htmlFor="customerAddress" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1">
+              <MapPin className="h-3 w-3 text-primary" />
               Billing Address
             </Label>
             <Input
@@ -136,7 +136,7 @@ export const CustomerInfo = ({
               placeholder="e.g. 12 Marina St, Victoria Island"
               value={customerAddress}
               onChange={(e) => onAddressChange?.(e.target.value)}
-              className="h-9 text-xs sm:text-sm bg-background"
+              className="!min-h-0 h-8 text-xs sm:text-sm bg-background print:border-none print:shadow-none print:p-0 print:h-auto print:font-semibold print:text-xs"
             />
           </div>
         </div>

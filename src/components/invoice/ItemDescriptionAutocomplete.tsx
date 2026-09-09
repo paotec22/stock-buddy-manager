@@ -7,12 +7,14 @@ interface ItemDescriptionAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   onSelect?: (item: any) => void;
+  className?: string;
 }
 
 export const ItemDescriptionAutocomplete = ({ 
   value, 
   onChange, 
-  onSelect 
+  onSelect,
+  className
 }: ItemDescriptionAutocompleteProps) => {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<any[]>([]);
@@ -90,7 +92,7 @@ export const ItemDescriptionAutocomplete = ({
         }}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
-        className="w-full"
+        className={className || "w-full !min-h-0 h-8 text-xs sm:text-sm"}
       />
       
       {open && (

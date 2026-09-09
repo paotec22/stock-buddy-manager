@@ -128,7 +128,7 @@ const CreateInvoice = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20 sm:pb-12">
+    <div className="max-w-6xl mx-auto space-y-3.5 pb-16 sm:pb-10 print:space-y-2 print:pb-0">
       {/* Top Invoice Config Header */}
       <InvoiceHeader 
         onPrint={handlePrint} 
@@ -158,8 +158,8 @@ const CreateInvoice = () => {
       />
 
       {/* Currency Selector Toolbar */}
-      <div className="flex items-center justify-between bg-card p-3 rounded-lg border border-border/80 shadow-xs print:hidden">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-border/80 shadow-xs print:hidden">
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
           Invoice Pricing Currency
         </span>
         <CurrencyChanger
@@ -180,8 +180,6 @@ const CreateInvoice = () => {
         onVatChange={setIncludeVat}
         discountPercent={discountPercent}
         onDiscountChange={setDiscountPercent}
-        notes={notes}
-        onNotesChange={setNotes}
       />
 
       {/* Bank Payment Instructions */}
