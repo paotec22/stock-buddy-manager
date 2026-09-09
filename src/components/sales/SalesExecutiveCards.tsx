@@ -64,16 +64,16 @@ export function SalesExecutiveCards({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {/* Total Revenue */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+            <div className="space-y-0.5 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Gross Revenue
               </span>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
                 title={showValues ? formatCurrency(totalRevenue) : undefined}
               >
                 {showValues ? formatCurrency(totalRevenue) : "••••••••"}
@@ -82,21 +82,21 @@ export function SalesExecutiveCards({
                 {sales.length} {sales.length === 1 ? "order" : "orders"}
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0 dark:text-emerald-400">
-              <TrendingUp className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0 dark:text-emerald-400">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
 
         {/* Units Sold & Orders */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+            <div className="space-y-0.5 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Units Sold
               </span>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
                 title={showValues ? totalQuantity.toLocaleString() : undefined}
               >
                 {showValues ? totalQuantity.toLocaleString() : "••••"}
@@ -105,16 +105,16 @@ export function SalesExecutiveCards({
                 Physical moved
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0 dark:text-blue-400">
-              <Package className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0 dark:text-blue-400">
+              <Package className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
 
         {/* Collections & Receivables */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+            <div className="space-y-0.5 min-w-0 flex-1">
               <div className="flex items-center gap-1">
                 <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                   Receivables
@@ -126,7 +126,7 @@ export function SalesExecutiveCards({
                 )}
               </div>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-rose-600 dark:text-rose-400 tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-rose-600 dark:text-rose-400 tabular-nums truncate"
                 title={showValues ? formatCurrency(totalOutstanding) : undefined}
               >
                 {showValues ? formatCurrency(totalOutstanding) : "••••••••"}
@@ -135,21 +135,21 @@ export function SalesExecutiveCards({
                 Settled: {showValues ? formatCurrency(totalPaid) : "••••"}
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20 shrink-0 dark:text-rose-400">
-              <AlertCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20 shrink-0 dark:text-rose-400">
+              <AlertCircle className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
 
         {/* Average Transaction Value */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+            <div className="space-y-0.5 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Avg. Ticket
               </span>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
                 title={showValues ? formatCurrency(averageOrderValue) : undefined}
               >
                 {showValues ? formatCurrency(averageOrderValue) : "••••••••"}
@@ -158,8 +158,8 @@ export function SalesExecutiveCards({
                 Per customer
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-600 border border-violet-500/20 shrink-0 dark:text-violet-400">
-              <Receipt className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-600 border border-violet-500/20 shrink-0 dark:text-violet-400">
+              <Receipt className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>

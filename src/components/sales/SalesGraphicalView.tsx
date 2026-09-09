@@ -239,13 +239,13 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
 
       {/* Summary Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="p-3 sm:p-5">
+        <Card className="p-3 sm:p-4">
           <div className="flex items-center justify-between pb-2">
             <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total Sales</span>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+            <div className="text-base sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
               {formatCurrency(totalSales)}
             </div>
             <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
@@ -254,13 +254,13 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
           </div>
         </Card>
 
-        <Card className="p-3 sm:p-5">
+        <Card className="p-3 sm:p-4">
           <div className="flex items-center justify-between pb-2">
             <span className="text-xs sm:text-sm font-medium text-muted-foreground">Average Sale</span>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+            <div className="text-base sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
               {formatCurrency(averageSale)}
             </div>
             <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
@@ -269,13 +269,13 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
           </div>
         </Card>
 
-        <Card className="p-3 sm:p-5">
+        <Card className="p-3 sm:p-4">
           <div className="flex items-center justify-between pb-2">
             <span className="text-xs sm:text-sm font-medium text-muted-foreground">Total Quantity</span>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+            <div className="text-base sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
               {totalQuantity.toLocaleString()}
             </div>
             <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
