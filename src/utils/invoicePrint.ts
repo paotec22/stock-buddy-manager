@@ -68,6 +68,17 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
     ? (typeof dueDate === "string" ? dueDate : format(dueDate, "dd/MM/yyyy")) 
     : null;
 
+  const trimmedCustomerName = customerName?.trim() || "";
+  const trimmedCustomerPhone = customerPhone?.trim() || "";
+  const trimmedCustomerEmail = customerEmail?.trim() || "";
+  const trimmedCustomerAddress = customerAddress?.trim() || "";
+  const hasCustomerInfo = Boolean(
+    trimmedCustomerName ||
+    trimmedCustomerPhone ||
+    trimmedCustomerEmail ||
+    trimmedCustomerAddress
+  );
+
   const itemsRows = items.map((item) => `
     <tr>
       <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: left;">
@@ -301,14 +312,16 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
       </div>
 
       <!-- Info Grid -->
-      <div class="grid-info">
+      <div class="grid-info" style="${!hasCustomerInfo ? 'display: flex; justify-content: flex-end;' : ''}">
+        ${hasCustomerInfo ? `
         <div>
           <div class="info-label">${isPaidInFull ? "Receipt Issued To" : "Invoice To"}</div>
-          <p class="info-value-name">${customerName || "Valued Customer"}</p>
-          ${customerPhone ? `<p class="info-text">Phone: ${customerPhone}</p>` : ""}
-          ${customerEmail ? `<p class="info-text">Email: ${customerEmail}</p>` : ""}
-          ${customerAddress ? `<p class="info-text">Address: ${customerAddress}</p>` : ""}
+          ${trimmedCustomerName ? `<p class="info-value-name">${trimmedCustomerName}</p>` : ""}
+          ${trimmedCustomerPhone ? `<p class="info-text">Phone: ${trimmedCustomerPhone}</p>` : ""}
+          ${trimmedCustomerEmail ? `<p class="info-text">Email: ${trimmedCustomerEmail}</p>` : ""}
+          ${trimmedCustomerAddress ? `<p class="info-text">Address: ${trimmedCustomerAddress}</p>` : ""}
         </div>
+        ` : ""}
         <div style="text-align: right;">
           <div class="info-label">Payment Status</div>
           <p style="font-size: 14px; font-weight: 800; color: ${isPaidInFull ? "#059669" : "#d97706"}; margin: 0 0 4px 0;">
@@ -557,25 +570,50 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
     doc.setDrawColor(226, 232, 240);
     doc.roundedRect(14, 35, 182, 28, 2, 2, "S");
 
+    const pdfCustomerName = customerName?.trim() || "";
+    const pdfCustomerPhone = customerPhone?.trim() || "";
+    const pdfCustomerEmail = customerEmail?.trim() || "";
+    const pdfCustomerAddress = customerAddress?.trim() || "";
+    const hasPdfCustomerInfo = Boolean(
+      pdfCustomerName ||
+      pdfCustomerPhone ||
+      pdfCustomerEmail ||
+      pdfCustomerAddress
+    );
+
     // Bill To
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139);
-    doc.text(isPaidInFull ? "RECEIPT ISSUED TO" : "INVOICE TO", 18, 41);
+    if (hasPdfCustomerInfo) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(isPaidInFull ? "RECEIPT ISSUED TO" : "INVOICE TO", 18, 41);
 
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text(customerName || "Valued Customer", 18, 47);
+      let currentCustomerY = 47;
+      if (pdfCustomerName) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text(pdfCustomerName, 18, currentCustomerY);
+        currentCustomerY += 5;
+      }
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.setTextColor(71, 85, 105);
-    const contactLine = [
-      customerPhone ? `Phone: ${customerPhone}` : null,
-      customerAddress ? `Address: ${customerAddress}` : null
-    ].filter(Boolean).join("  |  ");
-    if (contactLine) {
-      doc.text(contactLine, 18, 52);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(71, 85, 105);
+
+      const contactParts = [
+        pdfCustomerPhone ? `Phone: ${pdfCustomerPhone}` : null,
+        pdfCustomerEmail ? `Email: ${pdfCustomerEmail}` : null,
+      ].filter(Boolean);
+
+      if (contactParts.length > 0) {
+        doc.text(contactParts.join("   |   "), 18, currentCustomerY);
+        currentCustomerY += 4.5;
+      }
+
+      if (pdfCustomerAddress) {
+        doc.text(`Address: ${pdfCustomerAddress}`, 18, currentCustomerY);
+      }
     }
 
     // Status on right side of card
