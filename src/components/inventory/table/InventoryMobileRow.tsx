@@ -3,7 +3,7 @@ import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
 import { StatusBadge, getStockStatus } from "@/components/ui/status-badge";
 import { InventoryImageCell } from "../InventoryImageCell";
-import { Checkbox } from "@/components/ui/checkbox";
+import { InventoryItemSelector } from "./InventoryItemSelector";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, MoreVertical, Edit2, Trash2, Loader2 } from "lucide-react";
 import {
@@ -55,15 +55,13 @@ export function InventoryMobileRow({
           : "border-border/70 hover:border-border"
       }`}
     >
-      {/* Checkbox */}
-      <div
-        onClick={() => onToggleSelect(item.id)}
-        className="shrink-0 cursor-pointer h-9 w-9 flex items-center justify-center -ml-1 touch-manipulation"
-      >
-        <Checkbox
+      {/* Item Selector */}
+      <div className="shrink-0 -ml-0.5">
+        <InventoryItemSelector
           checked={isSelected}
-          onCheckedChange={() => onToggleSelect(item.id)}
-          className="h-4 w-4 rounded pointer-events-none"
+          onToggle={() => onToggleSelect(item.id)}
+          ariaLabel={isSelected ? `Deselect ${item["Item Description"]}` : `Select ${item["Item Description"]}`}
+          size="sm"
         />
       </div>
 

@@ -3,7 +3,7 @@ import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
 import { StatusBadge, getStockStatus } from "@/components/ui/status-badge";
 import { InventoryImageCell } from "../InventoryImageCell";
-import { Checkbox } from "@/components/ui/checkbox";
+import { InventoryItemSelector } from "./InventoryItemSelector";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, MoreVertical, Edit2, Trash2, Check, X, Loader2 } from "lucide-react";
 import {
@@ -97,19 +97,14 @@ export function InventoryMobileCard({
       >
         {/* Top Header: Select Checkbox, Image, Description, and 3-dot Menu */}
         <div className="flex items-start gap-2.5 sm:gap-3">
-          {/* Checkbox with generous touch target */}
-          <div className="shrink-0 -ml-1 -mt-1">
-            <div
-              onClick={() => onToggleSelect(item.id)}
-              className="min-h-[44px] min-w-[40px] flex items-center justify-center cursor-pointer rounded-lg hover:bg-muted/80 transition-colors touch-manipulation"
-              aria-label={isSelected ? "Deselect item" : "Select item"}
-            >
-              <Checkbox
-                checked={isSelected}
-                onCheckedChange={() => onToggleSelect(item.id)}
-                className="h-4 w-4 rounded data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground pointer-events-none"
-              />
-            </div>
+          {/* Item Selector */}
+          <div className="shrink-0 pt-1.5 -ml-0.5">
+            <InventoryItemSelector
+              checked={isSelected}
+              onToggle={() => onToggleSelect(item.id)}
+              ariaLabel={isSelected ? `Deselect ${item["Item Description"]}` : `Select ${item["Item Description"]}`}
+              size="sm"
+            />
           </div>
 
           {/* Product Thumbnail */}

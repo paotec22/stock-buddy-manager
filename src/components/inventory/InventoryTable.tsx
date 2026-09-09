@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { InventoryTableActions } from "./table/InventoryTableActions";
 import { InventoryItem } from "@/utils/inventoryUtils";
@@ -12,6 +11,8 @@ import { InventoryImageCell } from "./InventoryImageCell";
 import { InventoryMobileCard } from "./table/InventoryMobileCard";
 import { InventoryMobileRow } from "./table/InventoryMobileRow";
 import { InventoryItemEditDialog } from "./table/InventoryItemEditDialog";
+import { InventoryItemSelector } from "./table/InventoryItemSelector";
+import { cn } from "@/lib/utils";
 import {
   LayoutGrid,
   List,
@@ -20,8 +21,7 @@ import {
   Edit2,
   Check,
   X,
-  CheckSquare,
-  Square
+  Minus
 } from "lucide-react";
 import {
   Select,
@@ -199,20 +199,27 @@ export function InventoryTable({
           <button
             type="button"
             onClick={() => handleSelectAll(!allSelected)}
-            className="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-foreground py-1 px-1.5 rounded hover:bg-muted transition-colors cursor-pointer touch-manipulation min-w-0"
+            className="flex items-center gap-2 text-xs font-medium text-foreground py-1 px-2 rounded-lg hover:bg-muted transition-colors cursor-pointer touch-manipulation min-w-0"
           >
-            {allSelected ? (
-              <CheckSquare className="h-4 w-4 text-primary shrink-0" />
-            ) : selectedItems.length > 0 ? (
-              <div className="h-4 w-4 rounded bg-primary/20 border border-primary flex items-center justify-center shrink-0">
-                <span className="h-1.5 w-1.5 rounded-xs bg-primary" />
-              </div>
-            ) : (
-              <Square className="h-4 w-4 text-muted-foreground shrink-0" />
-            )}
-            <span className="truncate">
+            <span
+              className={cn(
+                "h-4 w-4 rounded-full flex items-center justify-center transition-all duration-150 border shrink-0",
+                allSelected
+                  ? "bg-primary border-primary text-primary-foreground shadow-2xs"
+                  : selectedItems.length > 0
+                  ? "bg-primary/15 border-primary text-primary"
+                  : "border-border/90 dark:border-border/70 bg-background/60 hover:border-primary/60"
+              )}
+            >
+              {allSelected ? (
+                <Check className="h-2.5 w-2.5 stroke-[2.5]" />
+              ) : selectedItems.length > 0 ? (
+                <Minus className="h-2.5 w-2.5 stroke-[2.5]" />
+              ) : null}
+            </span>
+            <span className="truncate font-semibold">
               {selectedItems.length > 0
-                ? `${selectedItems.length} sel`
+                ? `${selectedItems.length} selected`
                 : `All (${items.length})`}
             </span>
           </button>
@@ -347,12 +354,13 @@ export function InventoryTable({
         <Table>
           <TableHeader className="sticky top-0 z-20 bg-muted/70 backdrop-blur-xs">
             <TableRow className="border-b border-border/80 hover:bg-transparent">
-              <TableHead className="w-10 h-10 px-3">
-                <Checkbox
+              <TableHead className="w-10 h-10 px-3 text-center">
+                <InventoryItemSelector
                   checked={allSelected}
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Select all items"
-                  className="h-4 w-4"
+                  indeterminate={!allSelected && selectedItems.length > 0}
+                  onToggle={() => handleSelectAll(!allSelected)}
+                  ariaLabel={allSelected ? "Deselect all items" : "Select all items"}
+                  size="sm"
                 />
               </TableHead>
               <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider h-10">
@@ -387,12 +395,13 @@ export function InventoryTable({
                   }`}
                   aria-pressed={isSelected}
                 >
-                  {/* Selection Checkbox */}
-                  <TableCell className="w-10 px-3 py-2.5">
-                    <Checkbox
+                  {/* Selection Selector */}
+                  <TableCell className="w-10 px-3 py-2.5 text-center">
+                    <InventoryItemSelector
                       checked={isSelected}
-                      onCheckedChange={() => toggleSelectItem(item.id)}
-                      className="h-4 w-4"
+                      onToggle={() => toggleSelectItem(item.id)}
+                      ariaLabel={isSelected ? `Deselect ${item["Item Description"]}` : `Select ${item["Item Description"]}`}
+                      size="sm"
                     />
                   </TableCell>
 
