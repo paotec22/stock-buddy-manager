@@ -20,6 +20,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatCurrency } from "@/utils/formatters";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   ImageOff,
   Search,
@@ -389,8 +390,8 @@ export default function PublicCatalogue() {
       <div className="hidden print:block px-6 pt-4 print:mb-6">
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
           <div className="flex items-center gap-4">
-            <img
-              src="/Puido_Smart_Solutions.svg"
+            <CompanyLogo
+              variant="light"
               alt="Puido Smart Solutions"
               className="h-14 w-auto object-contain"
             />
@@ -421,8 +422,7 @@ export default function PublicCatalogue() {
       <header className="border-b border-border/40 bg-background/85 backdrop-blur-md sticky top-0 z-30 print:hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <img
-              src="/Puido_Smart_Solutions.svg"
+            <CompanyLogo
               alt="Puido Smart Solutions"
               className="h-9 md:h-11 w-auto object-contain flex-shrink-0"
             />
@@ -486,8 +486,7 @@ export default function PublicCatalogue() {
 
           <div className="flex items-center gap-3.5 relative z-10 min-w-0">
             <div className="h-11 w-11 md:h-14 md:w-14 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner flex-shrink-0">
-              <img
-                src="/Puido_Smart_Solutions.svg"
+              <CompanyLogo
                 alt="Puido Smart Solutions"
                 className="h-7 md:h-8 w-auto object-contain"
               />

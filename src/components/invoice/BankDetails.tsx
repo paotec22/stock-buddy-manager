@@ -36,25 +36,25 @@ export const BankDetails = () => {
             variant="outline"
             size="sm"
             onClick={handleCopy}
-            className="!min-h-0 h-6 text-xs border-blue-300 dark:border-blue-800 text-[#081def] hover:bg-blue-100 dark:hover:bg-blue-950 print:hidden self-start sm:self-auto px-2"
+            className="!min-h-0 h-8 sm:h-6 text-xs border-blue-300 dark:border-blue-800 text-[#081def] dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950 print:hidden self-start sm:self-auto px-2.5 active:scale-95 transition-transform"
           >
-            {copied ? <Check className="h-3 w-3 mr-1 text-emerald-600" /> : <Copy className="h-3 w-3 mr-1" />}
-            <span>{copied ? "Copied" : "Copy Account Details"}</span>
+            {copied ? <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+            <span>{copied ? "Copied to Clipboard" : "Copy Account Details"}</span>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 text-xs font-medium" style={{ color: "#081def" }}>
-          <div>
-            <span className="text-[10px] opacity-75 uppercase block">Bank Name</span>
-            <span className="font-bold text-foreground text-xs">{bankInfo.bankName}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-2 mt-2.5 sm:mt-2 text-xs font-medium" style={{ color: "#081def" }}>
+          <div className="bg-background/60 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none">
+            <span className="text-[10px] opacity-75 uppercase block font-semibold">Bank Name</span>
+            <span className="font-bold text-foreground text-xs sm:text-sm">{bankInfo.bankName}</span>
           </div>
-          <div>
-            <span className="text-[10px] opacity-75 uppercase block">Account Number</span>
-            <span className="font-bold font-mono text-foreground text-xs tracking-wide">{bankInfo.accountNumber}</span>
+          <div className="bg-background/60 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none">
+            <span className="text-[10px] opacity-75 uppercase block font-semibold">Account Number</span>
+            <span className="font-bold font-mono text-foreground text-xs sm:text-sm tracking-wider">{bankInfo.accountNumber}</span>
           </div>
-          <div>
-            <span className="text-[10px] opacity-75 uppercase block">Account Name</span>
-            <span className="font-bold text-foreground text-xs">{bankInfo.accountName}</span>
+          <div className="bg-background/60 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:rounded-none">
+            <span className="text-[10px] opacity-75 uppercase block font-semibold">Account Name</span>
+            <span className="font-bold text-foreground text-xs sm:text-sm">{bankInfo.accountName}</span>
           </div>
         </div>
 

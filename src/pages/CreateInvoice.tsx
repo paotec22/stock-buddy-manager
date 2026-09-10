@@ -12,6 +12,9 @@ import { CurrencyChanger, currencies, type Currency } from "@/components/invoice
 import { useAuth } from "@/components/AuthProvider";
 import { useInvoiceOperations, type NewInvoiceItem } from "@/hooks/useInvoiceOperations";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Save, Printer } from "lucide-react";
+import { formatCurrency } from "@/utils/formatters";
 
 const CreateInvoice = () => {
   const [customerName, setCustomerName] = useState("");
@@ -210,6 +213,46 @@ const CreateInvoice = () => {
         onDeleteInvoice={handleDeleteSavedInvoice}
         loadingInvoiceId={loadingInvoiceId}
       />
+
+      {/* Mobile Quick-Action Floating Dock */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 px-3 py-2.5 shadow-lg print:hidden">
+        <div className="flex items-center justify-between gap-2 max-w-md mx-auto">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+              {isPaidInFull ? "Paid Total" : "Grand Total"}
+            </span>
+            <span className="font-mono font-bold text-sm text-foreground">
+              {formatCurrency(calculateTotals().grandTotal, selectedCurrency)}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="!min-h-0 h-9 px-2.5 text-xs active:scale-95 bg-background"
+              title="Print"
+            >
+              <Printer className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              size="sm"
+              className={`!min-h-0 h-9 px-3 text-xs font-semibold text-primary-foreground shadow-xs active:scale-95 transition-transform ${
+                isPaidInFull
+                  ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600"
+                  : "bg-primary hover:bg-primary/90"
+              }`}
+            >
+              <Save className="h-3.5 w-3.5 mr-1" />
+              <span>{isSubmitting ? "Saving..." : isPaidInFull ? "Save Receipt" : "Save Invoice"}</span>
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

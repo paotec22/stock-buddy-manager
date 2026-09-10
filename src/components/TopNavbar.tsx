@@ -26,6 +26,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "./ThemeProvider";
+import { CompanyLogo } from "./CompanyLogo";
 
 interface NavItemProps {
   to: string;
@@ -228,10 +229,9 @@ export function TopNavbar() {
               <div className="flex flex-col h-full">
                 {/* Mobile header */}
                 <div className="flex items-center gap-3 px-4 py-4 border-b">
-                  <img
-                    src="/Puido_Smart_Solutions.svg"
+                  <CompanyLogo
                     alt="SI Manager"
-                    className="h-8 w-8"
+                    className="h-8 w-8 object-contain"
                   />
                   <span className="font-bold text-lg">SI Manager</span>
                 </div>

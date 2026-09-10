@@ -24,6 +24,7 @@ import {
   optimizeExistingInventoryImage,
 } from "@/lib/inventoryImages";
 import { formatCurrency } from "@/utils/formatters";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   ImageOff,
   Printer,
@@ -555,8 +556,8 @@ export default function Catalogue() {
       <div className="hidden print:block print:mb-6">
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
           <div className="flex items-center gap-4">
-            <img
-              src="/Puido_Smart_Solutions.svg"
+            <CompanyLogo
+              variant="light"
               alt="Puido Smart Solutions"
               className="h-10 w-auto object-contain"
             />
@@ -591,8 +592,7 @@ export default function Catalogue() {
 
         <div className="flex items-center gap-4 relative z-10">
           <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
-            <img
-              src="/Puido_Smart_Solutions.svg"
+            <CompanyLogo
               alt="Puido Smart Solutions"
               className="h-8 w-auto object-contain"
             />

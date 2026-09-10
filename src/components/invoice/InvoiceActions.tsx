@@ -29,13 +29,13 @@ export const InvoiceActions = ({
           onClick={onSave} 
           disabled={isSubmitting}
           size="sm"
-          className={`h-9 px-3 sm:px-4 text-primary-foreground font-semibold shadow-xs text-xs sm:text-sm flex-1 sm:flex-initial transition-all ${
+          className={`h-10 sm:h-9 px-3.5 sm:px-4 text-primary-foreground font-semibold shadow-xs text-xs sm:text-sm flex-1 sm:flex-initial transition-all active:scale-[0.98] ${
             isPaidInFull 
               ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600" 
               : "bg-primary hover:bg-primary/90"
           }`}
         >
-          <Save className="w-3.5 h-3.5 mr-1.5" />
+          <Save className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-1.5" />
           <span>{isSubmitting ? "Saving..." : isPaidInFull ? "Save Receipt" : "Save Invoice"}</span>
         </Button>
 
@@ -46,16 +46,16 @@ export const InvoiceActions = ({
             size="sm"
             onClick={onReset}
             disabled={isSubmitting}
-            className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm shrink-0"
+            className="h-10 sm:h-9 px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm shrink-0 active:scale-[0.98]"
             title="Reset Form"
           >
-            <RotateCcw className="w-3.5 h-3.5 sm:mr-1.5 text-muted-foreground" />
+            <RotateCcw className="w-4 h-4 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-muted-foreground" />
             <span className="hidden sm:inline">Reset</span>
           </Button>
         )}
       </div>
 
-      {/* Secondary Actions Row */}
+      {/* Secondary Actions Row - full width 3-column grid on mobile */}
       <div className="grid grid-cols-3 sm:flex items-center gap-1.5 w-full sm:w-auto">
         <Button 
           type="button"
@@ -63,10 +63,10 @@ export const InvoiceActions = ({
           size="sm"
           onClick={onPrint} 
           disabled={isSubmitting}
-          className="h-9 px-2 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm flex items-center justify-center"
+          className="h-10 sm:h-9 px-2 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm flex items-center justify-center active:scale-[0.98]"
           title={isPaidInFull ? "Print Official Receipt" : "Print Invoice"}
         >
-          <Printer className="w-3.5 h-3.5 mr-1 text-foreground shrink-0" />
+          <Printer className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-1.5 text-foreground shrink-0" />
           <span>{isPaidInFull ? "Receipt" : "Print"}</span>
         </Button>
 
@@ -76,10 +76,10 @@ export const InvoiceActions = ({
           size="sm"
           onClick={onDownload} 
           disabled={isSubmitting}
-          className="h-9 px-2 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm flex items-center justify-center"
+          className="h-10 sm:h-9 px-2 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm flex items-center justify-center active:scale-[0.98]"
           title={isPaidInFull ? "Download Receipt PDF" : "Download Invoice PDF"}
         >
-          <Download className="w-3.5 h-3.5 mr-1 text-foreground shrink-0" />
+          <Download className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-1.5 text-foreground shrink-0" />
           <span>PDF</span>
         </Button>
 
@@ -88,10 +88,10 @@ export const InvoiceActions = ({
           variant="outline" 
           size="sm"
           onClick={onShowSavedInvoices}
-          className="h-9 px-2 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm flex items-center justify-center"
+          className="h-10 sm:h-9 px-2 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm flex items-center justify-center active:scale-[0.98]"
           title="View Saved Invoices & Receipts"
         >
-          <History className="w-3.5 h-3.5 mr-1 text-primary shrink-0" />
+          <History className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-1.5 text-primary shrink-0" />
           <span>Saved</span>
         </Button>
       </div>

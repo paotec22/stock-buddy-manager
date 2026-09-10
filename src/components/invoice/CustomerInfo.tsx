@@ -89,8 +89,8 @@ export const CustomerInfo = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* Name */}
           <div className={!hasName ? "print:hidden" : ""}>
-            <Label htmlFor="customerName" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
-              <User className="h-3 w-3 text-primary print:hidden" />
+            <Label htmlFor="customerName" className="text-xs sm:text-[11px] font-medium text-muted-foreground mb-1 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
+              <User className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-primary print:hidden" />
               Customer Name <span className="text-destructive print:hidden">*</span>
             </Label>
             <Input
@@ -98,7 +98,7 @@ export const CustomerInfo = ({
               placeholder="e.g. Acme Corp / John Doe"
               value={customerName}
               onChange={(e) => onNameChange(e.target.value)}
-              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background print:hidden"
+              className="!min-h-0 h-10 sm:h-9 text-sm bg-background print:hidden"
             />
             <div className="hidden print:block font-bold text-xs text-foreground">
               {customerName}
@@ -107,8 +107,8 @@ export const CustomerInfo = ({
 
           {/* Phone */}
           <div className={!hasPhone ? "print:hidden" : ""}>
-            <Label htmlFor="customerPhone" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
-              <Phone className="h-3 w-3 text-primary print:hidden" />
+            <Label htmlFor="customerPhone" className="text-xs sm:text-[11px] font-medium text-muted-foreground mb-1 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
+              <Phone className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-primary print:hidden" />
               Phone Number
             </Label>
             <Input
@@ -118,7 +118,7 @@ export const CustomerInfo = ({
               placeholder="e.g. 08012345678"
               value={customerPhone}
               onChange={(e) => onPhoneChange(e.target.value)}
-              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background font-mono print:hidden"
+              className="!min-h-0 h-10 sm:h-9 text-sm bg-background font-mono print:hidden"
             />
             <div className="hidden print:block font-mono text-xs text-foreground">
               {customerPhone}
@@ -127,8 +127,8 @@ export const CustomerInfo = ({
 
           {/* Email */}
           <div className={!hasEmail ? "print:hidden" : ""}>
-            <Label htmlFor="customerEmail" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
-              <Mail className="h-3 w-3 text-primary print:hidden" />
+            <Label htmlFor="customerEmail" className="text-xs sm:text-[11px] font-medium text-muted-foreground mb-1 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
+              <Mail className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-primary print:hidden" />
               Email Address
             </Label>
             <Input
@@ -138,7 +138,7 @@ export const CustomerInfo = ({
               placeholder="e.g. client@example.com"
               value={customerEmail}
               onChange={(e) => onEmailChange?.(e.target.value)}
-              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background print:hidden"
+              className="!min-h-0 h-10 sm:h-9 text-sm bg-background print:hidden"
             />
             <div className="hidden print:block text-xs text-foreground">
               {customerEmail}
@@ -147,8 +147,8 @@ export const CustomerInfo = ({
 
           {/* Billing Address */}
           <div className={!hasAddress ? "print:hidden" : ""}>
-            <Label htmlFor="customerAddress" className="text-[11px] font-medium text-muted-foreground mb-0.5 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
-              <MapPin className="h-3 w-3 text-primary print:hidden" />
+            <Label htmlFor="customerAddress" className="text-xs sm:text-[11px] font-medium text-muted-foreground mb-1 flex items-center gap-1 print:text-[10px] print:uppercase print:font-bold print:text-slate-500">
+              <MapPin className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-primary print:hidden" />
               Billing Address
             </Label>
             <Input
@@ -156,7 +156,7 @@ export const CustomerInfo = ({
               placeholder="e.g. 12 Marina St, Victoria Island"
               value={customerAddress}
               onChange={(e) => onAddressChange?.(e.target.value)}
-              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background print:hidden"
+              className="!min-h-0 h-10 sm:h-9 text-sm bg-background print:hidden"
             />
             <div className="hidden print:block text-xs text-foreground">
               {customerAddress}
