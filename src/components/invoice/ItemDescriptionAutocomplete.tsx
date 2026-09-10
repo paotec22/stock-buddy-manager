@@ -96,12 +96,12 @@ export const ItemDescriptionAutocomplete = ({
       />
       
       {open && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover text-popover-foreground border border-border rounded-xl shadow-lg max-h-60 overflow-auto divide-y divide-border/60">
           {loading && (
-            <div className="p-2 text-sm text-muted-foreground">Loading...</div>
+            <div className="p-3 text-xs text-muted-foreground text-center">Searching inventory...</div>
           )}
           {!loading && items.length === 0 && value.length >= 2 && (
-            <div className="p-2 text-sm text-muted-foreground">No items found.</div>
+            <div className="p-3 text-xs text-muted-foreground text-center">No inventory items found.</div>
           )}
           {!loading && items.length > 0 && (
             <div>
@@ -111,12 +111,12 @@ export const ItemDescriptionAutocomplete = ({
                   data-dropdown-item
                   onClick={() => handleSelect(item)}
                   onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking
-                  className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  className="p-2.5 hover:bg-muted/70 active:bg-muted cursor-pointer transition-colors"
                 >
                   <div className="flex flex-col">
-                    <span className="font-medium">{item["Item Description"]}</span>
-                    <span className="text-sm text-muted-foreground">
-                      Price: ₦{item.Price?.toLocaleString()} | Stock: {item.Quantity}
+                    <span className="font-semibold text-xs text-foreground">{item["Item Description"]}</span>
+                    <span className="text-[11px] text-muted-foreground mt-0.5">
+                      Price: ₦{item.Price?.toLocaleString()} • Stock: {item.Quantity}
                     </span>
                   </div>
                 </div>

@@ -98,7 +98,7 @@ export const CustomerInfo = ({
               placeholder="e.g. Acme Corp / John Doe"
               value={customerName}
               onChange={(e) => onNameChange(e.target.value)}
-              className="!min-h-0 h-8 text-xs sm:text-sm bg-background print:hidden"
+              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background print:hidden"
             />
             <div className="hidden print:block font-bold text-xs text-foreground">
               {customerName}
@@ -113,10 +113,12 @@ export const CustomerInfo = ({
             </Label>
             <Input
               id="customerPhone"
+              type="tel"
+              inputMode="tel"
               placeholder="e.g. 08012345678"
               value={customerPhone}
               onChange={(e) => onPhoneChange(e.target.value)}
-              className="!min-h-0 h-8 text-xs sm:text-sm bg-background font-mono print:hidden"
+              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background font-mono print:hidden"
             />
             <div className="hidden print:block font-mono text-xs text-foreground">
               {customerPhone}
@@ -132,10 +134,11 @@ export const CustomerInfo = ({
             <Input
               id="customerEmail"
               type="email"
+              inputMode="email"
               placeholder="e.g. client@example.com"
               value={customerEmail}
               onChange={(e) => onEmailChange?.(e.target.value)}
-              className="!min-h-0 h-8 text-xs sm:text-sm bg-background print:hidden"
+              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background print:hidden"
             />
             <div className="hidden print:block text-xs text-foreground">
               {customerEmail}
@@ -153,7 +156,7 @@ export const CustomerInfo = ({
               placeholder="e.g. 12 Marina St, Victoria Island"
               value={customerAddress}
               onChange={(e) => onAddressChange?.(e.target.value)}
-              className="!min-h-0 h-8 text-xs sm:text-sm bg-background print:hidden"
+              className="!min-h-0 h-9 sm:h-8 text-xs sm:text-sm bg-background print:hidden"
             />
             <div className="hidden print:block text-xs text-foreground">
               {customerAddress}

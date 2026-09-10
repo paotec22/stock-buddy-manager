@@ -25,7 +25,6 @@ interface CurrencyChangerProps {
 export const CurrencyChanger = ({ selectedCurrency, onCurrencyChange }: CurrencyChangerProps) => {
   return (
     <div className="flex items-center gap-2 print:hidden">
-      <label className="text-sm font-medium">Currency:</label>
       <Select
         value={selectedCurrency.code}
         onValueChange={(value) => {
@@ -33,20 +32,20 @@ export const CurrencyChanger = ({ selectedCurrency, onCurrencyChange }: Currency
           if (currency) onCurrencyChange(currency);
         }}
       >
-        <SelectTrigger className="w-40">
+        <SelectTrigger className="!min-h-0 h-8 w-28 sm:w-36 text-xs bg-background">
           <SelectValue>
-            <div className="flex items-center gap-2">
-              <selectedCurrency.icon className="h-4 w-4" />
-              {selectedCurrency.code}
+            <div className="flex items-center gap-1.5 font-medium">
+              <selectedCurrency.icon className="h-3.5 w-3.5 text-primary" />
+              <span>{selectedCurrency.code} ({selectedCurrency.symbol})</span>
             </div>
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent align="end">
           {currencies.map((currency) => (
-            <SelectItem key={currency.code} value={currency.code}>
+            <SelectItem key={currency.code} value={currency.code} className="text-xs">
               <div className="flex items-center gap-2">
-                <currency.icon className="h-4 w-4" />
-                <span>{currency.code} - {currency.name}</span>
+                <currency.icon className="h-3.5 w-3.5 text-primary" />
+                <span>{currency.code} ({currency.symbol}) - {currency.name}</span>
               </div>
             </SelectItem>
           ))}

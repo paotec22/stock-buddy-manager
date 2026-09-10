@@ -133,9 +133,9 @@ const CreateInvoice = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-3.5 pb-16 sm:pb-10 print:space-y-2 print:pb-0 invoice-print-container">
+    <div className="max-w-6xl mx-auto px-2.5 sm:px-4 md:px-6 print:px-0 space-y-3 sm:space-y-3.5 pb-16 sm:pb-10 print:space-y-2 print:pb-0 invoice-print-container">
       {/* Top Invoice Main Content */}
-      <div className="space-y-3.5 print:space-y-2 print:flex-1">
+      <div className="space-y-3 sm:space-y-3.5 print:space-y-2 print:flex-1">
         {/* Top Invoice Config Header */}
         <InvoiceHeader 
           onPrint={handlePrint} 
@@ -166,9 +166,9 @@ const CreateInvoice = () => {
         />
 
         {/* Currency Selector Toolbar */}
-        <div className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-border/80 shadow-xs print:hidden">
+        <div className="flex flex-row items-center justify-between gap-2 bg-card px-3 py-2 sm:py-2.5 rounded-xl border border-border/80 shadow-xs print:hidden">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Invoice Pricing Currency
+            Pricing Currency
           </span>
           <CurrencyChanger
             selectedCurrency={selectedCurrency}

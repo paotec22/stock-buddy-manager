@@ -558,6 +558,15 @@
     color: #0f172a !important;
   }
 
+  .company-logo {
+    display: block !important;
+    max-height: 48px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .invoice-print-container {
     display: flex !important;
     flex-direction: column !important;

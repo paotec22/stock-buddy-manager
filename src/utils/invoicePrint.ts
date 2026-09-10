@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "./formatters";
 import type { Currency } from "@/components/invoice/CurrencyChanger";
 import { toast } from "sonner";
+import { COMPANY_LOGO_DATA_URI } from "./companyLogo";
 
 export interface InvoicePrintItem {
   description: string;
@@ -130,22 +131,22 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
       border-bottom: 3px solid ${isPaidInFull ? "#059669" : "#081def"};
       padding-bottom: 16px;
       margin-bottom: 20px;
+      gap: 16px;
     }
-    .brand-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: ${isPaidInFull ? "#059669" : "#081def"};
-      letter-spacing: -0.5px;
-      margin: 0;
+    .brand-group {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
     }
-    .brand-sub {
-      font-size: 12px;
-      color: #64748b;
-      margin: 4px 0 0 0;
-      font-weight: 500;
+    .company-logo {
+      height: 48px;
+      width: auto;
+      max-width: 220px;
+      object-fit: contain;
+      display: block;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .doc-type-badge {
       display: inline-block;
@@ -295,11 +296,12 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
     <div class="main-section">
       <!-- Header -->
       <div class="header-bar">
-        <div>
-          <h1 class="brand-title">
-            PUIDO SMART SOLUTIONS LTD
-          </h1>
-          <p class="brand-sub">Enterprise Telecommunications & Smart Device Inventory</p>
+        <div class="brand-group">
+          <img 
+            src="${COMPANY_LOGO_DATA_URI}" 
+            alt="Puido Smart Solutions Ltd" 
+            class="company-logo" 
+          />
           <div class="doc-type-badge">
             ${isPaidInFull ? "Official Payment Receipt" : "Commercial Invoice"}
           </div>

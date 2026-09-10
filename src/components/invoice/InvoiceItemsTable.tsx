@@ -289,94 +289,116 @@ export const InvoiceItemsTable = ({
         </div>
 
         {/* Mobile List Layout */}
-        <div className="md:hidden print:hidden p-2.5 space-y-2">
+        <div className="md:hidden print:hidden p-2.5 space-y-2.5">
+          {items.length === 0 && (
+            <div className="text-center py-5 px-3 bg-muted/20 rounded-xl border border-dashed border-border/80">
+              <ShoppingBag className="h-6 w-6 text-muted-foreground/50 mx-auto mb-1.5" />
+              <p className="text-xs font-medium text-foreground">No items added yet</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Use the form below to add products or services.</p>
+            </div>
+          )}
+
           {items.map((item, index) => (
-            <div key={index} className="rounded-lg border border-border/80 bg-background p-2.5 space-y-1.5">
+            <div key={index} className="rounded-xl border border-border/80 bg-background p-3 space-y-2 shadow-2xs">
               <div className="flex items-start justify-between gap-2">
-                <span className="font-semibold text-xs text-foreground leading-snug">{item.description}</span>
+                <span className="font-semibold text-xs text-foreground leading-snug break-words flex-1">
+                  {item.description}
+                </span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => handleRemoveItem(index)}
-                  className="!min-h-0 h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                  className="!min-h-0 h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                  title="Remove item"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
+
               <div className="grid grid-cols-2 gap-2 text-xs pt-0.5">
                 <div>
-                  <span className="text-muted-foreground block text-[10px]">Quantity</span>
+                  <span className="text-muted-foreground block text-[10px] font-medium uppercase tracking-wider">Quantity</span>
                   <Input
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     value={item.quantity}
                     onChange={(e) => handleUpdateItemQuantity(index, Number(e.target.value))}
-                    className="!min-h-0 h-6 w-20 text-xs font-mono mt-0.5"
+                    className="!min-h-0 h-8 w-full text-xs font-mono font-medium mt-1 bg-background"
                   />
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[10px]">Unit Price</span>
+                  <span className="text-muted-foreground block text-[10px] font-medium uppercase tracking-wider">Unit Price</span>
                   <Input
                     type="number"
+                    inputMode="decimal"
                     min="0"
+                    step="any"
                     value={item.unit_price}
                     onChange={(e) => handleUpdateItemPrice(index, Number(e.target.value))}
-                    className="!min-h-0 h-6 w-full text-xs font-mono mt-0.5"
+                    className="!min-h-0 h-8 w-full text-xs font-mono font-medium mt-1 text-right bg-background"
                   />
                 </div>
               </div>
-              <div className="flex justify-between items-center pt-1.5 border-t text-xs font-semibold">
-                <span className="text-muted-foreground text-[11px]">Line Total:</span>
-                <span className="font-mono text-foreground">{formatCurrency(item.amount, currency)}</span>
+
+              <div className="flex justify-between items-center pt-2 border-t border-border/60 text-xs">
+                <span className="text-muted-foreground text-[11px] font-medium">Line Total:</span>
+                <span className="font-mono font-bold text-xs sm:text-sm text-foreground">{formatCurrency(item.amount, currency)}</span>
               </div>
             </div>
           ))}
 
           {/* Mobile Add New Item Form */}
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-2.5 space-y-2">
-            <span className="text-xs font-bold text-primary block">Add Item</span>
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2.5">
+            <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+              <Plus className="h-3.5 w-3.5" />
+              Add Item to Invoice
+            </span>
             <ItemDescriptionAutocomplete
               value={newItem.description}
               onChange={(value) => setNewItem(prev => ({ ...prev, description: value }))}
               onSelect={handleItemSelect}
-              className="!min-h-0 h-7 text-xs bg-background"
+              className="!min-h-0 h-9 text-xs bg-background"
             />
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-[10px] text-muted-foreground mb-0.5 block">Quantity</Label>
+                <Label className="text-[10px] font-medium text-muted-foreground mb-1 block uppercase tracking-wider">Quantity</Label>
                 <Input
                   type="number"
+                  inputMode="numeric"
                   min="1"
                   value={newItem.quantity || ""}
                   onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
-                  className="!min-h-0 h-7 text-xs font-mono"
+                  className="!min-h-0 h-9 text-xs font-mono bg-background"
                   placeholder="1"
                 />
               </div>
               <div>
-                <Label className="text-[10px] text-muted-foreground mb-0.5 block">Unit Price</Label>
+                <Label className="text-[10px] font-medium text-muted-foreground mb-1 block uppercase tracking-wider">Unit Price</Label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   min="0"
+                  step="any"
                   value={newItem.unit_price === 0 ? "" : newItem.unit_price}
                   onChange={(e) => setNewItem({ ...newItem, unit_price: Number(e.target.value) })}
-                  className="!min-h-0 h-7 text-xs font-mono"
+                  className="!min-h-0 h-9 text-xs font-mono bg-background text-right"
                   placeholder="0.00"
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between pt-0.5">
-              <span className="text-[11px] text-muted-foreground">Calculated Amount</span>
-              <span className="text-xs font-bold font-mono">{formatCurrency(newItem.amount, currency)}</span>
+            <div className="flex items-center justify-between pt-1 border-t border-primary/15">
+              <span className="text-[11px] text-muted-foreground font-medium">Calculated Amount:</span>
+              <span className="text-xs font-bold font-mono text-primary">{formatCurrency(newItem.amount, currency)}</span>
             </div>
             <Button
               type="button"
               onClick={handleAddItem}
               disabled={!newItem.description.trim() || newItem.quantity <= 0}
-              className="w-full !min-h-0 h-8 text-xs font-semibold"
+              className="w-full !min-h-0 h-9 text-xs font-semibold shadow-xs"
             >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus className="h-4 w-4 mr-1.5" />
               Add Item to List
             </Button>
           </div>
@@ -385,7 +407,7 @@ export const InvoiceItemsTable = ({
 
       {/* Financial Summary Block (Right Aligned, Compact, accommodates many items) */}
       <div className="flex justify-end pt-1">
-        <div className="w-full max-w-sm sm:max-w-md rounded-xl border border-border/80 bg-card p-3 sm:p-3.5 space-y-2.5 shadow-xs print:border-none print:shadow-none print:p-0 print:max-w-xs print:mt-1">
+        <div className="w-full sm:max-w-md rounded-xl border border-border/80 bg-card p-3 sm:p-4 space-y-2.5 shadow-xs print:border-none print:shadow-none print:p-0 print:max-w-xs print:mt-1">
           <div className="flex items-center justify-between border-b pb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Financial Summary
@@ -394,9 +416,9 @@ export const InvoiceItemsTable = ({
           </div>
 
           {/* Adjustments: VAT & Discount Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 rounded-lg bg-muted/40 border border-border/60 print:hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted/40 border border-border/60 print:hidden">
             {/* VAT Switch */}
-            <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center justify-between gap-2">
               <Label htmlFor="vat-toggle" className="text-xs font-medium cursor-pointer">
                 Apply VAT ({VAT_RATE}%)
               </Label>
@@ -404,25 +426,26 @@ export const InvoiceItemsTable = ({
                 id="vat-toggle"
                 checked={includeVat}
                 onCheckedChange={onVatChange}
-                className="scale-90"
+                className="scale-90 shrink-0"
               />
             </div>
 
             {/* Discount % Input */}
-            <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center justify-between gap-2">
               <Label htmlFor="discount" className="text-xs font-medium flex items-center gap-1">
-                <Percent className="h-3 w-3 text-primary" />
+                <Percent className="h-3 w-3 text-primary shrink-0" />
                 Discount (%):
               </Label>
               <Input
                 id="discount"
                 type="number"
+                inputMode="decimal"
                 min="0"
                 max="100"
                 step="0.5"
                 value={discountPercent || ""}
                 onChange={(e) => onDiscountChange(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
-                className="w-14 !min-h-0 h-6.5 text-xs font-mono text-right"
+                className="w-16 !min-h-0 h-7 text-xs font-mono text-right bg-background"
                 placeholder="0"
               />
             </div>
@@ -455,7 +478,7 @@ export const InvoiceItemsTable = ({
             </div>
 
             {/* Amount Paid */}
-            <div className="flex justify-between items-center pt-1.5">
+            <div className="flex flex-col xs:flex-row sm:flex-row sm:items-center justify-between gap-1.5 pt-1.5">
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="amountPaid" className="text-xs font-semibold text-foreground">
                   Amount Paid
@@ -475,11 +498,12 @@ export const InvoiceItemsTable = ({
                 <Input
                   id="amountPaid"
                   type="number"
+                  inputMode="decimal"
                   min="0"
                   step="any"
                   value={amountPaid || ""}
                   onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
-                  className="w-28 !min-h-0 h-7 text-right font-mono font-semibold text-xs bg-background"
+                  className="w-full sm:w-28 !min-h-0 h-8 sm:h-7 text-right font-mono font-semibold text-xs bg-background"
                   placeholder="0.00"
                 />
               </div>
