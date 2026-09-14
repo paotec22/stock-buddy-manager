@@ -12,6 +12,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sale } from "./types";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { isAdminUser } from "@/utils/roles";
 import {
   Select,
   SelectContent,
@@ -27,6 +29,7 @@ interface SalesTableProps {
 }
 
 export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesTableProps) {
+  const { session } = useAuth();
   const [sortField, setSortField] = useState<SortField>('sale_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [paymentSale, setPaymentSale] = useState<Sale | null>(null);
@@ -41,23 +44,23 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
   }, [sales.length]);
 
   const { data: userRole } = useQuery({
-    queryKey: ['userRole'],
+    queryKey: ['userRole', session?.user?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!session?.user?.id) return null;
       
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', session.user.id)
         .maybeSingle();
       
       return profile?.role;
-    }
+    },
+    enabled: !!session?.user?.id
   });
 
-  const canEditDates = userRole === 'admin' || userRole === 'uploader';
-  const isAdmin = userRole === 'admin';
+  const isAdmin = isAdminUser(session?.user?.email, userRole);
+  const canEditDates = isAdmin || userRole === 'uploader';
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

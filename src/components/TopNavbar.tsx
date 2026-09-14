@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "./ThemeProvider";
 import { CompanyLogo } from "./CompanyLogo";
+import { isSuperAdminUser, isAdminUser, getRoleLabel } from "@/utils/roles";
 
 interface GroupDropdownItemProps {
   to: string;
@@ -152,8 +153,9 @@ export function TopNavbar() {
 
   if (!session) return null;
 
+  const isSuperAdmin = isSuperAdminUser(session.user.email, userRole);
+  const isAdmin = isAdminUser(session.user.email, userRole);
   const isInventoryManager = userRole === "inventory_manager";
-  const isAdmin = userRole === "admin";
   const isUploader = userRole === "uploader";
 
   // Check active module groups
@@ -194,13 +196,7 @@ export function TopNavbar() {
     window.dispatchEvent(new CustomEvent("open-command-palette"));
   };
 
-  const roleLabel = isAdmin
-    ? "Admin"
-    : isInventoryManager
-    ? "Inventory Manager"
-    : isUploader
-    ? "Uploader"
-    : "Staff";
+  const roleLabel = getRoleLabel(session.user.email, userRole);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-card/95 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 print:hidden">
@@ -353,24 +349,6 @@ export function TopNavbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          {/* Admin Direct Settings Link */}
-          {isAdmin && (
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all duration-150 select-none",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
-                )
-              }
-            >
-              <Settings className="h-3.5 w-3.5" />
-              <span>Settings</span>
-            </NavLink>
-          )}
         </nav>
 
         {/* Right Section: Command Bar + User Dropdown + Theme Switch */}
@@ -444,8 +422,11 @@ export function TopNavbar() {
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <Badge
-                      variant={isAdmin ? "destructive" : "secondary"}
-                      className="text-[10px] px-1.5 py-0 h-4 uppercase font-bold"
+                      variant={isSuperAdmin ? "default" : isAdmin ? "destructive" : "secondary"}
+                      className={cn(
+                        "text-[10px] px-1.5 py-0 h-4 uppercase font-bold",
+                        isSuperAdmin && "bg-amber-600 hover:bg-amber-600 text-white border-0"
+                      )}
                     >
                       {roleLabel}
                     </Badge>
@@ -457,7 +438,7 @@ export function TopNavbar() {
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Admin Settings</span>
+                    <span>{isSuperAdmin ? "Super Admin Settings" : "Admin Settings"}</span>
                   </DropdownMenuItem>
                 )}
 
@@ -635,7 +616,7 @@ export function TopNavbar() {
                         icon={Settings}
                         onClick={closeMobile}
                       >
-                        Admin Settings
+                        {isSuperAdmin ? "Super Admin Settings" : "Admin Settings"}
                       </MobileNavItem>
                     </div>
                   )}

@@ -3,6 +3,7 @@ import { useAuth } from "./AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { isAdminUser, isSuperAdminUser } from "@/utils/roles";
 
 interface RoleProtectedRouteProps {
   children: React.ReactNode;
@@ -34,17 +35,26 @@ export function RoleProtectedRoute({
     enabled: !!session?.user?.id
   });
 
+  const isSuperAdmin = isSuperAdminUser(session?.user?.email, userRole);
+  const isAdmin = isAdminUser(session?.user?.email, userRole);
+
+  const isAuthorized = Boolean(
+    isSuperAdmin ||
+    (isAdmin && allowedRoles.includes('admin')) ||
+    (userRole && allowedRoles.includes(userRole))
+  );
+
   useEffect(() => {
-    if (!isLoading && userRole && !allowedRoles.includes(userRole)) {
+    if (!isLoading && !isAuthorized) {
       navigate(redirectTo);
     }
-  }, [userRole, isLoading, allowedRoles, navigate, redirectTo]);
+  }, [isAuthorized, isLoading, navigate, redirectTo]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!userRole || !allowedRoles.includes(userRole)) {
+  if (!isAuthorized) {
     return null;
   }
 
