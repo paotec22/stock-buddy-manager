@@ -111,7 +111,7 @@ export function CommandPalette() {
     return acc;
   }, {} as Record<string, CommandAction[]>);
 
-  // Toggle palette with Cmd/Ctrl + K
+  // Toggle palette with Cmd/Ctrl + K or custom event
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -122,8 +122,14 @@ export function CommandPalette() {
         setOpen(false);
       }
     };
+    const handleCustomOpen = () => setOpen(true);
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-command-palette", handleCustomOpen);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-command-palette", handleCustomOpen);
+    };
   }, []);
 
   // Focus input when opened
