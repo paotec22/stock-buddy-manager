@@ -83,17 +83,46 @@ export async function uploadInventoryImage(file: File, itemId: number | string):
   return path;
 }
 
-// Simple in-memory cache for signed URLs to avoid re-signing on every render.
+// Multi-tier cache for signed URLs (memory Map + persistent sessionStorage)
 const urlCache = new Map<string, { url: string; expires: number }>();
 const SIGN_TTL = 60 * 60; // 1 hour
+const STORAGE_CACHE_PREFIX = "puido_img_url_";
 
 function cacheGet(path: string): string | null {
+  // 1. In-memory check
   const hit = urlCache.get(path);
-  if (hit && hit.expires > Date.now() + 60_000) return hit.url;
+  const now = Date.now();
+  if (hit && hit.expires > now + 60_000) return hit.url;
+
+  // 2. Session storage check (persists across page navigations within session)
+  try {
+    if (typeof window !== "undefined" && window.sessionStorage) {
+      const raw = window.sessionStorage.getItem(STORAGE_CACHE_PREFIX + path);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.url && parsed?.expires > now + 60_000) {
+          urlCache.set(path, parsed);
+          return parsed.url;
+        }
+      }
+    }
+  } catch {}
+
   return null;
 }
+
 function cacheSet(path: string, url: string) {
-  urlCache.set(path, { url, expires: Date.now() + SIGN_TTL * 1000 });
+  const expires = Date.now() + SIGN_TTL * 1000;
+  const entry = { url, expires };
+  urlCache.set(path, entry);
+  try {
+    if (typeof window !== "undefined" && window.sessionStorage) {
+      window.sessionStorage.setItem(
+        STORAGE_CACHE_PREFIX + path,
+        JSON.stringify(entry)
+      );
+    }
+  } catch {}
 }
 
 /**
@@ -159,15 +188,32 @@ export async function getInventoryImageUrls(paths: string[]): Promise<Record<str
   }
   if (missing.length === 0) return map;
 
-  const { data, error } = await supabase.storage
-    .from(INVENTORY_IMAGES_BUCKET)
-    .createSignedUrls(missing, SIGN_TTL);
-  if (error || !data) return map;
-  data.forEach((entry, idx) => {
-    if (entry.signedUrl) {
-      map[missing[idx]] = entry.signedUrl;
-      cacheSet(missing[idx], entry.signedUrl);
-    }
-  });
+  // Process missing in parallel chunks of 30 to avoid payload timeouts
+  const CHUNK_SIZE = 30;
+  const chunks: string[][] = [];
+  for (let i = 0; i < missing.length; i += CHUNK_SIZE) {
+    chunks.push(missing.slice(i, i + CHUNK_SIZE));
+  }
+
+  await Promise.all(
+    chunks.map(async (chunk) => {
+      try {
+        const { data, error } = await supabase.storage
+          .from(INVENTORY_IMAGES_BUCKET)
+          .createSignedUrls(chunk, SIGN_TTL);
+        if (!error && data) {
+          data.forEach((entry, idx) => {
+            if (entry?.signedUrl && chunk[idx]) {
+              map[chunk[idx]] = entry.signedUrl;
+              cacheSet(chunk[idx], entry.signedUrl);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Error signing image chunk:", err);
+      }
+    })
+  );
+
   return map;
 }

@@ -47,6 +47,7 @@ export function CompanyLogo({
       src={src}
       alt={alt}
       className={className}
+      referrerPolicy="no-referrer"
       {...props}
     />
   );
