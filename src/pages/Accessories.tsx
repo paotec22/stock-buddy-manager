@@ -105,7 +105,6 @@ export default function Accessories() {
   return (
     <RoleProtectedRoute
       allowedRoles={["admin", "uploader", "inventory_manager", "user"]}
-      pageName="Accessories (Spare Parts)"
     >
       <div className="container mx-auto p-4 sm:p-6 space-y-6 max-w-7xl">
         {/* Sub-page Navigation Tabs */}

@@ -218,7 +218,7 @@ const CreateInvoice = () => {
               {isPaidInFull ? "Paid Total" : "Grand Total"}
             </span>
             <span className="font-mono font-bold text-sm text-foreground">
-              {formatCurrency(calculateTotals().grandTotal, selectedCurrency)}
+              {formatCurrency(calculateTotals().total_amount, selectedCurrency)}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
