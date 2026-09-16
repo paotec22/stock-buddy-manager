@@ -9,6 +9,7 @@ import { ItemDescriptionAutocomplete } from "./ItemDescriptionAutocomplete";
 import { formatCurrency } from "@/utils/formatters";
 import type { Currency } from "./CurrencyChanger";
 import { Badge } from "@/components/ui/badge";
+import { BankDetails } from "./BankDetails";
 
 interface InvoiceItem {
   description: string;
@@ -173,61 +174,61 @@ export const InvoiceItemsTable = ({
         <div className="hidden md:block print:block overflow-x-auto">
           <Table className="w-full">
             <TableHeader className="bg-muted/40 print:bg-slate-100">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[48%] !h-7 py-1 px-3 font-semibold text-[11px] text-muted-foreground uppercase tracking-wider print:px-2 print:text-[10px] print:text-black">Item Description</TableHead>
-                <TableHead className="w-[12%] !h-7 py-1 px-2 text-center font-semibold text-[11px] text-muted-foreground uppercase tracking-wider print:px-1 print:text-[10px] print:text-black">Qty</TableHead>
-                <TableHead className="w-[18%] !h-7 py-1 px-3 text-right font-semibold text-[11px] text-muted-foreground uppercase tracking-wider print:px-2 print:text-[10px] print:text-black">Unit Price</TableHead>
-                <TableHead className="w-[18%] !h-7 py-1 px-3 text-right font-semibold text-[11px] text-muted-foreground uppercase tracking-wider print:px-2 print:text-[10px] print:text-black">Line Total</TableHead>
-                <TableHead className="w-[44px] !h-7 py-1 px-1 print:hidden"></TableHead>
+              <TableRow className="hover:bg-transparent border-b border-border/70">
+                <TableHead className="w-[46%] h-11 py-3 px-4 font-bold text-xs text-muted-foreground uppercase tracking-wider print:px-3 print:py-2 print:text-[11px] print:text-black">Item Description</TableHead>
+                <TableHead className="w-[12%] h-11 py-3 px-3 text-center font-bold text-xs text-muted-foreground uppercase tracking-wider print:px-2 print:py-2 print:text-[11px] print:text-black">Qty</TableHead>
+                <TableHead className="w-[20%] h-11 py-3 px-4 text-right font-bold text-xs text-muted-foreground uppercase tracking-wider print:px-3 print:py-2 print:text-[11px] print:text-black">Unit Price</TableHead>
+                <TableHead className="w-[18%] h-11 py-3 px-4 text-right font-bold text-xs text-muted-foreground uppercase tracking-wider print:px-3 print:py-2 print:text-[11px] print:text-black">Line Total</TableHead>
+                <TableHead className="w-[50px] h-11 py-3 px-2 print:hidden"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-16 text-center text-muted-foreground text-xs">
+                  <TableCell colSpan={5} className="h-20 text-center text-muted-foreground text-xs sm:text-sm">
                     No items added yet. Use the row below to add items from inventory or type manually.
                   </TableCell>
                 </TableRow>
               ) : (
                 items.map((item, index) => (
-                  <TableRow key={index} className="hover:bg-muted/20 border-b border-border/50">
-                    <TableCell className="py-1 px-3 font-medium text-xs text-foreground break-words print:py-0.5 print:px-2 print:text-[11px]">
+                  <TableRow key={index} className="hover:bg-muted/30 border-b border-border/60 transition-colors">
+                    <TableCell className="py-3.5 px-4 font-medium text-xs sm:text-sm text-foreground break-words print:py-2.5 print:px-3 print:text-xs">
                       {item.description}
                     </TableCell>
-                    <TableCell className="py-1 px-2 text-center print:py-0.5 print:px-1">
+                    <TableCell className="py-3.5 px-3 text-center print:py-2.5 print:px-2">
                       <Input
                         type="number"
                         min="1"
                         value={item.quantity}
                         onChange={(e) => handleUpdateItemQuantity(index, Number(e.target.value))}
-                        className="!min-h-0 w-14 h-7 text-center text-xs font-mono mx-auto print:hidden"
+                        className="!min-h-0 w-16 h-8 text-center text-xs sm:text-sm font-mono font-medium mx-auto print:hidden"
                       />
                       <span className="hidden print:inline font-mono text-xs">{item.quantity}</span>
                     </TableCell>
-                    <TableCell className="py-1 px-3 text-right print:py-0.5 print:px-2">
+                    <TableCell className="py-3.5 px-4 text-right print:py-2.5 print:px-3">
                       <Input
                         type="number"
                         min="0"
                         step="any"
                         value={item.unit_price}
                         onChange={(e) => handleUpdateItemPrice(index, Number(e.target.value))}
-                        className="!min-h-0 w-24 h-7 text-right text-xs font-mono ml-auto print:hidden"
+                        className="!min-h-0 w-28 h-8 text-right text-xs sm:text-sm font-mono font-medium ml-auto print:hidden"
                       />
                       <span className="hidden print:inline font-mono text-xs">{formatCurrency(item.unit_price, currency)}</span>
                     </TableCell>
-                    <TableCell className="py-1 px-3 text-right font-mono font-semibold text-xs text-foreground print:py-0.5 print:px-2 print:text-[11px]">
+                    <TableCell className="py-3.5 px-4 text-right font-mono font-semibold text-xs sm:text-sm text-foreground print:py-2.5 print:px-3 print:text-xs">
                       {formatCurrency(item.amount, currency)}
                     </TableCell>
-                    <TableCell className="py-1 px-1 print:hidden text-center">
+                    <TableCell className="py-3.5 px-2 print:hidden text-center">
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveItem(index)}
-                        className="!min-h-0 h-6 w-6 text-muted-foreground hover:text-destructive"
+                        className="!min-h-0 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         title="Remove item"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -236,26 +237,26 @@ export const InvoiceItemsTable = ({
 
               {/* Add New Item Input Row - Print Hidden */}
               <TableRow className="bg-muted/20 print:hidden border-t-2 border-primary/20">
-                <TableCell className="py-1.5 px-3">
+                <TableCell className="py-3 px-4">
                   <ItemDescriptionAutocomplete
                     value={newItem.description}
                     onChange={(value) => setNewItem(prev => ({ ...prev, description: value }))}
                     onSelect={handleItemSelect}
-                    className="!min-h-0 h-7 text-xs bg-background"
+                    className="!min-h-0 h-8 text-xs sm:text-sm bg-background"
                   />
                 </TableCell>
-                <TableCell className="py-1.5 px-2 text-center">
+                <TableCell className="py-3 px-3 text-center">
                   <Input
                     type="number"
                     inputMode="numeric"
                     min="1"
                     value={newItem.quantity || ""}
                     onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
-                    className="!min-h-0 w-14 h-7 text-center font-mono text-xs mx-auto"
+                    className="!min-h-0 w-16 h-8 text-center font-mono text-xs sm:text-sm mx-auto"
                     placeholder="1"
                   />
                 </TableCell>
-                <TableCell className="py-1.5 px-3 text-right">
+                <TableCell className="py-3 px-4 text-right">
                   <Input
                     type="number"
                     inputMode="decimal"
@@ -263,23 +264,23 @@ export const InvoiceItemsTable = ({
                     step="any"
                     value={newItem.unit_price === 0 ? "" : newItem.unit_price}
                     onChange={(e) => setNewItem({ ...newItem, unit_price: Number(e.target.value) })}
-                    className="!min-h-0 w-24 h-7 text-right font-mono text-xs ml-auto"
+                    className="!min-h-0 w-28 h-8 text-right font-mono text-xs sm:text-sm ml-auto"
                     placeholder="0.00"
                   />
                 </TableCell>
-                <TableCell className="py-1.5 px-3 text-right font-mono font-semibold text-xs text-foreground">
+                <TableCell className="py-3 px-4 text-right font-mono font-semibold text-xs sm:text-sm text-foreground">
                   {formatCurrency(newItem.amount, currency)}
                 </TableCell>
-                <TableCell className="py-1.5 px-1 text-center">
+                <TableCell className="py-3 px-2 text-center">
                   <Button
                     type="button"
                     onClick={handleAddItem}
                     disabled={!newItem.description.trim() || newItem.quantity <= 0}
                     size="sm"
-                    className="!min-h-0 h-7 px-2.5 text-xs bg-primary text-primary-foreground font-semibold shadow-xs"
+                    className="!min-h-0 h-8 px-3 text-xs bg-primary text-primary-foreground font-semibold shadow-xs"
                     title="Add to Invoice"
                   >
-                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    <Plus className="h-4 w-4 mr-1" />
                     Add
                   </Button>
                 </TableCell>
@@ -453,10 +454,16 @@ export const InvoiceItemsTable = ({
         </div>
       </div>
 
-      {/* Financial Summary Block (Right Aligned, Compact, accommodates many items) */}
-      <div className="flex justify-end pt-1">
-        <div className="w-full sm:max-w-md rounded-xl border border-border/80 bg-card p-3 sm:p-4 space-y-2.5 shadow-xs print:border-none print:shadow-none print:p-0 print:max-w-xs print:mt-1">
-          <div className="flex items-center justify-between border-b pb-2">
+      {/* Financial Summary & Payment Instructions Section */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-start justify-between gap-6 pt-4 print:pt-2">
+        {/* Payment Instructions taking up the empty space */}
+        <div className="flex-1 w-full order-2 lg:order-1 flex flex-col">
+          <BankDetails />
+        </div>
+
+        {/* Financial Summary Block */}
+        <div className="w-full lg:w-[420px] shrink-0 order-1 lg:order-2 rounded-xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-xs print:border-none print:shadow-none print:p-0 print:max-w-xs print:mt-1">
+          <div className="flex items-center justify-between border-b pb-2.5">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Financial Summary
             </span>
@@ -464,7 +471,7 @@ export const InvoiceItemsTable = ({
           </div>
 
           {/* Adjustments: VAT & Discount Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-lg bg-muted/40 border border-border/60 print:hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-2.5 rounded-lg bg-muted/40 border border-border/60 print:hidden">
             {/* VAT Switch */}
             <div className="flex items-center justify-between gap-2">
               <Label htmlFor="vat-toggle" className="text-xs font-medium cursor-pointer">
@@ -500,33 +507,33 @@ export const InvoiceItemsTable = ({
           </div>
 
           {/* Breakdown Lines */}
-          <div className="space-y-1.5 text-xs pt-0.5">
+          <div className="space-y-2 text-xs pt-0.5">
             <div className="flex justify-between items-center text-muted-foreground py-0.5">
-              <span>Subtotal</span>
-              <span className="font-mono font-medium text-foreground">{formatCurrency(subtotal, currency)}</span>
+              <span className="text-xs sm:text-sm">Subtotal</span>
+              <span className="font-mono font-medium text-xs sm:text-sm text-foreground">{formatCurrency(subtotal, currency)}</span>
             </div>
 
             {discountPercent > 0 && (
               <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 py-0.5">
-                <span>Discount ({discountPercent}%)</span>
-                <span className="font-mono font-medium">-{formatCurrency(discountAmount, currency)}</span>
+                <span className="text-xs sm:text-sm">Discount ({discountPercent}%)</span>
+                <span className="font-mono font-medium text-xs sm:text-sm">-{formatCurrency(discountAmount, currency)}</span>
               </div>
             )}
 
             {includeVat && (
               <div className="flex justify-between items-center text-muted-foreground py-0.5">
-                <span>VAT ({VAT_RATE}%)</span>
-                <span className="font-mono font-medium text-foreground">{formatCurrency(vatAmount, currency)}</span>
+                <span className="text-xs sm:text-sm">VAT ({VAT_RATE}%)</span>
+                <span className="font-mono font-medium text-xs sm:text-sm text-foreground">{formatCurrency(vatAmount, currency)}</span>
               </div>
             )}
 
-            <div className="flex justify-between items-center font-bold text-sm sm:text-base text-foreground border-t pt-1.5">
+            <div className="flex justify-between items-center font-bold text-sm sm:text-base text-foreground border-t pt-2">
               <span>Grand Total</span>
-              <span className="font-mono text-primary text-base font-bold">{formatCurrency(grandTotal, currency)}</span>
+              <span className="font-mono text-primary text-base sm:text-lg font-bold">{formatCurrency(grandTotal, currency)}</span>
             </div>
 
             {/* Amount Paid */}
-            <div className="flex flex-col xs:flex-row sm:flex-row sm:items-center justify-between gap-1.5 pt-1.5">
+            <div className="flex flex-col xs:flex-row sm:flex-row sm:items-center justify-between gap-1.5 pt-2">
               <div className="flex items-center gap-2">
                 <Label htmlFor="amountPaid" className="text-xs sm:text-sm font-semibold text-foreground">
                   Amount Paid
@@ -551,7 +558,7 @@ export const InvoiceItemsTable = ({
                   step="any"
                   value={amountPaid || ""}
                   onChange={(e) => onAmountPaidChange(Number(e.target.value) || 0)}
-                  className="w-full sm:w-28 !min-h-0 h-9 sm:h-7 text-right font-mono font-semibold text-sm sm:text-xs bg-background"
+                  className="w-full sm:w-28 !min-h-0 h-9 sm:h-8 text-right font-mono font-semibold text-sm bg-background"
                   placeholder="0.00"
                 />
               </div>
@@ -561,9 +568,9 @@ export const InvoiceItemsTable = ({
             </div>
 
             {/* Balance */}
-            <div className="flex justify-between items-center font-bold text-xs sm:text-sm border-t pt-1.5">
+            <div className="flex justify-between items-center font-bold text-xs sm:text-sm border-t pt-2">
               <span>{balance <= 0 && grandTotal > 0 ? "Balance Settled" : "Outstanding Balance"}</span>
-              <span className={`font-mono text-sm sm:text-base font-bold ${balance <= 0 && grandTotal > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+              <span className={`font-mono text-base sm:text-lg font-bold ${balance <= 0 && grandTotal > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                 {formatCurrency(balance, currency)}
               </span>
             </div>

@@ -5,7 +5,6 @@ import { format, addDays } from "date-fns";
 import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
-import { BankDetails } from "@/components/invoice/BankDetails";
 import { SavedInvoicesModal } from "@/components/invoice/SavedInvoicesModal";
 import { InvoiceFooter } from "@/components/invoice/InvoiceFooter";
 import { CurrencyChanger, currencies, type Currency } from "@/components/invoice/CurrencyChanger";
@@ -194,11 +193,8 @@ const CreateInvoice = () => {
         />
       </div>
 
-      {/* Bottom Section: Official Payment Instructions & Printable Footer */}
+      {/* Bottom Section: Printable Footer */}
       <div className="invoice-print-bottom print:mt-auto print:pt-4 space-y-3 print:space-y-2">
-        {/* Bank Payment Instructions (Official Payment Instructions) */}
-        <BankDetails />
-
         {/* Printable Footer */}
         <InvoiceFooter />
       </div>

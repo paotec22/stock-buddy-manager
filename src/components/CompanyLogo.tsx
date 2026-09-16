@@ -1,25 +1,37 @@
 import React from "react";
 import { useTheme } from "./ThemeProvider";
+import { 
+  COMPANY_LOGO_PATH, 
+  INVOICE_LOGO_PATH, 
+  INVOICE_LOGO_DARK_PATH 
+} from "@/utils/companyLogo";
 
 export interface CompanyLogoProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /**
    * Theme variant:
-   * - "auto" (default): automatically uses white logo in dark mode, black logo in light mode.
-   * - "light": forces original black logo (ideal for white backgrounds and paper printing).
-   * - "dark": forces white logo (ideal for dark mode cards or banners).
+   * - "auto" (default): automatically matches system/app theme.
+   * - "light": forces light variant (ideal for white paper print).
+   * - "dark": forces dark variant.
+   * - "invoice": explicitly forces the official primary invoice logo.
    */
-  variant?: "auto" | "light" | "dark";
+  variant?: "auto" | "light" | "dark" | "invoice";
+  /**
+   * Set to true to use the official Puido Smart Solutions Primary Logo on invoice pages.
+   */
+  isInvoice?: boolean;
 }
 
 /**
- * CompanyLogo displays the official Puido Smart Solutions Ltd. company logo.
- * When the app is in dark mode, the black portions dynamically become white while
- * the distinctive blue brand accents are preserved intact.
+ * CompanyLogo displays the authentic brand marks for Puido Smart Solutions Ltd.
+ * When rendered on the invoice page (or with isInvoice / variant="invoice"), it renders
+ * the official Puido Smart Solutions_Primary Logo.svg.
  */
 export function CompanyLogo({
   variant = "auto",
+  isInvoice = false,
   className = "h-8 w-auto object-contain",
   alt = "Puido Smart Solutions",
+  src,
   ...props
 }: CompanyLogoProps) {
   let isDark = false;
@@ -28,7 +40,6 @@ export function CompanyLogo({
     const themeContext = useTheme();
     isDark = themeContext.theme === "dark";
   } catch {
-    // Gracefully fallback if rendered outside ThemeProvider
     if (typeof document !== "undefined") {
       isDark = document.documentElement.classList.contains("dark");
     }
@@ -37,14 +48,18 @@ export function CompanyLogo({
   const effectiveTheme =
     variant === "dark" ? "dark" : variant === "light" ? "light" : isDark ? "dark" : "light";
 
-  const src =
-    effectiveTheme === "dark"
-      ? "/Puido_Smart_Solutions_dark.svg"
-      : "/Puido_Smart_Solutions.svg";
+  let finalSrc = src;
+  if (!finalSrc) {
+    if (isInvoice || variant === "invoice") {
+      finalSrc = effectiveTheme === "dark" ? INVOICE_LOGO_DARK_PATH : INVOICE_LOGO_PATH;
+    } else {
+      finalSrc = COMPANY_LOGO_PATH;
+    }
+  }
 
   return (
     <img
-      src={src}
+      src={finalSrc}
       alt={alt}
       className={className}
       referrerPolicy="no-referrer"
@@ -54,3 +69,4 @@ export function CompanyLogo({
 }
 
 export default CompanyLogo;
+

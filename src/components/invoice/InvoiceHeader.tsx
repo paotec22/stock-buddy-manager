@@ -50,6 +50,7 @@ export const InvoiceHeader = ({
           <div className="flex flex-col gap-1.5 items-start">
             <CompanyLogo 
               variant="light"
+              isInvoice={true}
               alt="Puido Smart Solutions" 
               className="h-10 sm:h-12 w-auto object-contain company-logo"
             />
@@ -74,10 +75,11 @@ export const InvoiceHeader = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-border/60">
           <div className="flex items-center justify-between sm:justify-start gap-2.5 w-full sm:w-auto">
             <Link to="/inventory" className="shrink-0 group" title="Puido Smart Solutions - Inventory">
-              <div className="h-10 w-auto px-2 py-1 rounded-lg border border-border/60 bg-white dark:bg-slate-950 flex items-center justify-center transition-all group-hover:border-primary/50 shadow-xs">
+              <div className="h-10 w-auto px-2.5 py-1 rounded-lg border border-border/60 bg-white dark:bg-slate-950 flex items-center justify-center transition-all group-hover:border-primary/50 shadow-xs">
                 <CompanyLogo 
+                  isInvoice={true}
                   alt="Puido Smart Solutions" 
-                  className="h-7 w-auto object-contain" 
+                  className="h-7 w-auto max-w-[180px] sm:max-w-[220px] object-contain" 
                 />
               </div>
             </Link>

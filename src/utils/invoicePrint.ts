@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "./formatters";
 import type { Currency } from "@/components/invoice/CurrencyChanger";
 import { toast } from "sonner";
-import { COMPANY_LOGO_DATA_URI } from "./companyLogo";
+import { INVOICE_LOGO_DATA_URI, COMPANY_LOGO_DATA_URI } from "./companyLogo";
 
 export interface InvoicePrintItem {
   description: string;
@@ -69,10 +69,16 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
     ? (typeof dueDate === "string" ? dueDate : format(dueDate, "dd/MM/yyyy")) 
     : null;
 
-  const trimmedCustomerName = customerName?.trim() || "";
-  const trimmedCustomerPhone = customerPhone?.trim() || "";
-  const trimmedCustomerEmail = customerEmail?.trim() || "";
-  const trimmedCustomerAddress = customerAddress?.trim() || "";
+  const safeTrim = (val: unknown): string => {
+    if (typeof val === "string") return val.trim();
+    if (typeof val === "number") return String(val).trim();
+    return "";
+  };
+
+  const trimmedCustomerName = safeTrim(customerName);
+  const trimmedCustomerPhone = safeTrim(customerPhone);
+  const trimmedCustomerEmail = safeTrim(customerEmail);
+  const trimmedCustomerAddress = safeTrim(customerAddress);
   const hasCustomerInfo = Boolean(
     trimmedCustomerName ||
     trimmedCustomerPhone ||
@@ -82,16 +88,16 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
 
   const itemsRows = items.map((item) => `
     <tr>
-      <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: left;">
+      <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: left; line-height: 1.5;">
         ${item.description}
       </td>
-      <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: center;">
+      <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: center;">
         ${item.quantity}
       </td>
-      <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace;">
+      <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace;">
         ${formatCurrency(item.unit_price, currency)}
       </td>
-      <td style="padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; font-family: monospace;">
+      <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; font-family: monospace;">
         ${formatCurrency(item.amount, currency)}
       </td>
     </tr>
@@ -212,26 +218,48 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
     }
     table.items-table th {
       background: #f1f5f9;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       color: #475569;
       border-bottom: 2px solid #cbd5e1;
     }
-    .summary-wrap {
+    .summary-bank-section {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 24px;
+      margin-top: 14px;
       margin-bottom: 20px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .bank-card {
+      flex: 1;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-size: 12px;
+      color: #1e40af;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .bank-card p {
+      margin: 2px 0;
     }
     .summary-table {
-      width: 320px;
+      width: 340px;
+      min-width: 320px;
       font-size: 13px;
     }
     .summary-row {
       display: flex;
       justify-content: space-between;
-      padding: 5px 0;
+      padding: 6px 0;
       border-bottom: 1px solid #f1f5f9;
       color: #475569;
     }
@@ -251,28 +279,16 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
       margin-top: 4px;
     }
     .summary-row.balance {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       color: ${balance <= 0 ? "#059669" : "#dc2626"};
-      padding-top: 6px;
+      padding-top: 7px;
     }
     .bottom-section {
       margin-top: auto;
       padding-top: 16px;
       page-break-inside: avoid;
       break-inside: avoid;
-    }
-    .bank-card {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 12px;
-      color: #1e40af;
-      margin-bottom: 12px;
-    }
-    .bank-card p {
-      margin: 2px 0;
     }
     .footer-bar {
       background: ${isPaidInFull ? "#059669" : "#081def"};
@@ -298,7 +314,7 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
       <div class="header-bar">
         <div class="brand-group">
           <img 
-            src="${COMPANY_LOGO_DATA_URI}" 
+            src="${INVOICE_LOGO_DATA_URI || COMPANY_LOGO_DATA_URI}" 
             alt="Puido Smart Solutions Ltd" 
             class="company-logo" 
           />
@@ -349,8 +365,26 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
         </tbody>
       </table>
 
-      <!-- Financial Totals -->
-      <div class="summary-wrap">
+      <!-- Payment Instructions taking up empty space beside Financial Totals -->
+      <div class="summary-bank-section">
+        <!-- Official Payment Instructions (Takes up the empty space) -->
+        <div class="bank-card">
+          <div>
+            <p style="font-weight: 800; text-transform: uppercase; margin: 0 0 8px 0; color: #081def; font-size: 11px; letter-spacing: 0.5px;">
+              Official Payment Instructions (Bank Transfer)
+            </p>
+            <div style="font-size: 12.5px; line-height: 1.6;">
+              <p style="margin: 3px 0;">Bank Name: <strong style="color: #0f172a;">Globus Bank</strong></p>
+              <p style="margin: 3px 0;">Account Number: <strong style="color: #0f172a; font-family: monospace; font-size: 14px; letter-spacing: 0.5px;">1000145362</strong></p>
+              <p style="margin: 3px 0;">Account Name: <strong style="color: #0f172a;">Puido Smart Solution Ltd.</strong></p>
+            </div>
+          </div>
+          <p style="font-size: 11px; color: #64748b; margin: 12px 0 0 0; padding-top: 8px; border-top: 1px solid #bfdbfe;">
+            Please specify invoice number in transfer narration. Thank you for your patronage!
+          </p>
+        </div>
+
+        <!-- Financial Totals -->
         <div class="summary-table">
           <div class="summary-row">
             <span>Subtotal</span>
@@ -384,17 +418,8 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
       </div>
     </div>
 
-    <!-- Official Payment Instructions & Footer at Bottom -->
+    <!-- Printable Footer at Bottom -->
     <div class="bottom-section">
-      <div class="bank-card">
-        <p style="font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">
-          Official Payment Instructions (Bank Transfer):
-        </p>
-        <p>Bank Name: <strong>Globus Bank</strong></p>
-        <p>Account Number: <strong>1000145362</strong></p>
-        <p>Account Name: <strong>Puido Smart Solution Ltd.</strong></p>
-      </div>
-
       <div class="footer-bar">
         <span>Phone: 07035339641, 08131927116</span>
         <span>41, Olowu Street, Ikeja, Lagos</span>
@@ -505,6 +530,7 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
       customerName,
       customerPhone,
       customerAddress,
+      customerEmail,
       items,
       currency,
       subtotal,
@@ -532,16 +558,32 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, 210, 5, "F");
 
-    // Company Header
+    // Company Header & Official Geometric "P" Brand Mark (#0029FF)
+    doc.setDrawColor(0, 41, 255);
+    doc.setLineWidth(1.6);
+    doc.setLineCap("square");
+    doc.setLineJoin("miter");
+    // Geometric Monogram "P" outline
+    doc.line(14, 25, 14, 11);
+    doc.line(14, 11, 22.5, 11);
+    doc.line(22.5, 11, 22.5, 17.5);
+    doc.line(22.5, 17.5, 17.5, 17.5);
+
+    // Official Typography beside the mark
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(...primaryColor);
-    doc.text("PUIDO SMART SOLUTIONS LTD", 14, 18);
+    doc.setFontSize(14.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text("PUIDO", 26, 17);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(51, 65, 85);
+    doc.text("SMART SOLUTIONS", 26.2, 21.5);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
-    doc.text("Enterprise Telecommunications & Smart Devices", 14, 23);
+    doc.text("Enterprise Telecommunications & Smart Devices", 26.2, 26);
 
     // Document Title & Meta Box
     doc.setFont("helvetica", "bold");
@@ -572,10 +614,16 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
     doc.setDrawColor(226, 232, 240);
     doc.roundedRect(14, 35, 182, 28, 2, 2, "S");
 
-    const pdfCustomerName = customerName?.trim() || "";
-    const pdfCustomerPhone = customerPhone?.trim() || "";
-    const pdfCustomerEmail = customerEmail?.trim() || "";
-    const pdfCustomerAddress = customerAddress?.trim() || "";
+    const safeTrim = (val: unknown): string => {
+      if (typeof val === "string") return val.trim();
+      if (typeof val === "number") return String(val).trim();
+      return "";
+    };
+
+    const pdfCustomerName = safeTrim(customerName);
+    const pdfCustomerPhone = safeTrim(customerPhone);
+    const pdfCustomerEmail = safeTrim(customerEmail);
+    const pdfCustomerAddress = safeTrim(customerAddress);
     const hasPdfCustomerInfo = Boolean(
       pdfCustomerName ||
       pdfCustomerPhone ||
@@ -658,7 +706,7 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
       styles: {
         fontSize: 8.5,
         textColor: [15, 23, 42],
-        cellPadding: 3,
+        cellPadding: 4.5,
       },
       columnStyles: {
         0: { cellWidth: "auto" },
@@ -720,36 +768,60 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
       doc.text(formatCurrency(balance, currency), totalsXVal, totalsY, { align: "right" });
     }
 
-    // Official Payment Instructions & Footer at bottom of page
-    const bottomY = 250;
+    // Official Payment Instructions taking up empty space on the left
+    const bankBoxY = finalY + 8;
+    const bankBoxWidth = 114;
+    const bankBoxHeight = 36;
 
-    // Globus Bank Box
     doc.setFillColor(239, 246, 255);
-    doc.roundedRect(14, bottomY, 182, 22, 2, 2, "F");
+    doc.roundedRect(14, bankBoxY, bankBoxWidth, bankBoxHeight, 2, 2, "F");
     doc.setDrawColor(191, 219, 254);
-    doc.roundedRect(14, bottomY, 182, 22, 2, 2, "S");
+    doc.roundedRect(14, bankBoxY, bankBoxWidth, bankBoxHeight, 2, 2, "S");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(30, 64, 175);
-    doc.text("OFFICIAL PAYMENT INSTRUCTIONS (BANK TRANSFER):", 18, bottomY + 5);
+    doc.setFontSize(7.5);
+    doc.setTextColor(8, 29, 239);
+    doc.text("OFFICIAL PAYMENT INSTRUCTIONS (BANK TRANSFER)", 18, bankBoxY + 6);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.text("Bank Name: Globus Bank   |   Account Number: 1000145362   |   Account Name: Puido Smart Solution Ltd.", 18, bottomY + 12);
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text("Please use invoice number as transfer narration.", 18, bottomY + 17);
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    doc.text("Bank Name:", 18, bankBoxY + 13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text("Globus Bank", 48, bankBoxY + 13);
 
-    // Footer contact bar
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text("Account Number:", 18, bankBoxY + 19);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text("1000145362", 48, bankBoxY + 19);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text("Account Name:", 18, bankBoxY + 25);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text("Puido Smart Solution Ltd.", 48, bankBoxY + 25);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.8);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Please specify invoice number in transfer narration.", 18, bankBoxY + 31.5);
+
+    // Printable footer at bottom of page
+    const maxSectionY = Math.max(totalsY, bankBoxY + bankBoxHeight);
+    const footerY = Math.max(maxSectionY + 14, 272);
+
     doc.setFillColor(...primaryColor);
-    doc.rect(14, bottomY + 25, 182, 9, "F");
+    doc.rect(14, footerY, 182, 9, "F");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(255, 255, 255);
-    doc.text("Phone: 07035339641, 08131927116", 18, bottomY + 31);
-    doc.text("41, Olowu Street, Ikeja, Lagos", 192, bottomY + 31, { align: "right" });
+    doc.text("Phone: 07035339641, 08131927116", 18, footerY + 6);
+    doc.text("41, Olowu Street, Ikeja, Lagos", 192, footerY + 6, { align: "right" });
 
     // Save File
     const filename = `${docTitle}-${invoiceNumber || "document"}.pdf`;

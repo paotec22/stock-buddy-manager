@@ -30,10 +30,10 @@ export const CustomerInfo = ({
   selectedCustomerId,
   onCustomerSelect,
 }: CustomerInfoProps) => {
-  const hasName = Boolean(customerName && customerName.trim().length > 0);
-  const hasPhone = Boolean(customerPhone && customerPhone.trim().length > 0);
-  const hasEmail = Boolean(customerEmail && customerEmail.trim().length > 0);
-  const hasAddress = Boolean(customerAddress && customerAddress.trim().length > 0);
+  const hasName = Boolean(typeof customerName === "string" && customerName.trim().length > 0);
+  const hasPhone = Boolean(typeof customerPhone === "string" && customerPhone.trim().length > 0);
+  const hasEmail = Boolean(typeof customerEmail === "string" && customerEmail.trim().length > 0);
+  const hasAddress = Boolean(typeof customerAddress === "string" && customerAddress.trim().length > 0);
   const hasAnyCustomerDetail = hasName || hasPhone || hasEmail || hasAddress;
 
   const handleSelect = (c: CustomerLite | null) => {
