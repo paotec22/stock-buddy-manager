@@ -558,32 +558,8 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
     doc.setFillColor(...primaryColor);
     doc.rect(0, 0, 210, 5, "F");
 
-    // Company Header & Official Geometric "P" Brand Mark (#0029FF)
-    doc.setDrawColor(0, 41, 255);
-    doc.setLineWidth(1.6);
-    doc.setLineCap("square");
-    doc.setLineJoin("miter");
-    // Geometric Monogram "P" outline
-    doc.line(14, 25, 14, 11);
-    doc.line(14, 11, 22.5, 11);
-    doc.line(22.5, 11, 22.5, 17.5);
-    doc.line(22.5, 17.5, 17.5, 17.5);
-
-    // Official Typography beside the mark
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text("PUIDO", 26, 17);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
-    doc.setTextColor(51, 65, 85);
-    doc.text("SMART SOLUTIONS", 26.2, 21.5);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text("Enterprise Telecommunications & Smart Devices", 26.2, 26);
+    // Official supplied Puido Smart Solutions primary logo
+    doc.addImage(INVOICE_LOGO_DATA_URI, "PNG", 14, 10, 58, 13.66);
 
     // Document Title & Meta Box
     doc.setFont("helvetica", "bold");
