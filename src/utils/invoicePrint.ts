@@ -36,6 +36,60 @@ export interface InvoicePrintData {
 }
 
 /**
+ * Generates a clean, filesystem-safe filename base combining customer name and date.
+ * Example: "Alhaji Musa - 17-09-2026"
+ */
+export const getInvoiceDocumentBaseName = (
+  customerName?: string | null,
+  invoiceDate?: Date | string | null,
+  fallbackDocType: string = "Invoice"
+): string => {
+  // 1. Format date safely into dd-MM-yyyy
+  let dateStr = "";
+  try {
+    if (invoiceDate instanceof Date && !isNaN(invoiceDate.getTime())) {
+      dateStr = format(invoiceDate, "dd-MM-yyyy");
+    } else if (typeof invoiceDate === "string" && invoiceDate.trim()) {
+      const trimmed = invoiceDate.trim();
+      const dmyMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+      if (dmyMatch) {
+        const day = dmyMatch[1].padStart(2, "0");
+        const month = dmyMatch[2].padStart(2, "0");
+        const year = dmyMatch[3];
+        dateStr = `${day}-${month}-${year}`;
+      } else {
+        const parsed = new Date(trimmed);
+        if (!isNaN(parsed.getTime())) {
+          dateStr = format(parsed, "dd-MM-yyyy");
+        } else {
+          dateStr = trimmed.replace(/[/\\:*?"<>|]/g, "-");
+        }
+      }
+    }
+  } catch {
+    dateStr = "";
+  }
+
+  if (!dateStr) {
+    dateStr = format(new Date(), "dd-MM-yyyy");
+  }
+
+  // 2. Sanitize customer name
+  const rawCustomer = typeof customerName === "string" ? customerName.trim() : "";
+  const sanitizedCustomer = rawCustomer
+    .replace(/[/\\:*?"<>|]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // 3. Return sanitized customer name + date
+  if (sanitizedCustomer) {
+    return `${sanitizedCustomer} - ${dateStr}`;
+  }
+
+  return `${fallbackDocType} - ${dateStr}`;
+};
+
+/**
  * Generate a standalone, styled HTML document for high-fidelity printing
  */
 export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
@@ -62,6 +116,7 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
   } = data;
 
   const docTitle = isPaidInFull ? "RECEIPT" : "INVOICE";
+  const docFileName = getInvoiceDocumentBaseName(customerName, invoiceDate, docTitle);
   const formattedDate = typeof invoiceDate === "string" 
     ? invoiceDate 
     : format(invoiceDate, "dd/MM/yyyy");
@@ -107,7 +162,7 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${docTitle} - ${invoiceNumber}</title>
+  <title>${docFileName}</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -436,6 +491,7 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
  */
 export const printInvoiceDocument = (data: InvoicePrintData): void => {
   const docType = data.isPaidInFull ? "Receipt" : "Invoice";
+  const baseFilename = getInvoiceDocumentBaseName(data.customerName, data.invoiceDate, docType);
   toast.info(`Preparing ${docType} for printing...`);
 
   const html = generateInvoicePrintHtml(data);
@@ -443,11 +499,19 @@ export const printInvoiceDocument = (data: InvoicePrintData): void => {
   // Strategy 1: If top-level window (not embedded in an iframe), native print is fastest
   const isTopLevel = window.self === window.top;
   if (isTopLevel) {
+    const originalTitle = document.title;
     try {
+      document.title = baseFilename;
       window.print();
       return;
     } catch (e) {
       console.warn("Direct window.print() failed, falling back to popup/iframe print:", e);
+    } finally {
+      setTimeout(() => {
+        try {
+          document.title = originalTitle;
+        } catch {}
+      }, 1000);
     }
   }
 
@@ -458,6 +522,9 @@ export const printInvoiceDocument = (data: InvoicePrintData): void => {
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
+      try {
+        printWindow.document.title = baseFilename;
+      } catch {}
 
       setTimeout(() => {
         try {
@@ -489,6 +556,18 @@ export const printInvoiceDocument = (data: InvoicePrintData): void => {
       frameDoc.open();
       frameDoc.write(html);
       frameDoc.close();
+      try {
+        frameDoc.title = baseFilename;
+        if (printIframe.contentWindow) {
+          printIframe.contentWindow.document.title = baseFilename;
+        }
+      } catch {}
+
+      // Keep parent document title aligned during print dialog
+      const originalTitle = document.title;
+      try {
+        document.title = baseFilename;
+      } catch {}
 
       setTimeout(() => {
         try {
@@ -501,6 +580,9 @@ export const printInvoiceDocument = (data: InvoicePrintData): void => {
           exportInvoiceToPdf(data);
         } finally {
           setTimeout(() => {
+            try {
+              document.title = originalTitle;
+            } catch {}
             if (document.body.contains(printIframe)) {
               document.body.removeChild(printIframe);
             }
@@ -800,7 +882,8 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
     doc.text("41, Olowu Street, Ikeja, Lagos", 192, footerY + 6, { align: "right" });
 
     // Save File
-    const filename = `${docTitle}-${invoiceNumber || "document"}.pdf`;
+    const baseFilename = getInvoiceDocumentBaseName(customerName, invoiceDate, docTitle);
+    const filename = `${baseFilename}.pdf`;
     doc.save(filename);
     toast.success(`${docTitle} PDF downloaded successfully!`);
   } catch (err: any) {

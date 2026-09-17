@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Save, Printer } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
+import { getInvoiceDocumentBaseName } from "@/utils/invoicePrint";
 
 const CreateInvoice = () => {
   const [customerName, setCustomerName] = useState("");
@@ -117,6 +118,32 @@ const CreateInvoice = () => {
 
   const totals = calculateTotals();
   const isPaidInFull = totals.isPaidInFull;
+
+  // Auto-synchronize document title for browser print dialog ("Save as PDF")
+  useEffect(() => {
+    const originalTitle = document.title || "SI Manager";
+    const updateTitle = () => {
+      const docTitle = getInvoiceDocumentBaseName(
+        customerName,
+        invoiceDate,
+        isPaidInFull ? "Receipt" : "Invoice"
+      );
+      document.title = docTitle;
+    };
+
+    updateTitle();
+
+    const handleBeforePrint = () => {
+      updateTitle();
+    };
+
+    window.addEventListener("beforeprint", handleBeforePrint);
+
+    return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      document.title = originalTitle;
+    };
+  }, [customerName, invoiceDate, isPaidInFull]);
 
   useEffect(() => {
     if (!loading && !session) {

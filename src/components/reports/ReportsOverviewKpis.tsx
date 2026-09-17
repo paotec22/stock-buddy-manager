@@ -121,14 +121,14 @@ export function ReportsOverviewKpis({ dateFrom, dateTo }: ReportsOverviewKpisPro
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Gross Sales */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Gross Sales
               </span>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
                 title={showValues ? formatCurrency(totalSales) : undefined}
               >
                 {showValues ? formatCurrency(totalSales) : "••••••••"}
@@ -137,21 +137,21 @@ export function ReportsOverviewKpis({ dateFrom, dateTo }: ReportsOverviewKpisPro
                 {salesCount} {salesCount === 1 ? 'sale' : 'sales recorded'}
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0 dark:text-emerald-400">
-              <ShoppingBag className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0 dark:text-emerald-400">
+              <ShoppingBag className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
 
         {/* Operating Expenses */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Total Expenses
               </span>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-rose-600 dark:text-rose-400 tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-rose-600 dark:text-rose-400 tabular-nums truncate"
                 title={showValues ? formatCurrency(totalExpenses) : undefined}
               >
                 {showValues ? formatCurrency(totalExpenses) : "••••••••"}
@@ -160,21 +160,21 @@ export function ReportsOverviewKpis({ dateFrom, dateTo }: ReportsOverviewKpisPro
                 {expensesCount} {expensesCount === 1 ? 'expense' : 'expenses logged'}
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20 shrink-0 dark:text-rose-400">
-              <TrendingDown className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-600 border border-rose-500/20 shrink-0 dark:text-rose-400">
+              <TrendingDown className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
 
         {/* Installations Revenue */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Installations
               </span>
               <div 
-                className="text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
+                className="text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate"
                 title={showValues ? formatCurrency(totalInstallations) : undefined}
               >
                 {showValues ? formatCurrency(totalInstallations) : "••••••••"}
@@ -183,21 +183,21 @@ export function ReportsOverviewKpis({ dateFrom, dateTo }: ReportsOverviewKpisPro
                 {installationsCount} {installationsCount === 1 ? 'job' : 'jobs completed'}
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0 dark:text-blue-400">
-              <Wrench className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0 dark:text-blue-400">
+              <Wrench className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
 
         {/* Net Flow */}
-        <Card className="p-3 sm:p-5 border border-border/70 hover:border-border transition-colors min-w-0">
+        <Card className="p-3 sm:p-4 border border-border/70 hover:border-border transition-colors min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
               <span className="text-[11px] sm:text-xs font-medium text-muted-foreground truncate block">
                 Net Operating Balance
               </span>
               <div 
-                className={`text-base sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight tabular-nums truncate ${
+                className={`text-sm sm:text-lg lg:text-xl font-bold font-mono tracking-tight tabular-nums truncate ${
                   netCashFlow >= 0 
                     ? 'text-emerald-600 dark:text-emerald-400' 
                     : 'text-rose-600 dark:text-rose-400'
@@ -210,8 +210,8 @@ export function ReportsOverviewKpis({ dateFrom, dateTo }: ReportsOverviewKpisPro
                 {netCashFlow >= 0 ? 'Surplus balance' : 'Deficit balance'}
               </p>
             </div>
-            <div className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-600 border border-violet-500/20 shrink-0 dark:text-violet-400">
-              <TrendingUp className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+            <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-violet-500/10 text-violet-600 border border-violet-500/20 shrink-0 dark:text-violet-400">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
             </div>
           </div>
         </Card>
