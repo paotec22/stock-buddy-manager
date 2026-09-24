@@ -184,14 +184,15 @@ export function MobileSaleCard({
         )}
 
         {/* Actions */}
-        <div className="mt-3 pt-3 border-t border-border flex justify-between items-center">
+        <div className="mt-3 pt-3 border-t border-border flex flex-wrap justify-between items-center gap-2">
           {sale.payment_status !== 'paid' && canEditDates && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => onUpdatePayment?.(sale)}
+              className="min-h-[38px] rounded-xl text-xs font-semibold active:scale-[0.98]"
             >
-              <CreditCard className="h-4 w-4 mr-1" />
+              <CreditCard className="h-4 w-4 mr-1.5" />
               Update Payment
             </Button>
           )}
@@ -202,9 +203,9 @@ export function MobileSaleCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="min-h-[38px] rounded-xl text-xs text-destructive hover:text-destructive hover:bg-destructive/10 active:scale-[0.98]"
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
+                    <Trash2 className="h-4 w-4 mr-1.5" />
                     Delete
                   </Button>
                 </AlertDialogTrigger>

@@ -11,7 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ReportsFilterSheet } from "@/components/reports/ReportsFilterSheet";
-import { RefreshCw, BarChart3, Receipt, Wrench, MapPin, Activity, ArrowRight } from "lucide-react";
+import { RefreshCw, BarChart3, Receipt, Wrench, MapPin, Activity, ArrowRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -115,55 +115,70 @@ const Reports = () => {
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm"
+              className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm active:scale-95"
               title="Refresh reports"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''} sm:mr-1.5`} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
+
+            {/* Print / Export PDF Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="h-9 px-2.5 sm:px-3 bg-background border-input hover:bg-muted font-medium text-xs sm:text-sm active:scale-95"
+              title="Print report or save to PDF"
+              aria-label="Print report"
+            >
+              <Printer className="h-3.5 w-3.5 sm:mr-1.5 text-foreground" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Tabs Navigation */}
+      {/* Tabs Navigation - Scrollable on mobile, grid on desktop */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-5 h-10 sm:h-11 p-1 bg-muted rounded-lg border border-border/60">
-          <TabsTrigger 
-            value="overview" 
-            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
-          >
-            <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span className="truncate">Overview</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="expenses" 
-            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
-          >
-            <Receipt className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span className="truncate">Expenses</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="installations" 
-            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
-          >
-            <Wrench className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span className="truncate">Install<span className="hidden sm:inline">ations</span></span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="locations" 
-            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
-          >
-            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span className="truncate">Branches</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="activity" 
-            className="flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium py-1 px-1 sm:px-3 truncate"
-          >
-            <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-            <span className="truncate">Activity</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
+          <TabsList className="flex sm:grid sm:grid-cols-5 w-max sm:w-full min-w-full h-10 sm:h-11 p-1 bg-muted rounded-xl border border-border/60 gap-1">
+            <TabsTrigger 
+              value="overview" 
+              className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium py-1.5 px-3 sm:px-2 rounded-lg whitespace-nowrap"
+            >
+              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>Overview</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="expenses" 
+              className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium py-1.5 px-3 sm:px-2 rounded-lg whitespace-nowrap"
+            >
+              <Receipt className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>Expenses</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="installations" 
+              className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium py-1.5 px-3 sm:px-2 rounded-lg whitespace-nowrap"
+            >
+              <Wrench className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>Installations</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="locations" 
+              className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium py-1.5 px-3 sm:px-2 rounded-lg whitespace-nowrap"
+            >
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>Branches</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="activity" 
+              className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium py-1.5 px-3 sm:px-2 rounded-lg whitespace-nowrap"
+            >
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>Activity</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="space-y-4 sm:space-y-6 focus-visible:outline-none">

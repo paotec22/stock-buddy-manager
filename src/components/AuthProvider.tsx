@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { useCustomersRealtime } from "@/hooks/useCustomersRealtime";
 
 interface AuthContextType {
   session: Session | null;
@@ -34,6 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Keep customer directory synced in real time across all logged in users
+  useCustomersRealtime();
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();

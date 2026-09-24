@@ -658,8 +658,8 @@ export default function Expenses() {
                   </CardDescription>
                 </div>
                 {/* Search & Location Filter */}
-                <div className="flex items-center gap-2">
-                  <div className="relative w-48 sm:w-56">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-56">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                     <Input
                       placeholder="Search entries..."
@@ -669,7 +669,7 @@ export default function Expenses() {
                     />
                   </div>
                   <Select value={locationFilter} onValueChange={setLocationFilter}>
-                    <SelectTrigger className="h-9 w-28 text-xs">
+                    <SelectTrigger className="h-9 w-full sm:w-32 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -696,64 +696,114 @@ export default function Expenses() {
                   <p className="text-xs">Log a new expense above to see it reflected in this list</p>
                 </div>
               ) : (
-                <div className="border-t sm:border border-border/80 sm:rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader className="bg-muted/50">
-                      <TableRow>
-                        <TableHead className="text-xs font-semibold uppercase">Date</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase">Description</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase">Category</TableHead>
-                        <TableHead className="text-xs font-semibold uppercase">Branch</TableHead>
-                        <TableHead className="text-right text-xs font-semibold uppercase">Amount</TableHead>
-                        <TableHead className="text-center text-xs font-semibold uppercase w-[80px]">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredExpenses.map((expense) => (
-                        <TableRow key={expense.id} className="hover:bg-muted/20">
-                          <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
-                            {format(new Date(expense.expense_date), "dd/MM/yyyy")}
-                          </TableCell>
-                          <TableCell className="text-xs font-medium text-foreground">
-                            {expense.description}
-                          </TableCell>
-                          <TableCell>
+                <>
+                  {/* Mobile Card List (< sm) */}
+                  <div className="block sm:hidden divide-y divide-border/60 p-3 space-y-3">
+                    {filteredExpenses.map((expense) => (
+                      <div key={expense.id} className="pt-3 first:pt-0 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-semibold text-foreground block">
+                              {expense.description}
+                            </span>
+                            <span className="text-[11px] font-mono text-muted-foreground">
+                              {format(new Date(expense.expense_date), "dd MMM yyyy")}
+                            </span>
+                          </div>
+                          <span className="font-mono font-bold text-sm text-foreground shrink-0">
+                            {formatCurrency(Number(expense.amount || 0))}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <Badge variant="secondary" className="text-[11px] font-medium">
                               {expense.category}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
                             <Badge variant="outline" className="text-[11px]">
                               {expense.location}
                             </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-mono font-bold text-xs sm:text-sm text-foreground">
-                            {formatCurrency(Number(expense.amount || 0))}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              disabled={deletingId === expense.id}
-                              onClick={() => handleDeleteExpense(expense.id)}
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                              title="Delete record"
-                            >
-                              {deletingId === expense.id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-3.5 w-3.5" />
-                              )}
-                            </Button>
-                          </TableCell>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={deletingId === expense.id}
+                            onClick={() => handleDeleteExpense(expense.id)}
+                            className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg active:scale-95"
+                            title="Delete record"
+                          >
+                            {deletingId === expense.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            <span>Delete</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table View (>= sm) */}
+                  <div className="hidden sm:block border-t sm:border border-border/80 sm:rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-muted/50">
+                        <TableRow>
+                          <TableHead className="text-xs font-semibold uppercase">Date</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase">Description</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase">Category</TableHead>
+                          <TableHead className="text-xs font-semibold uppercase">Branch</TableHead>
+                          <TableHead className="text-right text-xs font-semibold uppercase">Amount</TableHead>
+                          <TableHead className="text-center text-xs font-semibold uppercase w-[80px]">
+                            Actions
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredExpenses.map((expense) => (
+                          <TableRow key={expense.id} className="hover:bg-muted/20">
+                            <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                              {format(new Date(expense.expense_date), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell className="text-xs font-medium text-foreground">
+                              {expense.description}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary" className="text-[11px] font-medium">
+                                {expense.category}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-[11px]">
+                                {expense.location}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-bold text-xs sm:text-sm text-foreground">
+                              {formatCurrency(Number(expense.amount || 0))}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                disabled={deletingId === expense.id}
+                                onClick={() => handleDeleteExpense(expense.id)}
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                title="Delete record"
+                              >
+                                {deletingId === expense.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -768,7 +818,47 @@ export default function Expenses() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 sm:p-5 sm:pt-0">
-                <div className="border-t sm:border border-border/80 sm:rounded-lg overflow-hidden">
+                {/* Mobile Card List (< sm) */}
+                <div className="block sm:hidden divide-y divide-border/60 p-3 space-y-3">
+                  {installations.map((inst) => (
+                    <div key={inst.id} className="pt-3 first:pt-0 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-semibold text-foreground block">
+                            {inst.description}
+                          </span>
+                          <span className="text-[11px] font-mono text-muted-foreground">
+                            {format(new Date(inst.installation_date), "dd MMM yyyy")}
+                          </span>
+                        </div>
+                        <span className="font-mono font-bold text-sm text-foreground shrink-0">
+                          {formatCurrency(Number(inst.amount || 0))}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-end pt-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={deletingId === inst.id}
+                          onClick={() => handleDeleteInstallation(inst.id)}
+                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg active:scale-95"
+                          title="Delete installation record"
+                        >
+                          {deletingId === inst.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          )}
+                          <span>Delete</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View (>= sm) */}
+                <div className="hidden sm:block border-t sm:border border-border/80 sm:rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader className="bg-muted/50">
                       <TableRow>
@@ -800,7 +890,7 @@ export default function Expenses() {
                               disabled={deletingId === inst.id}
                               onClick={() => handleDeleteInstallation(inst.id)}
                               className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                              title="Delete installation"
+                              title="Delete installation record"
                             >
                               {deletingId === inst.id ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

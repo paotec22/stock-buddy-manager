@@ -540,86 +540,174 @@ function RequestContent() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-muted/40">
-                  <TableRow>
-                    <TableHead className="text-xs uppercase font-semibold">Product Name</TableHead>
-                    <TableHead className="text-xs uppercase font-semibold text-right">Price</TableHead>
-                    <TableHead className="text-xs uppercase font-semibold text-right">Install Cost</TableHead>
-                    <TableHead className="text-xs uppercase font-semibold text-center">Qty</TableHead>
-                    <TableHead className="text-xs uppercase font-semibold">Location</TableHead>
-                    <TableHead className="text-xs uppercase font-semibold">Status</TableHead>
-                    <TableHead className="text-xs uppercase font-semibold text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRequests.map((request) => (
-                    <TableRow key={request.id} className="hover:bg-muted/20">
-                      <TableCell className="font-medium text-xs sm:text-sm">
-                        <div>
-                          <span>{request.product_name}</span>
-                          {request.notes && (
-                            <p className="text-xs text-muted-foreground truncate max-w-[260px] mt-0.5">
-                              {request.notes}
-                            </p>
-                          )}
+            <>
+              {/* Mobile Card View (< sm) */}
+              <div className="block sm:hidden divide-y divide-border/60 p-3 space-y-3">
+                {filteredRequests.map((request) => (
+                  <div key={request.id} className="pt-3 first:pt-0 space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm text-foreground leading-tight">
+                          {request.product_name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">{request.location}</span>
+                          <span>•</span>
+                          <span>Qty: {request.expenses}</span>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs sm:text-sm">
-                        {formatCurrency(request.price)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-semibold text-xs sm:text-sm text-foreground">
-                        {formatCurrency(request.installation_cost)}
-                      </TableCell>
-                      <TableCell className="text-center font-mono text-xs sm:text-sm">
-                        {request.expenses}
-                      </TableCell>
-                      <TableCell className="text-xs">{request.location}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={request.status === "Installed" ? "default" : "secondary"}
-                          className={
-                            request.status === "Installed"
-                              ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400 font-semibold"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80 font-medium"
-                          }
+                      </div>
+                      <Badge
+                        variant={request.status === "Installed" ? "default" : "secondary"}
+                        className={
+                          request.status === "Installed"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold shrink-0"
+                            : "bg-muted text-muted-foreground font-medium shrink-0"
+                        }
+                      >
+                        {request.status === "Installed" ? (
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                        ) : (
+                          <Clock className="h-3 w-3 mr-1" />
+                        )}
+                        {request.status}
+                      </Badge>
+                    </div>
+
+                    {request.notes && (
+                      <p className="text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                        {request.notes}
+                      </p>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-xl text-xs font-mono">
+                      <div>
+                        <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                          Product Price
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {formatCurrency(request.price)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-semibold text-muted-foreground block">
+                          Install Cost
+                        </span>
+                        <span className="font-bold text-primary">
+                          {formatCurrency(request.installation_cost)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      {request.status === "Not installed" && (
+                        <Button
+                          size="sm"
+                          onClick={() => setConfirmInstall(request)}
+                          className="flex-1 min-h-[38px] px-3 font-semibold rounded-xl active:scale-[0.98] text-xs"
                         >
-                          {request.status === "Installed" ? (
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                          ) : (
-                            <Clock className="h-3 w-3 mr-1" />
-                          )}
-                          {request.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {request.status === "Not installed" && (
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                          Mark Installed
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className={`min-h-[38px] px-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 ${
+                          request.status !== "Not installed" ? "w-full justify-center" : "shrink-0"
+                        }`}
+                        onClick={() => setConfirmDelete(request)}
+                        aria-label="Delete request"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1.5" />
+                        <span>Delete</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (>= sm) */}
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead className="text-xs uppercase font-semibold">Product Name</TableHead>
+                      <TableHead className="text-xs uppercase font-semibold text-right">Price</TableHead>
+                      <TableHead className="text-xs uppercase font-semibold text-right">Install Cost</TableHead>
+                      <TableHead className="text-xs uppercase font-semibold text-center">Qty</TableHead>
+                      <TableHead className="text-xs uppercase font-semibold">Location</TableHead>
+                      <TableHead className="text-xs uppercase font-semibold">Status</TableHead>
+                      <TableHead className="text-xs uppercase font-semibold text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRequests.map((request) => (
+                      <TableRow key={request.id} className="hover:bg-muted/20">
+                        <TableCell className="font-medium text-xs sm:text-sm">
+                          <div>
+                            <span>{request.product_name}</span>
+                            {request.notes && (
+                              <p className="text-xs text-muted-foreground truncate max-w-[260px] mt-0.5">
+                                {request.notes}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs sm:text-sm">
+                          {formatCurrency(request.price)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold text-xs sm:text-sm text-foreground">
+                          {formatCurrency(request.installation_cost)}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs sm:text-sm">
+                          {request.expenses}
+                        </TableCell>
+                        <TableCell className="text-xs">{request.location}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={request.status === "Installed" ? "default" : "secondary"}
+                            className={
+                              request.status === "Installed"
+                                ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400 font-semibold"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80 font-medium"
+                            }
+                          >
+                            {request.status === "Installed" ? (
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                            ) : (
+                              <Clock className="h-3 w-3 mr-1" />
+                            )}
+                            {request.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {request.status === "Not installed" && (
+                              <Button
+                                size="sm"
+                                onClick={() => setConfirmInstall(request)}
+                                className="min-h-[34px] px-3 font-semibold rounded-lg active:scale-[0.98] text-xs"
+                              >
+                                Mark Installed
+                              </Button>
+                            )}
                             <Button
                               size="sm"
-                              onClick={() => setConfirmInstall(request)}
-                              className="min-h-[34px] px-3 font-semibold rounded-lg active:scale-[0.98] text-xs"
+                              variant="ghost"
+                              className="min-h-[34px] min-w-[34px] h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => setConfirmDelete(request)}
+                              aria-label="Delete request"
                             >
-                              Mark Installed
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="min-h-[34px] min-w-[34px] h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => setConfirmDelete(request)}
-                            aria-label="Delete request"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

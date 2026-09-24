@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
@@ -49,6 +50,7 @@ export const useInvoiceOperations = (
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingInvoiceId, setLoadingInvoiceId] = useState<number | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const validItems = items.filter(item => 
     item.description && item.quantity > 0
@@ -96,6 +98,63 @@ export const useInvoiceOperations = (
 
     setIsSubmitting(true);
     try {
+      // Sync customer details to the shared customers table across all users
+      let resolvedCustomerId = customerId;
+      const trimmedName = customerName.trim();
+      const trimmedPhone = customerPhone?.trim() || null;
+      const trimmedEmail = customerEmail?.trim() || null;
+      const trimmedAddress = customerAddress?.trim() || null;
+
+      try {
+        if (resolvedCustomerId) {
+          await supabase
+            .from("customers")
+            .update({
+              phone: trimmedPhone,
+              email: trimmedEmail,
+              address: trimmedAddress,
+            })
+            .eq("id", resolvedCustomerId);
+        } else if (trimmedName) {
+          const { data: existingCustomer } = await supabase
+            .from("customers")
+            .select("id, phone, address, email")
+            .ilike("name", trimmedName)
+            .maybeSingle();
+
+          if (existingCustomer) {
+            resolvedCustomerId = existingCustomer.id;
+            await supabase
+              .from("customers")
+              .update({
+                phone: trimmedPhone || existingCustomer.phone,
+                email: trimmedEmail || existingCustomer.email,
+                address: trimmedAddress || existingCustomer.address,
+              })
+              .eq("id", existingCustomer.id);
+          } else {
+            const { data: newCustomer } = await supabase
+              .from("customers")
+              .insert({
+                name: trimmedName,
+                phone: trimmedPhone,
+                email: trimmedEmail,
+                address: trimmedAddress,
+              })
+              .select("id")
+              .maybeSingle();
+
+            if (newCustomer) {
+              resolvedCustomerId = newCustomer.id;
+            }
+          }
+        }
+        // Invalidate customer queries so all users get the synchronized data
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+      } catch (syncErr) {
+        console.warn("Non-blocking customer sync issue:", syncErr);
+      }
+
       const totals = calculateTotals();
       const formattedInvoiceDate = format(invoiceDate || new Date(), "yyyy-MM-dd");
       const formattedDueDate = format(dueDate || addDays(new Date(), 14), "yyyy-MM-dd");
@@ -106,7 +165,7 @@ export const useInvoiceOperations = (
           customer_name: customerName, 
           customer_phone: customerPhone,
           customer_address: customerAddress,
-          customer_id: customerId,
+          customer_id: resolvedCustomerId,
           user_id: userId,
           invoice_number: totals.invoice_number,
           invoice_date: formattedInvoiceDate,

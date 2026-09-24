@@ -149,6 +149,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess }: AddSaleFormProps)
 
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
 
       toast.success(
         prepared.length > 1

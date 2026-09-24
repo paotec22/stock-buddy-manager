@@ -12,7 +12,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useInvoiceOperations, type NewInvoiceItem } from "@/hooks/useInvoiceOperations";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Save, Printer } from "lucide-react";
+import { Save, Printer, Download, History } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { getInvoiceDocumentBaseName } from "@/utils/invoicePrint";
 
@@ -253,9 +253,29 @@ const CreateInvoice = () => {
               type="button"
               variant="outline"
               size="sm"
+              onClick={handleShowSavedInvoices}
+              className="!min-h-0 h-9 w-9 p-0 text-xs active:scale-95 bg-background shrink-0"
+              title="Saved Invoices & Receipts"
+            >
+              <History className="h-3.5 w-3.5 text-primary" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+              className="!min-h-0 h-9 w-9 p-0 text-xs active:scale-95 bg-background shrink-0"
+              title="Download PDF"
+            >
+              <Download className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={handlePrint}
-              className="!min-h-0 h-9 px-2.5 text-xs active:scale-95 bg-background"
-              title="Print"
+              className="!min-h-0 h-9 w-9 p-0 text-xs active:scale-95 bg-background shrink-0"
+              title={isPaidInFull ? "Print Receipt" : "Print Invoice"}
             >
               <Printer className="h-3.5 w-3.5" />
             </Button>
@@ -264,14 +284,14 @@ const CreateInvoice = () => {
               onClick={handleSubmit}
               disabled={isSubmitting}
               size="sm"
-              className={`!min-h-0 h-9 px-3 text-xs font-semibold text-primary-foreground shadow-xs active:scale-95 transition-transform ${
+              className={`!min-h-0 h-9 px-3 text-xs font-semibold text-primary-foreground shadow-xs active:scale-95 transition-transform shrink-0 ${
                 isPaidInFull
                   ? "bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600"
                   : "bg-primary hover:bg-primary/90"
               }`}
             >
               <Save className="h-3.5 w-3.5 mr-1" />
-              <span>{isSubmitting ? "Saving..." : isPaidInFull ? "Save Receipt" : "Save Invoice"}</span>
+              <span>{isSubmitting ? "Saving..." : isPaidInFull ? "Receipt" : "Save"}</span>
             </Button>
           </div>
         </div>

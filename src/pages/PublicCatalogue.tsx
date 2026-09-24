@@ -37,6 +37,7 @@ import {
   MessageCircle,
   Phone,
   RefreshCw,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -437,6 +438,19 @@ export default function PublicCatalogue() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Print / Save PDF Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="h-9 px-3 rounded-xl border-border/60 bg-card/65 hover:bg-muted text-xs font-semibold flex items-center gap-1.5 active:scale-95"
+              title="Print or export catalogue to PDF"
+              aria-label="Print catalogue"
+            >
+              <Printer className="h-3.5 w-3.5 text-foreground" />
+              <span className="hidden sm:inline">Print / PDF</span>
+            </Button>
+
             {/* Desktop WhatsApp CTA */}
             <a
               href={WHATSAPP_LINK}
@@ -969,6 +983,16 @@ export default function PublicCatalogue() {
           >
             <MessageCircle className="h-4 w-4" /> Ask for Price
           </a>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => window.print()}
+            className="h-11 w-11 rounded-xl flex-shrink-0 border-border/60 bg-card active:scale-[0.98]"
+            title="Print or export catalogue to PDF"
+            aria-label="Print catalogue"
+          >
+            <Printer className="h-4 w-4 text-foreground" />
+          </Button>
           <Button
             id="pub-mobile-filter-fab"
             variant="outline"

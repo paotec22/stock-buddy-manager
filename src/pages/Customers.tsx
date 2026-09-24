@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useCustomersRealtime } from "@/hooks/useCustomersRealtime";
 
 interface Customer {
   id: string;
@@ -63,6 +64,9 @@ export default function Customers() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
   const [selected, setSelected] = useState<Customer | null>(null);
+
+  // Keep live sync across all users
+  useCustomersRealtime();
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers", "page"],
