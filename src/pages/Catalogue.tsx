@@ -26,7 +26,17 @@ import {
   ViewMode,
   StockFilter,
 } from "@/components/catalogue/CatalogueTypes";
+import {
+  CategoryId,
+  getProductCategory,
+  groupItemsByCategory,
+  getCategoryCounts,
+} from "@/utils/catalogueCategories";
+import { CatalogueCategorySection } from "@/components/catalogue/CatalogueCategorySection";
+import { CatalogueCategoryGrid } from "@/components/catalogue/CatalogueCategoryGrid";
+import { CatalogueActiveCategoryBar } from "@/components/catalogue/CatalogueActiveCategoryBar";
 import { CatalogueStats } from "@/components/catalogue/CatalogueStats";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   GridCard,
   CompactCard,
@@ -41,6 +51,7 @@ import { CataloguePrintView } from "@/components/catalogue/CataloguePrintView";
 // ─── Constants ─────────────────────────────────────────────────────────────
 const PAGE_SIZE = 24;
 const VIEW_KEY = "puido_catalogue_view_mode";
+const GROUP_BY_CAT_KEY = "puido_catalogue_group_by_cat";
 
 export default function Catalogue() {
   const location = "Ikeja";
@@ -53,6 +64,21 @@ export default function Catalogue() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>("all");
+
+  // Mobile detection & category hub navigation state
+  const isMobile = useIsMobile();
+  const [showAllProductsFlat, setShowAllProductsFlat] = useState(false);
+
+  // Group by category state (default true for relatable categorized browsing)
+  const [groupByCategory, setGroupByCategory] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(GROUP_BY_CAT_KEY);
+      return saved !== null ? saved === "true" : true;
+    } catch {
+      return true;
+    }
+  });
 
   // Selected item for quick view modal
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -90,10 +116,17 @@ export default function Catalogue() {
     } catch {}
   }, [view]);
 
-  // Reset pagination on filter or search changes
+  // Persist groupByCategory mode
+  useEffect(() => {
+    try {
+      localStorage.setItem(GROUP_BY_CAT_KEY, String(groupByCategory));
+    } catch {}
+  }, [groupByCategory]);
+
+  // Reset pagination on filter, category, or search changes
   useEffect(() => {
     setPage(1);
-  }, [search, onlyWithImages, stockFilter, sort, minPrice, maxPrice]);
+  }, [search, onlyWithImages, stockFilter, sort, minPrice, maxPrice, selectedCategory, groupByCategory]);
 
   // ── Database Query (Targeted columns + cached) ──────────────────────────
   const { data: itemsData, isLoading, refetch } = useQuery({
@@ -117,6 +150,12 @@ export default function Catalogue() {
   // ── Filter + Sort Logic ──────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let out = items.filter((it) => {
+      // Category filter
+      if (selectedCategory !== "all") {
+        const cat = getProductCategory(it);
+        if (cat.id !== selectedCategory) return false;
+      }
+
       // Photo filter
       if (onlyWithImages && !it.image_url) return false;
 
@@ -164,9 +203,48 @@ export default function Catalogue() {
     });
 
     return out;
-  }, [items, search, onlyWithImages, stockFilter, sort, minPrice, maxPrice]);
+  }, [items, search, onlyWithImages, stockFilter, sort, minPrice, maxPrice, selectedCategory]);
 
-  // ── Paginated Slice ──────────────────────────────────────────────────────
+  // ── Category Counts & Grouped Sections ────────────────────────────────────
+  const categoryCounts = useMemo(() => getCategoryCounts(items), [items]);
+  const categoryGroups = useMemo(() => groupItemsByCategory(filtered), [filtered]);
+
+  // Sample preview images by category for visual directory cards
+  const previewImagesByCat = useMemo(() => {
+    const map: Record<CategoryId, string[]> = {
+      all: [],
+      curtains_tracks: [],
+      switches_panels: [],
+      lighting_solar: [],
+      security_access: [],
+      hubs_power: [],
+      hardware_accessories: [],
+      general_products: [],
+    };
+    for (const item of items) {
+      if (item.image_url && signed[item.image_url]) {
+        const cat = getProductCategory(item);
+        if (map[cat.id] && map[cat.id].length < 3) {
+          map[cat.id].push(signed[item.image_url]);
+        }
+      }
+    }
+    return map;
+  }, [items, signed]);
+
+  // Show category directory initially on mobile or when browsing by category
+  // If user has a search query or other filter, immediately show the matching products
+  const showCategoryDirectory =
+    selectedCategory === "all" &&
+    !search.trim() &&
+    !showAllProductsFlat &&
+    stockFilter === "all" &&
+    !onlyWithImages &&
+    !minPrice &&
+    !maxPrice &&
+    (isMobile || groupByCategory);
+
+  // ── Paginated Slice (Used in flat view mode) ───────────────────────────────
   const paginated = useMemo(() => {
     return filtered.slice(0, page * PAGE_SIZE);
   }, [filtered, page]);
@@ -174,13 +252,18 @@ export default function Catalogue() {
   const hasMore = page * PAGE_SIZE < filtered.length;
 
   // ── High-Performance Viewport Image Signing (Lazy on-demand) ──────────────
-  // Only sign images for items that are currently visible or upcoming in the next page
+  // Sign images for visible items (both grouped and flat mode, plus category hub preview)
   useEffect(() => {
-    if (paginated.length === 0) return;
+    const candidateItems =
+      selectedCategory === "all" && !showAllProductsFlat
+        ? items.slice(0, 30)
+        : groupByCategory
+        ? filtered.slice(0, 80)
+        : filtered.slice(0, (page + 1) * PAGE_SIZE);
 
-    // Grab images from the visible page + a prefetch window of 12 items
-    const prefetchSlice = filtered.slice(0, (page + 1) * PAGE_SIZE);
-    const neededPaths = prefetchSlice
+    if (candidateItems.length === 0) return;
+
+    const neededPaths = candidateItems
       .map((it) => it.image_url)
       .filter((p): p is string => Boolean(p) && !signed[p] && !signingInProgressRef.current.has(p));
 
@@ -199,7 +282,7 @@ export default function Catalogue() {
     return () => {
       active = false;
     };
-  }, [paginated, filtered, page, signed]);
+  }, [groupByCategory, filtered, page, signed]);
 
   // Ensure selected item's image is loaded for quick view
   useEffect(() => {
@@ -238,6 +321,8 @@ export default function Catalogue() {
     setOnlyWithImages(false);
     setStockFilter("all");
     setSort("name_asc");
+    setSelectedCategory("all");
+    setShowAllProductsFlat(false);
   }, []);
 
   // ── Print Catalogue with On-Demand Image Fetch ────────────────────────────
@@ -353,26 +438,26 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2 relative z-10 w-full md:w-auto">
+        <div className="grid grid-cols-3 gap-2 relative z-10 w-full md:flex md:w-auto md:items-center">
           <Button
             variant="outline"
             size="sm"
             onClick={handleOptimizeImages}
             disabled={optimizing}
             title="Optimize image sizes for faster browsing"
-            className="flex-1 md:flex-initial h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-3"
+            className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3 text-xs flex items-center justify-center active:scale-[0.98]"
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-primary mr-1.5" />
-                <span className="text-primary text-xs">
+                <Loader2 className="h-4 w-4 animate-spin text-primary mr-1 sm:mr-1.5 shrink-0" />
+                <span className="text-primary text-[11px] sm:text-xs truncate">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 text-primary mr-1.5" />
-                <span className="text-xs">Optimize</span>
+                <Sparkles className="h-4 w-4 text-primary mr-1 sm:mr-1.5 shrink-0" />
+                <span className="truncate">Optimize</span>
               </>
             )}
           </Button>
@@ -382,10 +467,10 @@ export default function Catalogue() {
             size="sm"
             onClick={() => setShareOpen(true)}
             title="Share interactive catalogue link with clients"
-            className="flex-1 md:flex-initial h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-3.5"
+            className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3.5 text-xs flex items-center justify-center active:scale-[0.98]"
           >
-            <Share2 className="h-4 w-4 text-primary mr-1.5" />
-            <span className="text-xs">Share Link</span>
+            <Share2 className="h-4 w-4 text-primary mr-1 sm:mr-1.5 shrink-0" />
+            <span className="truncate"><span className="hidden xs:inline">Share </span>Link</span>
           </Button>
 
           <Button
@@ -394,17 +479,17 @@ export default function Catalogue() {
             onClick={handlePrint}
             disabled={preparingPrint}
             title="Print or export to PDF"
-            className="flex-1 md:flex-initial h-10 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all px-4"
+            className="h-11 sm:h-10 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all px-2.5 sm:px-4 text-xs flex items-center justify-center active:scale-[0.98]"
           >
             {preparingPrint ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-                <span className="text-xs">Preparing...</span>
+                <Loader2 className="h-4 w-4 animate-spin mr-1 sm:mr-1.5 shrink-0" />
+                <span className="text-[11px] sm:text-xs truncate">Preparing...</span>
               </>
             ) : (
               <>
-                <Printer className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">Print Catalogue</span>
+                <Printer className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+                <span className="truncate"><span className="hidden xs:inline">Print </span>Catalogue</span>
               </>
             )}
           </Button>
@@ -447,9 +532,34 @@ export default function Catalogue() {
         onClearFilters={clearFilters}
         totalFilteredCount={filtered.length}
         totalAllCount={items.length}
+        selectedCategory={selectedCategory}
+        onCategoryChange={(cat) => {
+          setSelectedCategory(cat);
+          setShowAllProductsFlat(false);
+        }}
+        categoryCounts={categoryCounts}
+        groupByCategory={groupByCategory}
+        onToggleGroupByCategory={() => setGroupByCategory((v) => !v)}
       />
 
-      {/* ── MAIN PRODUCT GRID / LIST / SKELETON ──────────────────────────── */}
+      {/* ── ACTIVE CATEGORY BAR (When user clicks into an intended category) ── */}
+      {selectedCategory !== "all" && !isLoading && (
+        <CatalogueActiveCategoryBar
+          selectedCategory={selectedCategory}
+          onBackToCategories={() => {
+            setSelectedCategory("all");
+            setShowAllProductsFlat(false);
+          }}
+          onSelectCategory={(catId) => {
+            setSelectedCategory(catId);
+            setShowAllProductsFlat(false);
+          }}
+          categoryCounts={categoryCounts}
+          totalCategoryItems={filtered.length}
+        />
+      )}
+
+      {/* ── MAIN PRODUCT GRID / LIST / CATEGORY HUB / SKELETON ─────────── */}
       {isLoading ? (
         view === "grid" ? (
           <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 print:hidden">
@@ -491,8 +601,41 @@ export default function Catalogue() {
             Reset all filters
           </Button>
         </div>
+      ) : showCategoryDirectory ? (
+        /* ── Initial Category Hub: Shows categories first for intuitive mobile browsing ── */
+        <div className="print:hidden">
+          <CatalogueCategoryGrid
+            categoryCounts={categoryCounts}
+            onSelectCategory={(catId) => {
+              setSelectedCategory(catId);
+              setShowAllProductsFlat(false);
+            }}
+            onViewAllProducts={() => setShowAllProductsFlat(true)}
+            totalProducts={items.length}
+            locationName={location}
+            previewImagesByCat={previewImagesByCat}
+          />
+        </div>
+      ) : groupByCategory && selectedCategory === "all" ? (
+        /* Grouped by Relatable Categories */
+        <div className="space-y-7 sm:space-y-8 print:hidden">
+          {categoryGroups.map((group) => (
+            <CatalogueCategorySection
+              key={group.category.id}
+              category={group.category}
+              items={group.items}
+              view={view}
+              signedUrls={signed}
+              onSelectItem={setSelectedItem}
+              onSelectCategoryFilter={(catId) => {
+                setSelectedCategory(catId as CategoryId);
+                setShowAllProductsFlat(false);
+              }}
+            />
+          ))}
+        </div>
       ) : (
-        /* Render Products */
+        /* Standard Flat Products View (or single category products view) */
         <div>
           {view === "grid" && (
             <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 print:hidden">
@@ -535,8 +678,8 @@ export default function Catalogue() {
         </div>
       )}
 
-      {/* ── SHOW MORE PAGINATION BUTTON ──────────────────────────────────── */}
-      {!isLoading && hasMore && (
+      {/* ── SHOW MORE PAGINATION BUTTON (Only in products view when more exist) ── */}
+      {!isLoading && !showCategoryDirectory && (!groupByCategory || selectedCategory !== "all") && hasMore && (
         <div className="flex flex-col items-center justify-center pt-4 print:hidden gap-2">
           <Button
             id="show-more-btn"

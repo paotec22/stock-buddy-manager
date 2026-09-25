@@ -10,8 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
-import { Copy, Check, Share2, Search, X } from "lucide-react";
+import { Copy, Check, Share2, Search, X, Layers } from "lucide-react";
 import { toast } from "sonner";
+import {
+  PRODUCT_CATEGORIES,
+  getProductCategory,
+} from "@/utils/catalogueCategories";
 
 interface CatalogueShareDialogProps {
   open: boolean;
@@ -143,6 +147,46 @@ export function CatalogueShareDialog({
                 >
                   {shareIds.length === items.length ? "Clear" : "Select All"}
                 </Button>
+              </div>
+
+              {/* Quick Select By Category */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
+                <span className="text-muted-foreground font-semibold shrink-0 text-[10px] uppercase tracking-wider mr-0.5">
+                  Category:
+                </span>
+                {PRODUCT_CATEGORIES.map((cat) => {
+                  const catItems = items.filter(
+                    (i) => getProductCategory(i).id === cat.id
+                  );
+                  if (catItems.length === 0) return null;
+                  const catIds = catItems.map((i) => i.id);
+                  const allSelected = catIds.every((id) => shareIds.includes(id));
+
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        if (allSelected) {
+                          setShareIds((prev) =>
+                            prev.filter((id) => !catIds.includes(id))
+                          );
+                        } else {
+                          setShareIds((prev) =>
+                            Array.from(new Set([...prev, ...catIds]))
+                          );
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg border font-medium transition-colors shrink-0 whitespace-nowrap ${
+                        allSelected
+                          ? cat.badgeClass + " font-bold"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted border-border/50"
+                      }`}
+                    >
+                      {cat.shortName} ({catItems.length})
+                    </button>
+                  );
+                })}
               </div>
 
               {/* List */}

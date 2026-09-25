@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
 import { getStockStatus } from "./CatalogueTypes";
+import { getProductCategory } from "@/utils/catalogueCategories";
 import {
   ImageOff,
   Copy,
@@ -36,6 +37,8 @@ export function CatalogueQuickView({
   if (!item) return null;
 
   const stock = getStockStatus(item.Quantity ?? 0);
+  const category = getProductCategory(item);
+  const CategoryIcon = category.icon;
 
   const handleCopyQuote = () => {
     const text = `*Puido Smart Solutions*\n📦 *Product:* ${item["Item Description"]}\n💰 *Price:* ${formatCurrency(
@@ -90,7 +93,13 @@ export function CatalogueQuickView({
           <div className="flex flex-col justify-between p-6 sm:p-7 md:p-8 space-y-6 md:overflow-y-auto h-full">
             <div className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${category.badgeClass}`}
+                  >
+                    <CategoryIcon className="h-3 w-3" />
+                    {category.name}
+                  </span>
                   <button
                     type="button"
                     onClick={handleCopySku}

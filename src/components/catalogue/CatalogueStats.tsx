@@ -30,7 +30,7 @@ export function CatalogueStats({
   const inStockPercentage = total > 0 ? Math.round((inStockCount / total) * 100) : 0;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 print:hidden">
+    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 print:hidden">
       {/* 1. Total Products */}
       <button
         type="button"

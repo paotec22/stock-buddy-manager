@@ -38,8 +38,17 @@ import {
   Phone,
   RefreshCw,
   Printer,
+  FolderTree,
+  Layers,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  CategoryId,
+  PRODUCT_CATEGORIES,
+  getProductCategory,
+} from "@/utils/catalogueCategories";
 
 const SUPABASE_URL = "https://itycbazttpidqlgmmrot.supabase.co";
 const SUPABASE_ANON_KEY =
@@ -247,6 +256,10 @@ export default function PublicCatalogue() {
   const [maxPrice, setMaxPrice] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>("all");
+  const [groupByCategory, setGroupByCategory] = useState<boolean>(true);
 
   const [selectedItem, setSelectedItem] = useState<PublicItem | null>(null);
 
@@ -273,7 +286,7 @@ export default function PublicCatalogue() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, sort, minPrice, maxPrice]);
+  }, [search, sort, minPrice, maxPrice, selectedCategory, groupByCategory]);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,6 +321,22 @@ export default function PublicCatalogue() {
     };
   }, [location, retryCount]);
 
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: items.length };
+    for (const cat of PRODUCT_CATEGORIES) {
+      counts[cat.id] = 0;
+    }
+    for (const item of items) {
+      const cat = getProductCategory({
+        "Item Description": item.description,
+        features: item.features,
+      });
+      counts[cat.id] = (counts[cat.id] || 0) + 1;
+    }
+    return counts as Record<CategoryId | "all", number>;
+  }, [items]);
+
   // Stats
   const stats = useMemo(() => {
     if (items.length === 0) return null;
@@ -321,6 +350,15 @@ export default function PublicCatalogue() {
 
   const filtered = useMemo(() => {
     let out = items.filter((it) => {
+      // Category filter
+      if (selectedCategory !== "all") {
+        const cat = getProductCategory({
+          "Item Description": it.description,
+          features: it.features,
+        });
+        if (cat.id !== selectedCategory) return false;
+      }
+
       if (
         search.trim() &&
         !it.description?.toLowerCase().includes(search.toLowerCase())
@@ -349,7 +387,32 @@ export default function PublicCatalogue() {
     });
 
     return out;
-  }, [items, search, sort, minPrice, maxPrice]);
+  }, [items, search, sort, minPrice, maxPrice, selectedCategory]);
+
+  // Category Groups for grouped layout
+  const categoryGroups = useMemo(() => {
+    const groups = new Map<CategoryId, PublicItem[]>();
+    for (const cat of PRODUCT_CATEGORIES) {
+      groups.set(cat.id, []);
+    }
+    for (const item of filtered) {
+      const cat = getProductCategory({
+        "Item Description": item.description,
+        features: item.features,
+      });
+      const list = groups.get(cat.id) || [];
+      list.push(item);
+      groups.set(cat.id, list);
+    }
+    const result: { category: typeof PRODUCT_CATEGORIES[0]; items: PublicItem[] }[] = [];
+    for (const cat of PRODUCT_CATEGORIES) {
+      const catItems = groups.get(cat.id) || [];
+      if (catItems.length > 0) {
+        result.push({ category: cat, items: catItems });
+      }
+    }
+    return result;
+  }, [filtered]);
 
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = page * PAGE_SIZE < filtered.length;
@@ -360,14 +423,16 @@ export default function PublicCatalogue() {
     if (minPrice) count++;
     if (maxPrice) count++;
     if (sort !== "name_asc") count++;
+    if (selectedCategory !== "all") count++;
     return count;
-  }, [search, minPrice, maxPrice, sort]);
+  }, [search, minPrice, maxPrice, sort, selectedCategory]);
 
   const clearFilters = () => {
     setSearch("");
     setMinPrice("");
     setMaxPrice("");
     setSort("name_asc");
+    setSelectedCategory("all");
   };
 
   const currentDateFormatted = useMemo(() => {
@@ -461,6 +526,22 @@ export default function PublicCatalogue() {
             >
               <MessageCircle className="h-3.5 w-3.5" /> Enquire
             </a>
+
+            {/* Grouped by category toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setGroupByCategory((v) => !v)}
+              className={`h-9 px-2.5 rounded-xl border-border/60 text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                groupByCategory
+                  ? "bg-primary/10 border-primary/40 text-primary"
+                  : "bg-card/65 text-muted-foreground hover:text-foreground"
+              }`}
+              title={groupByCategory ? "Category grouping active" : "Group products by category"}
+            >
+              <FolderTree className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Grouped</span>
+            </Button>
 
             {/* View toggle */}
             <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5">
@@ -577,7 +658,78 @@ export default function PublicCatalogue() {
 
         {/* Search + Filter bar (Hidden when printing) */}
         <div className="space-y-2 print:hidden">
-          <div className="flex gap-2">
+          {/* Mobile view: collapsible search + filter toolbar */}
+          <div className="sm:hidden">
+            {mobileSearchOpen || Boolean(search) ? (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="pub-catalogue-search-mobile"
+                    placeholder="Search products…"
+                    value={search}
+                    autoFocus
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 pr-9 h-11 bg-card/90 backdrop-blur-xs border-primary/40 focus-visible:ring-primary/20 rounded-xl text-sm shadow-xs"
+                  />
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (search) setSearch("");
+                    setMobileSearchOpen(false);
+                  }}
+                  className="h-11 px-3.5 rounded-xl border-border/80 bg-card font-semibold text-xs shrink-0 active:scale-[0.98]"
+                >
+                  Done
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  id="pub-mobile-search-btn"
+                  variant="outline"
+                  onClick={() => setMobileSearchOpen(true)}
+                  className="h-11 px-3 rounded-xl border-border/70 bg-card/80 backdrop-blur-xs flex items-center justify-center gap-2 text-xs font-semibold hover:border-primary/40 text-foreground transition-all active:scale-[0.98]"
+                >
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <span>Search</span>
+                </Button>
+
+                <Button
+                  id="pub-open-mobile-filters-btn"
+                  variant="outline"
+                  onClick={() => setMobileFiltersOpen(true)}
+                  className={`h-11 px-3 rounded-xl border-border/70 backdrop-blur-xs flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-[0.98] ${
+                    activeFilterCount > 0
+                      ? "bg-primary/10 border-primary text-primary font-bold shadow-xs"
+                      : "bg-card/80 text-foreground hover:border-primary/40"
+                  }`}
+                >
+                  <SlidersHorizontal className={`h-4 w-4 ${activeFilterCount > 0 ? "text-primary" : "text-muted-foreground"}`} />
+                  <span>Filters</span>
+                  {activeFilterCount > 0 && (
+                    <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop search + filter row (hidden on mobile) */}
+          <div className="hidden sm:flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
@@ -598,29 +750,12 @@ export default function PublicCatalogue() {
               )}
             </div>
 
-            {/* Mobile filter button → opens bottom sheet */}
-            <Button
-              id="pub-open-mobile-filters-btn"
-              variant="outline"
-              size="icon"
-              onClick={() => setMobileFiltersOpen(true)}
-              className="h-10 w-10 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs relative flex-shrink-0 sm:hidden"
-              aria-label="Open filters"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shadow-sm">
-                  {activeFilterCount}
-                </span>
-              )}
-            </Button>
-
             {/* Desktop filter button → toggles inline panel */}
             <Button
               id="pub-toggle-filters-btn"
               variant="outline"
               onClick={() => setFiltersOpen((v) => !v)}
-              className={`hidden sm:inline-flex h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 ${filtersOpen ? "border-primary text-primary bg-primary/5" : ""
+              className={`h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 ${filtersOpen ? "border-primary text-primary bg-primary/5" : ""
                 }`}
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -629,6 +764,63 @@ export default function PublicCatalogue() {
                 <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
               )}
             </Button>
+          </div>
+
+          {/* Category Navigation Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar scroll-smooth">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("all")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 border ${
+                selectedCategory === "all"
+                  ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                  : "bg-card/70 text-muted-foreground hover:text-foreground hover:bg-muted/80 border-border/70"
+              }`}
+            >
+              <Layers className="h-3.5 w-3.5" />
+              <span>All Categories</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                  selectedCategory === "all"
+                    ? "bg-primary-foreground/20 text-primary-foreground font-bold"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {categoryCounts.all || items.length}
+              </span>
+            </button>
+
+            {PRODUCT_CATEGORIES.map((cat) => {
+              const count = categoryCounts[cat.id] || 0;
+              if (count === 0 && selectedCategory !== cat.id) return null;
+              const Icon = cat.icon;
+              const isSelected = selectedCategory === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(isSelected ? "all" : cat.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 border ${
+                    isSelected
+                      ? cat.pillActiveClass
+                      : "bg-card/70 text-muted-foreground hover:text-foreground hover:bg-muted/80 border-border/70"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span>{cat.shortName}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                      isSelected
+                        ? "bg-white/20 text-white font-bold"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Active filter chips */}
@@ -813,7 +1005,74 @@ export default function PublicCatalogue() {
         ) : (
           <>
             {/* Screen view */}
-            {view === "grid" ? (
+            {groupByCategory ? (
+              <div className="space-y-7 md:space-y-8 print:hidden">
+                {categoryGroups.map((group) => {
+                  const Icon = group.category.icon;
+                  return (
+                    <section key={group.category.id} className="space-y-3">
+                      <div
+                        className={`rounded-2xl border ${group.category.accentBorder} bg-card/90 backdrop-blur-xs p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-3`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center border shrink-0 ${group.category.badgeClass}`}
+                          >
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-bold text-sm sm:text-base text-foreground tracking-tight">
+                                {group.category.name}
+                              </h3>
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${group.category.badgeClass}`}
+                              >
+                                {group.items.length}{" "}
+                                {group.items.length === 1 ? "product" : "products"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 sm:line-clamp-none">
+                              {group.category.tagline}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCategory(group.category.id)}
+                          className="text-xs text-primary hover:underline font-medium shrink-0 hidden sm:inline-block"
+                        >
+                          Focus Category
+                        </button>
+                      </div>
+
+                      {view === "grid" ? (
+                        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                          {group.items.map((item) => (
+                            <GridCard
+                              key={`${item.location}-${item.id}`}
+                              item={item}
+                              onClick={() => setSelectedItem(item)}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {group.items.map((item) => (
+                            <ListRow
+                              key={`${item.location}-${item.id}`}
+                              item={item}
+                              onClick={() => setSelectedItem(item)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            ) : view === "grid" ? (
               <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 print:hidden">
                 {paginated.map((item) => (
                   <GridCard
@@ -835,20 +1094,38 @@ export default function PublicCatalogue() {
               </div>
             )}
 
-            {/* Print-only view (all items, 4-column grid) */}
-            <div className="hidden print:grid print:grid-cols-4 print:gap-2.5">
-              {filtered.map((item) => (
-                <PrintCard
-                  key={`print-${item.location}-${item.id}`}
-                  item={item}
-                />
+            {/* Print-only view (grouped by category for official aesthetic) */}
+            <div className="hidden print:block print:space-y-5">
+              {categoryGroups.map((group) => (
+                <div
+                  key={`print-cat-${group.category.id}`}
+                  className="print:break-inside-avoid space-y-2"
+                >
+                  <div className="flex items-center justify-between py-1.5 px-3 bg-slate-900 text-white rounded font-bold text-xs">
+                    <span className="uppercase tracking-wider">
+                      {group.category.name}
+                    </span>
+                    <span className="text-[11px] font-normal opacity-90">
+                      {group.items.length}{" "}
+                      {group.items.length === 1 ? "item" : "items"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {group.items.map((item) => (
+                      <PrintCard
+                        key={`print-${item.location}-${item.id}`}
+                        item={item}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </>
         )}
 
-        {/* Show more (Hidden when printing) */}
-        {!loading && hasMore && (
+        {/* Show more (Hidden when printing, only in flat mode) */}
+        {!loading && !groupByCategory && hasMore && (
           <div className="flex justify-center pt-2 print:hidden">
             <Button
               id="pub-show-more-btn"
