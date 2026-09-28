@@ -8,7 +8,28 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, className, fullWidth }: AppLayoutProps) {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
+
+  // If auth is still checking, display a smooth skeleton layout shell
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background text-foreground">
+        <header className="h-16 border-b border-border/40 bg-card/60 backdrop-blur-md px-4 md:px-8 flex items-center justify-between">
+          <div className="h-8 w-36 bg-muted rounded-xl animate-pulse" />
+          <div className="h-8 w-24 bg-muted rounded-xl animate-pulse" />
+        </header>
+        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-5">
+          <div className="h-10 w-48 bg-muted rounded-xl animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="h-24 bg-muted/60 rounded-xl animate-pulse" />
+            <div className="h-24 bg-muted/60 rounded-xl animate-pulse" />
+            <div className="h-24 bg-muted/60 rounded-xl animate-pulse" />
+          </div>
+          <div className="h-72 bg-muted/40 rounded-2xl animate-pulse" />
+        </main>
+      </div>
+    );
+  }
 
   // If not logged in, render children without layout (for login page)
   if (!session) {
