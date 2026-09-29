@@ -15,6 +15,7 @@ interface InvoiceHeaderProps {
   isSubmitting: boolean;
   onSave: () => void;
   onShowSavedInvoices: () => void;
+  onImportPdf?: () => void;
   invoiceNumber: string;
   onInvoiceNumberChange: (value: string) => void;
   invoiceDate: Date;
@@ -29,6 +30,7 @@ export const InvoiceHeader = ({
   isSubmitting,
   onSave,
   onShowSavedInvoices,
+  onImportPdf,
   invoiceNumber,
   onInvoiceNumberChange,
   invoiceDate,
@@ -116,6 +118,7 @@ export const InvoiceHeader = ({
               onDownload={onDownload}
               onSave={onSave}
               onShowSavedInvoices={onShowSavedInvoices}
+              onImportPdf={onImportPdf}
               isSubmitting={isSubmitting}
               onReset={onReset}
               isPaidInFull={isPaidInFull}

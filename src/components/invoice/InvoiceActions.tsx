@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Save, History, RotateCcw } from "lucide-react";
+import { Printer, Download, Save, History, RotateCcw, FileUp } from "lucide-react";
 
 interface InvoiceActionsProps {
   onPrint: () => void;
   onDownload: () => void;
   onSave: () => void;
   onShowSavedInvoices: () => void;
+  onImportPdf?: () => void;
   isSubmitting: boolean;
   onReset?: () => void;
   isPaidInFull?: boolean;
@@ -16,6 +17,7 @@ export const InvoiceActions = ({
   onDownload,
   onSave,
   onShowSavedInvoices,
+  onImportPdf,
   isSubmitting,
   onReset,
   isPaidInFull = false
@@ -38,6 +40,22 @@ export const InvoiceActions = ({
           <Save className="w-4 h-4 sm:w-3.5 sm:h-3.5 mr-1.5" />
           <span>{isSubmitting ? "Saving..." : isPaidInFull ? "Save Receipt" : "Save Invoice"}</span>
         </Button>
+
+        {onImportPdf && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onImportPdf}
+            disabled={isSubmitting}
+            className="h-10 sm:h-9 px-2.5 sm:px-3 bg-primary/5 border-primary/30 hover:bg-primary/10 text-primary font-medium text-xs sm:text-sm shrink-0 active:scale-[0.98]"
+            title="Import PDF to populate invoice"
+          >
+            <FileUp className="w-4 h-4 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-primary" />
+            <span className="hidden sm:inline">Import PDF</span>
+            <span className="sm:hidden">PDF</span>
+          </Button>
+        )}
 
         {onReset && (
           <Button
@@ -98,3 +116,4 @@ export const InvoiceActions = ({
     </div>
   );
 };
+

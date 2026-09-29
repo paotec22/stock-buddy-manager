@@ -6,13 +6,14 @@ import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
 import { CustomerInfo } from "@/components/invoice/CustomerInfo";
 import { InvoiceItemsTable } from "@/components/invoice/InvoiceItemsTable";
 import { SavedInvoicesModal } from "@/components/invoice/SavedInvoicesModal";
+import { ImportPdfInvoiceModal } from "@/components/invoice/ImportPdfInvoiceModal";
 import { InvoiceFooter } from "@/components/invoice/InvoiceFooter";
 import { CurrencyChanger, currencies, type Currency } from "@/components/invoice/CurrencyChanger";
 import { useAuth } from "@/components/AuthProvider";
 import { useInvoiceOperations, type NewInvoiceItem } from "@/hooks/useInvoiceOperations";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Save, Printer, Download, History } from "lucide-react";
+import { Save, Printer, Download, History, FileUp } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { getInvoiceDocumentBaseName } from "@/utils/invoicePrint";
 
@@ -33,6 +34,8 @@ const CreateInvoice = () => {
   const [amountPaid, setAmountPaid] = useState(0);
   const [includeVat, setIncludeVat] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
+
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const navigate = useNavigate();
   const { session, loading } = useAuth();
@@ -63,6 +66,38 @@ const CreateInvoice = () => {
     setIncludeVat(data.includeVat);
     setDiscountPercent(data.discountPercent);
     setSelectedCustomerId(data.selectedCustomerId);
+  };
+
+  const handlePopulateFromPdf = (data: {
+    customerName: string;
+    customerPhone: string;
+    customerAddress: string;
+    customerEmail: string;
+    invoiceNumber: string;
+    invoiceDate: Date;
+    dueDate: Date;
+    notes: string;
+    items: NewInvoiceItem[];
+    includeVat: boolean;
+    discountPercent: number;
+    selectedCustomerId: string | null;
+    amountPaid: number;
+    currency: Currency;
+  }) => {
+    setCustomerName(data.customerName);
+    setCustomerPhone(data.customerPhone);
+    setCustomerAddress(data.customerAddress);
+    setCustomerEmail(data.customerEmail);
+    setInvoiceNumber(data.invoiceNumber);
+    setInvoiceDate(data.invoiceDate);
+    setDueDate(data.dueDate);
+    setNotes(data.notes);
+    setItems(data.items);
+    setIncludeVat(data.includeVat);
+    setDiscountPercent(data.discountPercent);
+    setSelectedCustomerId(data.selectedCustomerId);
+    setAmountPaid(data.amountPaid);
+    setSelectedCurrency(data.currency);
   };
 
   const handleResetForm = () => {
@@ -172,6 +207,7 @@ const CreateInvoice = () => {
           isSubmitting={isSubmitting}
           onSave={handleSubmit}
           onShowSavedInvoices={handleShowSavedInvoices}
+          onImportPdf={() => setIsPdfModalOpen(true)}
           invoiceNumber={invoiceNumber}
           onInvoiceNumberChange={setInvoiceNumber}
           invoiceDate={invoiceDate}
@@ -237,6 +273,13 @@ const CreateInvoice = () => {
         loadingInvoiceId={loadingInvoiceId}
       />
 
+      {/* PDF Invoice Importer Modal */}
+      <ImportPdfInvoiceModal
+        isOpen={isPdfModalOpen}
+        onOpenChange={setIsPdfModalOpen}
+        onApplyInvoice={handlePopulateFromPdf}
+      />
+
       {/* Mobile Quick-Action Floating Dock */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 px-3 py-2.5 shadow-lg print:hidden">
         <div className="flex items-center justify-between gap-2 max-w-md mx-auto">
@@ -249,6 +292,16 @@ const CreateInvoice = () => {
             </span>
           </div>
           <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPdfModalOpen(true)}
+              className="!min-h-0 h-9 w-9 p-0 text-xs active:scale-95 bg-primary/10 border-primary/30 text-primary shrink-0"
+              title="Import PDF"
+            >
+              <FileUp className="h-3.5 w-3.5" />
+            </Button>
             <Button
               type="button"
               variant="outline"
