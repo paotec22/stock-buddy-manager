@@ -1,5 +1,8 @@
 import { TopNavbar } from "./TopNavbar";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { useAuth } from "./AuthProvider";
+import { useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -9,6 +12,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, className, fullWidth }: AppLayoutProps) {
   const { session, loading } = useAuth();
+  const location = useLocation();
 
   // If auth is still checking, display a smooth skeleton layout shell
   if (loading) {
@@ -36,14 +40,30 @@ export function AppLayout({ children, className, fullWidth }: AppLayoutProps) {
     return <>{children}</>;
   }
 
+  // On create-invoice, it has its own dedicated mobile quick dock at the bottom
+  const isCreateInvoice = location.pathname === "/create-invoice";
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground print:min-h-0 print:bg-white print:text-black">
       <TopNavbar />
-      <main className="flex-1 print:flex-none print:w-full">
-        <div className={fullWidth ? "" : "px-4 md:px-8 lg:px-16 xl:px-24 py-4 md:py-6 print:p-0 print:m-0 print:w-full print:max-w-none"}>
+      <main
+        className={cn(
+          "flex-1 print:flex-none print:w-full",
+          !isCreateInvoice && "pb-18 md:pb-0",
+          className
+        )}
+      >
+        <div
+          className={
+            fullWidth
+              ? ""
+              : "px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-3 sm:py-4 md:py-6 print:p-0 print:m-0 print:w-full print:max-w-none"
+          }
+        >
           {children}
         </div>
       </main>
+      {!isCreateInvoice && <MobileBottomNav />}
     </div>
   );
 }

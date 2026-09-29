@@ -1,14 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { Boxes, ShoppingCart, Receipt, BarChart3, Settings, Wallet } from "lucide-react";
+import { Boxes, ShoppingCart, Receipt, BarChart3, Users, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { to: "/inventory", label: "Stock", icon: Boxes, end: true },
   { to: "/sales", label: "Sales", icon: ShoppingCart, end: false },
-  { to: "/expenses", label: "Expenses", icon: Wallet, end: false },
   { to: "/create-invoice", label: "Invoice", icon: Receipt, end: false },
+  { to: "/customers", label: "Clients", icon: Users, end: false },
+  { to: "/expenses", label: "Expenses", icon: Wallet, end: false },
   { to: "/reports", label: "Reports", icon: BarChart3, end: false },
-  { to: "/settings", label: "Settings", icon: Settings, end: false },
 ];
 
 export function MobileBottomNav() {
