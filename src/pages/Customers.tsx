@@ -55,6 +55,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { RemoveDebtDialog } from "@/components/customers/RemoveDebtDialog";
 
 export interface Customer {
   id: string;
@@ -108,6 +109,15 @@ export default function Customers() {
   const [syncing, setSyncing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
   const [selected, setSelected] = useState<Customer | null>(null);
+  const [debtModalOpen, setDebtModalOpen] = useState(false);
+  const [debtTargetCustomer, setDebtTargetCustomer] = useState<Customer | null>(null);
+  const [debtTargetStats, setDebtTargetStats] = useState<CustomerStats | null>(null);
+
+  const openRemoveDebt = (customer: Customer, stats?: CustomerStats | null) => {
+    setDebtTargetCustomer(customer);
+    setDebtTargetStats(stats || customerStatsMap[customer.id] || null);
+    setDebtModalOpen(true);
+  };
 
   // 1. Fetch Customers Directory
   const {
@@ -942,9 +952,20 @@ export default function Customers() {
                     )}
 
                     {stats && stats.outstanding > 0 && (
-                      <Badge variant="destructive" className="rounded-lg text-[11px] font-mono font-bold">
-                        ₦{stats.outstanding.toLocaleString()} owed
-                      </Badge>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openRemoveDebt(c, stats);
+                        }}
+                        className="h-6 px-2 rounded-lg text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 active:scale-95 transition-all shrink-0"
+                        title="Clear or settle customer debt"
+                      >
+                        <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-600 dark:text-emerald-400" />
+                        <span>₦{stats.outstanding.toLocaleString()} owed • Clear</span>
+                      </Button>
                     )}
                   </div>
 
@@ -1024,6 +1045,21 @@ export default function Customers() {
 
                       <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-1">
+                          {((stats?.outstanding || 0) > 0) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openRemoveDebt(c, stats);
+                              }}
+                              className="h-7 px-2 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 rounded-lg flex items-center gap-1"
+                              title="Clear customer debt"
+                            >
+                              <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                              <span>Clear Debt</span>
+                            </Button>
+                          )}
                           {waLink && (
                             <a
                               href={waLink}
@@ -1290,10 +1326,23 @@ export default function Customers() {
                     ₦{(customerStatsMap[selected.id]?.total_paid || 0).toLocaleString()}
                   </div>
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Outstanding Debt
-                  </span>
+                <div className="flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Outstanding Debt
+                    </span>
+                    {(customerStatsMap[selected.id]?.outstanding || 0) > 0 && (
+                      <Button
+                        size="sm"
+                        type="button"
+                        onClick={() => openRemoveDebt(selected, customerStatsMap[selected.id])}
+                        className="h-6 px-2 text-[10px] font-bold bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-md active:scale-95 shadow-2xs flex items-center gap-1"
+                      >
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                        <span>Clear Debt</span>
+                      </Button>
+                    )}
+                  </div>
                   <div
                     className={`text-lg font-black font-mono mt-0.5 ${
                       (customerStatsMap[selected.id]?.outstanding || 0) > 0 ? "text-destructive" : "text-foreground"
@@ -1351,12 +1400,28 @@ export default function Customers() {
                                 ₦{Number(s.total_amount || 0).toLocaleString()}
                               </td>
                               <td className="py-2 px-3 text-center capitalize">
-                                <Badge
-                                  variant={s.payment_status === "paid" ? "secondary" : "outline"}
-                                  className="text-[10px]"
-                                >
-                                  {s.payment_status?.replace("_", " ") || "recorded"}
-                                </Badge>
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <Badge
+                                    variant={s.payment_status === "paid" ? "secondary" : "outline"}
+                                    className={`text-[10px] ${
+                                      s.payment_status !== "paid" ? "text-amber-600 border-amber-500/40 bg-amber-500/5" : ""
+                                    }`}
+                                  >
+                                    {s.payment_status?.replace("_", " ") || "recorded"}
+                                  </Badge>
+                                  {s.payment_status !== "paid" && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      type="button"
+                                      onClick={() => openRemoveDebt(selected, customerStatsMap[selected.id])}
+                                      className="h-6 px-1.5 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md"
+                                      title="Settle balance on this sale"
+                                    >
+                                      Settle
+                                    </Button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1434,6 +1499,17 @@ export default function Customers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Remove / Settle Customer Debt Dialog ── */}
+      <RemoveDebtDialog
+        open={debtModalOpen}
+        onOpenChange={setDebtModalOpen}
+        customer={debtTargetCustomer}
+        stats={debtTargetStats}
+        onSuccess={() => {
+          refetchCustomers();
+        }}
+      />
     </div>
   );
 }

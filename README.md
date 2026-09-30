@@ -21,6 +21,11 @@
 ### 👥 1. Customer Directory & CRM Ledger (`/customers`)
 - **Full Client Profiles**: Record customer names, phone numbers, emails, physical delivery addresses, and custom project notes.
 - **Accounts Receivable & Debt Tracking**: Real-time monitoring of customer balances, total amount spent, total paid, and outstanding debt.
+- **Direct Debt Removal & Settle Modal**: 1-click **"Clear Debt"** action on customer cards, table rows, and profile drawers. Supports:
+  - **Full Debt Clearance (100% Paid)**: Immediately clears outstanding debt and marks all associated customer sales as fully paid.
+  - **Partial Debt Installment**: Record custom payment amounts, auto-distributed sequentially across outstanding sales transactions.
+  - **Debt Write-off / Waiver**: Zero out customer debt with audit trail tracking without collecting cash.
+  - **Multi-channel Logging**: Settle via Bank Transfer, Cash, POS/Card, Cheque, or Store Credit.
 - **Smart Filtering**: One-click filters for **All Clients**, **With Debt**, **VIP (₦100k+ Spent)**, and **Recently Active**.
 - **Dual Display Modes**: Toggle between interactive **Grid Cards** with financial badges and dense **Data Table** views.
 - **Customer Transaction History**: Detailed modal drawer showing all linked sales transactions, itemized products purchased, dates, and invoice records.
