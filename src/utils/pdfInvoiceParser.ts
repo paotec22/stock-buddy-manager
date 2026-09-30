@@ -1,9 +1,10 @@
 import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.js?url";
 import { currencies, type Currency } from "@/components/invoice/CurrencyChanger";
 
-// Configure worker using cdnjs matching version 3.11.174
+// Configure worker locally using Vite's ?url asset bundler (prevents external CORS/CSP failures)
 if (typeof window !== "undefined") {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 }
 
 export interface ExtractedPdfItem {
@@ -47,15 +48,18 @@ interface TextItemWithPosition {
   y: number;
   width: number;
   height: number;
-  hasEOL?: boolean;
 }
 
 /**
- * Parses raw text from a PDF file using pdfjs-dist
+ * Parses raw text from a PDF file using pdfjs-dist with positional reconstruction
  */
-export async function extractTextFromPdf(file: File | ArrayBuffer): Promise<{ text: string; pagesText: string[]; rawItems: TextItemWithPosition[] }> {
+export async function extractTextFromPdf(
+  file: File | ArrayBuffer
+): Promise<{ text: string; pagesText: string[]; rawItems: TextItemWithPosition[] }> {
   try {
     const arrayBuffer = file instanceof File ? await file.arrayBuffer() : file;
+
+    // Load document using pdfjs-dist
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
       useSystemFonts: true,
@@ -70,67 +74,81 @@ export async function extractTextFromPdf(file: File | ArrayBuffer): Promise<{ te
     for (let i = 1; i <= pageCount; i++) {
       const page = await pdfDoc.getPage(i);
       const textContent = await page.getTextContent();
-      
-      // Sort items roughly top-to-bottom, left-to-right
-      const items = (textContent.items as any[]).map((item) => ({
+
+      const items: TextItemWithPosition[] = (textContent.items as any[]).map((item) => ({
         str: item.str || "",
         x: item.transform ? item.transform[4] : 0,
         y: item.transform ? item.transform[5] : 0,
         width: item.width || 0,
         height: item.height || 0,
-        hasEOL: item.hasEOL,
       }));
 
       allRawItems.push(...items);
 
-      // Group into lines by Y-coordinate proximity
-      const lines: { y: number; text: string[] }[] = [];
-      const Y_TOLERANCE = 4;
+      // Group items into rows by Y-coordinate proximity
+      const Y_TOLERANCE = 5;
+      const lines: { y: number; items: TextItemWithPosition[] }[] = [];
 
       for (const item of items) {
-        if (!item.str.trim()) continue;
+        if (!item.str || item.str.trim() === "") continue;
         const existingLine = lines.find((l) => Math.abs(l.y - item.y) <= Y_TOLERANCE);
         if (existingLine) {
-          existingLine.text.push(item.str);
+          existingLine.items.push(item);
         } else {
-          lines.push({ y: item.y, text: [item.str] });
+          lines.push({ y: item.y, items: [item] });
         }
       }
 
-      // Sort lines by Y descending (PDF coordinates origin is bottom-left)
+      // Sort lines top-to-bottom (PDF Y-origin is bottom-left, so descending Y = top-to-bottom)
       lines.sort((a, b) => b.y - a.y);
-      const pageString = lines.map((l) => l.text.join(" ").trim()).filter(Boolean).join("\n");
+
+      // Sort items within each line left-to-right (X ascending)
+      const reconstructedLines = lines.map((l) => {
+        l.items.sort((a, b) => a.x - b.x);
+        return l.items
+          .map((it) => it.str)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }).filter((lineStr) => lineStr.length > 0);
+
+      const pageString = reconstructedLines.join("\n");
       pagesText.push(pageString);
     }
 
     const fullText = pagesText.join("\n\n--- PAGE BREAK ---\n\n");
     return { text: fullText, pagesText, rawItems: allRawItems };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to extract PDF text:", error);
-    throw new Error(`Unable to read PDF file: ${error instanceof Error ? error.message : "Unknown error"}`);
+    throw new Error(`Unable to read PDF file: ${error?.message || "Unknown PDF parsing error"}`);
   }
 }
 
 /**
- * Clean currency string to float
+ * Clean currency/number string into a valid float
  */
 function cleanNumber(val: string | number | undefined): number {
-  if (typeof val === "number") return val;
+  if (typeof val === "number") return isNaN(val) ? 0 : val;
   if (!val) return 0;
-  // Remove currency signs, commas, spaces
-  const cleaned = val.toString().replace(/[^0-9.-]/g, "");
+  // Remove currency symbols, commas, spaces, trailing dots
+  const cleaned = val
+    .toString()
+    .replace(/₦|\$|€|£|¥|NGN|USD|EUR|GBP/gi, "")
+    .replace(/,/g, "")
+    .replace(/[^\d.-]/g, "")
+    .trim();
   const num = parseFloat(cleaned);
   return isNaN(num) ? 0 : num;
 }
 
 /**
- * Parse standard date patterns
+ * Parse standard and written date patterns
  */
 function parseDateString(dateStr: string): Date | null {
   if (!dateStr) return null;
   const str = dateStr.trim();
 
-  // Try standard DD/MM/YYYY or DD-MM-YYYY
+  // Try standard DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
   const dmyMatch = str.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
   if (dmyMatch) {
     const d = parseInt(dmyMatch[1], 10);
@@ -151,9 +169,11 @@ function parseDateString(dateStr: string): Date | null {
     if (!isNaN(date.getTime())) return date;
   }
 
-  // Try Native Date parse (handles "Sep 28, 2026", "28 September 2026", etc.)
+  // Try written formats like "12 Sep 2026", "September 12, 2026"
   const parsed = new Date(str);
-  if (!isNaN(parsed.getTime())) return parsed;
+  if (!isNaN(parsed.getTime()) && parsed.getFullYear() > 2000 && parsed.getFullYear() < 2100) {
+    return parsed;
+  }
 
   return null;
 }
@@ -188,7 +208,7 @@ function detectCurrency(text: string): Currency {
  * Intelligent parser that converts raw PDF text lines into structured invoice payload
  */
 export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
-  const lines = fullText
+  const rawLines = fullText
     .split("\n")
     .map((l) => l.trim())
     .filter((l) => l.length > 0 && !l.startsWith("--- PAGE BREAK"));
@@ -211,77 +231,96 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
   let totalAmount = 0;
   let amountPaid = 0;
 
-  // 1. INVOICE / RECEIPT NUMBER
-  const invNoRegex = /(?:invoice|receipt|inv|bill|doc|rec)[\s#.:\-_]+([a-zA-Z0-9\-_/]{3,30})/i;
-  for (const line of lines) {
-    const match = line.match(invNoRegex);
-    if (match && match[1] && !invoiceNumber) {
-      // Check that match is not just a label word like "Date"
-      const candidate = match[1].trim();
-      if (!/^(date|due|to|from|for|total|number|no|details)$/i.test(candidate)) {
-        invoiceNumber = candidate;
+  // 1. INVOICE / RECEIPT NUMBER EXTRACTION
+  const invNoRegexes = [
+    /(?:invoice\s*no\.?|invoice\s*#|invoice\s*number|inv\s*#|inv\s*no\.?|receipt\s*#|receipt\s*no\.?|bill\s*#|bill\s*no\.?|order\s*#|ref\s*#)[\s:=-]+([a-zA-Z0-9\-_/]{3,35})/i,
+    /\b(INV[-_][A-Za-z0-9_-]{4,25})\b/i,
+    /\b(REC[-_][A-Za-z0-9_-]{4,25})\b/i,
+    /\b(SI[-_][A-Za-z0-9_-]{4,25})\b/i,
+    /#\s*([a-zA-Z0-9\-_]{4,25})/,
+  ];
+
+  for (const regex of invNoRegexes) {
+    const match = fullText.match(regex);
+    if (match && match[1]) {
+      const cand = match[1].trim();
+      if (!/^(date|due|to|from|for|total|number|no|details|status|paid)$/i.test(cand)) {
+        invoiceNumber = cand;
         break;
       }
     }
   }
 
-  // Fallback pattern for standard INV-YYYYMMDD format
+  // Fallback pattern if none found
   if (!invoiceNumber) {
-    const codeMatch = fullText.match(/\b(INV-[A-Za-z0-9_-]+|REC-[A-Za-z0-9_-]+|[A-Z]{2,4}-\d{4,10})\b/);
-    if (codeMatch) {
-      invoiceNumber = codeMatch[1];
+    const fallbackMatch = fullText.match(/\b([A-Z]{2,4}-\d{4,12})\b/);
+    if (fallbackMatch) {
+      invoiceNumber = fallbackMatch[1];
     }
   }
 
-  // 2. DATES
-  const dateRegex = /(?:invoice\s*date|issue\s*date|dated|date)[\s:]+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|\d{4}[./-][0-9]{1,2}[./-][0-9]{1,2})/i;
-  for (const line of lines) {
-    const match = line.match(dateRegex);
+  // 2. DATES EXTRACTION
+  const dateRegexes = [
+    /(?:invoice\s*date|issue\s*date|billing\s*date|dated|date)[\s:=-]+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|\d{4}[./-][0-9]{1,2}[./-][0-9]{1,2})/i,
+    /\b(\d{1,2}[./-]\d{1,2}[./-]\d{2,4})\b/,
+  ];
+
+  for (const regex of dateRegexes) {
+    const match = fullText.match(regex);
     if (match && match[1]) {
-      const d = parseDateString(match[1]);
-      if (d) {
-        invoiceDate = d;
+      const parsed = parseDateString(match[1]);
+      if (parsed) {
+        invoiceDate = parsed;
         break;
       }
     }
   }
 
-  const dueDateRegex = /(?:due\s*date|payment\s*due|due\s*by|valid\s*until)[\s:]+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|\d{4}[./-][0-9]{1,2}[./-][0-9]{1,2})/i;
-  for (const line of lines) {
-    const match = line.match(dueDateRegex);
-    if (match && match[1]) {
-      const d = parseDateString(match[1]);
-      if (d) {
-        dueDate = d;
-        break;
-      }
+  const dueDateRegex = /(?:due\s*date|payment\s*due|due\s*by|valid\s*until|expiry\s*date)[\s:=-]+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|\d{4}[./-][0-9]{1,2}[./-][0-9]{1,2})/i;
+  const dueMatch = fullText.match(dueDateRegex);
+  if (dueMatch && dueMatch[1]) {
+    const parsedDue = parseDateString(dueMatch[1]);
+    if (parsedDue) {
+      dueDate = parsedDue;
     }
   }
 
   // 3. EMAIL & PHONE
-  const emailMatch = fullText.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+  const emailMatch = fullText.match(emailRegex);
   if (emailMatch) {
-    // Exclude generic company email if possible
     customerEmail = emailMatch[1];
   }
 
-  const phoneMatch = fullText.match(/(?:phone|tel|mobile|whatsapp|call)?[\s:]*(\+?\d{1,4}?[-.\s]?(?:\(?\d{2,4}\)?[-.\s]?)?\d{3,4}[-.\s]?\d{3,4})/i);
-  if (phoneMatch) {
-    customerPhone = phoneMatch[1].trim();
+  const phoneRegexes = [
+    /(?:phone|tel|mobile|whatsapp|contact)?[\s:]*(\+?234[\s-]?\d{2,3}[\s-]?\d{3,4}[\s-]?\d{3,4})/i,
+    /(?:phone|tel|mobile|whatsapp|contact)?[\s:]*(0[789][01]\d{1}[\s-]?\d{3}[\s-]?\d{4})/i,
+    /(?:phone|tel|mobile|whatsapp)[\s:]*(\+?\d{1,4}?[-.\s]?(?:\(?\d{2,4}\)?[-.\s]?)?\d{3,4}[-.\s]?\d{3,4})/i,
+  ];
+
+  for (const regex of phoneRegexes) {
+    const pMatch = fullText.match(regex);
+    if (pMatch && pMatch[1]) {
+      customerPhone = pMatch[1].trim();
+      break;
+    }
   }
 
-  // 4. CUSTOMER NAME & ADDRESS ("Bill To:", "Customer:", "Sold To:", "Client:")
+  // 4. CUSTOMER NAME & ADDRESS ("Bill To:", "Customer:", "Sold To:", "Client:", "Recipient:")
   let capturingCustomer = false;
   const customerLines: string[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
 
-    if (/^(?:bill\s*to|billed\s*to|customer|client|sold\s*to|deliver\s*to|attn|recipient)[\s:]*$/i.test(line)) {
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
+
+    // Explicit Bill To: header on separate line
+    if (/^(?:bill\s*to|billed\s*to|customer|client|sold\s*to|deliver\s*to|attn|recipient|customer\s*name|client\s*name)[\s:]*$/i.test(line)) {
       capturingCustomer = true;
       continue;
     }
 
-    const inlineMatch = line.match(/^(?:bill\s*to|billed\s*to|customer|client|sold\s*to|deliver\s*to|attn)[\s:]+(.+)$/i);
+    // Inline Bill To: John Doe
+    const inlineMatch = line.match(/^(?:bill\s*to|billed\s*to|customer|client|sold\s*to|deliver\s*to|attn|customer\s*name|client\s*name)[\s:=-]+(.+)$/i);
     if (inlineMatch && inlineMatch[1]) {
       customerName = inlineMatch[1].trim();
       capturingCustomer = true;
@@ -289,7 +328,7 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
     }
 
     if (capturingCustomer) {
-      if (/^(?:invoice|items|description|qty|quantity|amount|total|subtotal|payment|bank|date|notes)/i.test(line)) {
+      if (/^(?:invoice|items|description|qty|quantity|amount|total|subtotal|payment|bank|date|due|notes|item\s*description|unit\s*price)/i.test(line)) {
         capturingCustomer = false;
       } else {
         customerLines.push(line);
@@ -301,7 +340,6 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
   if (!customerName && customerLines.length > 0) {
     customerName = customerLines[0];
     if (customerLines.length > 1) {
-      // Subsequent lines might be address / phone / email
       const remaining = customerLines.slice(1);
       const addrParts: string[] = [];
       for (const part of remaining) {
@@ -320,53 +358,58 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
   }
 
   // 5. LINE ITEMS EXTRACTION
-  // Scan for table rows or item descriptions followed by Qty, Unit Price, Amount
   const items: ExtractedPdfItem[] = [];
 
-  // Patterns for table rows:
-  // e.g. "iPhone 15 Pro Max 256GB 2 850000 1700000" or "Service Fee 1 50000 50000"
-  // e.g. "1. Solar Inverter 5kVA | Qty: 2 | Price: 450,000 | Total: 900,000"
-  // e.g. "MacBook Air M2  -  2 @ ₦1,200,000 = ₦2,400,000"
-
   let inItemsTable = false;
-  const itemCandidateLines: string[] = [];
+  const tableCandidateLines: string[] = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
 
-    if (/^(?:description|item|product|service|particulars)\s+(?:qty|quantity)?/i.test(line) ||
-        /(?:description|item).*(?:qty|quantity).*(?:price|rate).*(?:amount|total)/i.test(line)) {
+    // Detect Table Header row
+    if (
+      /(?:description|item|product|service|particulars)\s+(?:qty|quantity)?/i.test(line) ||
+      /(?:description|item).*(?:qty|quantity).*(?:price|rate).*(?:amount|total)/i.test(line) ||
+      /(?:s\/n|item\s*no).*(?:description).*(?:qty).*(?:price|total)/i.test(line)
+    ) {
       inItemsTable = true;
       continue;
     }
 
     if (inItemsTable) {
-      // Stop condition when reaching summary totals
-      if (/^(?:subtotal|total|vat|tax|discount|amount\s*paid|balance|notes|terms|bank\s*details|authorized\s*signature)/i.test(line)) {
+      // Stop condition when reaching summary totals or notes
+      if (
+        /^(?:subtotal|sub-total|total|vat|tax|discount|amount\s*paid|balance|notes|terms|bank\s*details|authorized|thank\s*you)/i.test(line)
+      ) {
         inItemsTable = false;
         continue;
       }
-      itemCandidateLines.push(line);
+      tableCandidateLines.push(line);
     }
   }
 
-  // If header wasn't explicitly found, scan entire text for item-like line patterns
-  const candidatePool = itemCandidateLines.length > 0 ? itemCandidateLines : lines;
+  // If table boundaries weren't strictly marked, consider all plausible lines
+  const candidatePool = tableCandidateLines.length > 0 ? tableCandidateLines : rawLines;
 
   for (const line of candidatePool) {
-    // Avoid header/footer keywords
-    if (/^(?:invoice|receipt|bill\s*to|date|due|subtotal|total|tax|vat|discount|notes|bank|phone|email|thank\s*you)/i.test(line)) {
+    // Skip obvious non-item lines
+    if (
+      /^(?:invoice|receipt|bill\s*to|date|due|subtotal|total|tax|vat|discount|notes|bank|phone|email|thank\s*you|page|terms|signature|puido|si\s*manager)/i.test(
+        line
+      )
+    ) {
       continue;
     }
 
-    // Pattern A: Text followed by 3 numbers: Qty, Unit Price, Total Amount
-    // e.g. "HP Pavilion Gaming Laptop 15  2  450,000.00  900,000.00"
-    const matchA = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)\s+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)$/);
-    if (matchA) {
-      const desc = matchA[1].trim().replace(/^\d+[\s.)-]+/, ""); // remove leading item index like "1."
-      const qty = cleanNumber(matchA[2]);
-      const unitPrice = cleanNumber(matchA[3]);
-      const amt = cleanNumber(matchA[4]) || qty * unitPrice;
+    // Pattern 1: Description with 3 numeric groups at end: Qty, Unit Price, Total Amount
+    // e.g., "Smart Touch Switch 3 Gang White 4 18,500.00 74,000.00"
+    // e.g., "1. Motorized Track 4.2m 2 65000 130000"
+    const match1 = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)\s+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)$/);
+    if (match1) {
+      const desc = match1[1].trim().replace(/^\d+[\s.)|/-]+/, "").trim();
+      const qty = cleanNumber(match1[2]);
+      const unitPrice = cleanNumber(match1[3]);
+      const amt = cleanNumber(match1[4]) || qty * unitPrice;
 
       if (desc.length > 1 && qty > 0 && unitPrice > 0) {
         items.push({
@@ -380,15 +423,20 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
       }
     }
 
-    // Pattern B: Text followed by 2 numbers: Qty, Unit Price
-    // e.g. "Wireless Ergonomic Mouse  5  15000"
-    const matchB = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)$/);
-    if (matchB) {
-      const desc = matchB[1].trim().replace(/^\d+[\s.)-]+/, "");
-      const qty = cleanNumber(matchB[2]);
-      const unitPrice = cleanNumber(matchB[3]);
+    // Pattern 2: Description with 2 numeric groups at end: Qty, Unit Price
+    // e.g., "Tuya Zigbee Gateway Hub 2 35000"
+    const match2 = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)$/);
+    if (match2) {
+      const desc = match2[1].trim().replace(/^\d+[\s.)|/-]+/, "").trim();
+      const qty = cleanNumber(match2[2]);
+      const unitPrice = cleanNumber(match2[3]);
 
-      if (desc.length > 1 && qty > 0 && unitPrice > 0 && !/^(subtotal|total|vat|tax|discount|paid|balance)/i.test(desc)) {
+      if (
+        desc.length > 1 &&
+        qty > 0 &&
+        unitPrice > 0 &&
+        !/^(subtotal|total|vat|tax|discount|paid|balance|amount)/i.test(desc)
+      ) {
         items.push({
           id: Math.random().toString(36).substring(2, 9),
           description: desc,
@@ -400,12 +448,35 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
       }
     }
 
-    // Pattern C: "Item Description - Amount" or "Item Description: ₦50,000"
-    const matchC = line.match(/^(.+?)(?:\s*[-:=@]\s*|\s{3,})([₦$€£]?\s*[\d,]+(?:\.\d{2})?)$/);
-    if (matchC) {
-      const desc = matchC[1].trim().replace(/^\d+[\s.)-]+/, "");
-      const price = cleanNumber(matchC[2]);
-      if (desc.length > 2 && price > 0 && !/^(subtotal|total|vat|tax|discount|amount\s*paid|balance|net)/i.test(desc)) {
+    // Pattern 3: Separated by | or @ or x
+    // e.g., "Smart Roller Blind Motor @ 45,000 x 3 = 135,000"
+    const match3 = line.match(/^(.+?)(?:\s*[@xX]\s*|\s*\|\s*)(\d+(?:\.\d+)?)(?:\s*[@xX]\s*|\s*\|\s*)([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/);
+    if (match3) {
+      const desc = match3[1].trim().replace(/^\d+[\s.)|/-]+/, "").trim();
+      const qty = cleanNumber(match3[2]);
+      const unitPrice = cleanNumber(match3[3]);
+      if (desc.length > 1 && qty > 0 && unitPrice > 0) {
+        items.push({
+          id: Math.random().toString(36).substring(2, 9),
+          description: desc,
+          quantity: qty,
+          unit_price: unitPrice,
+          amount: qty * unitPrice,
+        });
+        continue;
+      }
+    }
+
+    // Pattern 4: "Item Description - ₦50,000" or "Item Description: ₦50,000"
+    const match4 = line.match(/^(.+?)(?:\s*[-:=]\s*|\s{3,})([₦$€£]?\s*[\d,]+(?:\.\d{2})?)$/);
+    if (match4) {
+      const desc = match4[1].trim().replace(/^\d+[\s.)|/-]+/, "").trim();
+      const price = cleanNumber(match4[2]);
+      if (
+        desc.length > 2 &&
+        price > 0 &&
+        !/^(subtotal|total|vat|tax|discount|amount\s*paid|balance|net|due)/i.test(desc)
+      ) {
         items.push({
           id: Math.random().toString(36).substring(2, 9),
           description: desc,
@@ -418,71 +489,81 @@ export function parseInvoiceFromText(fullText: string): ExtractedPdfInvoice {
     }
   }
 
-  // 6. TOTALS, VAT, DISCOUNT, AMOUNT PAID
-  for (const line of lines) {
+  // 6. TOTALS, TAX, DISCOUNT, AMOUNT PAID
+  for (const line of rawLines) {
     // Subtotal
-    const subMatch = line.match(/(?:subtotal|sub-total|sub\s*total)[\s:]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
+    const subMatch = line.match(/(?:subtotal|sub-total|sub\s*total)[\s:=-]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
     if (subMatch) {
-      subtotal = cleanNumber(subMatch[1]);
+      const val = cleanNumber(subMatch[1]);
+      if (val > 0) subtotal = val;
     }
 
     // VAT / Tax
-    const vatMatch = line.match(/(?:vat|tax|gst)[\s(]*(\d+(?:\.\d+)?%?)?[\s)]*[\s:]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
+    const vatMatch = line.match(/(?:vat|tax|gst)[\s(]*(\d+(?:\.\d+)?%?)?[\s)]*[\s:=-]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
     if (vatMatch) {
-      taxAmount = cleanNumber(vatMatch[2]);
-      if (taxAmount > 0) {
+      const val = cleanNumber(vatMatch[2]);
+      if (val > 0) {
+        taxAmount = val;
         includeVat = true;
       }
     }
 
     // Discount
-    const discMatch = line.match(/(?:discount|rebate)[\s(]*(\d+(?:\.\d+)?%?)?[\s)]*[\s:]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
+    const discMatch = line.match(/(?:discount|rebate|less)[\s(]*(\d+(?:\.\d+)?%?)?[\s)]*[\s:=-]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
     if (discMatch) {
-      discountAmount = cleanNumber(discMatch[2]);
+      const val = cleanNumber(discMatch[2]);
+      if (val > 0) {
+        discountAmount = val;
+      }
       if (discMatch[1]) {
         discountPercent = cleanNumber(discMatch[1]);
       }
     }
 
-    // Total Amount
-    const totMatch = line.match(/(?:total\s*amount|grand\s*total|invoice\s*total|total)[\s:]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
+    // Total Amount / Grand Total
+    const totMatch = line.match(/(?:total\s*amount|grand\s*total|invoice\s*total|total\s*due|net\s*total|total)[\s:=-]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
     if (totMatch) {
-      const parsedTotal = cleanNumber(totMatch[1]);
-      if (parsedTotal > 0) {
-        totalAmount = parsedTotal;
+      const val = cleanNumber(totMatch[1]);
+      if (val > 0 && val !== subtotal) {
+        totalAmount = val;
+      } else if (val > 0 && !totalAmount) {
+        totalAmount = val;
       }
     }
 
-    // Amount Paid / Paid
-    const paidMatch = line.match(/(?:amount\s*paid|paid\s*amount|deposit|payment\s*received|paid)[\s:]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
+    // Amount Paid / Deposit / Received
+    const paidMatch = line.match(/(?:amount\s*paid|paid\s*amount|deposit|payment\s*received|paid)[\s:=-]+([₦$€£]?\s*[\d,]+(?:\.\d{2})?)/i);
     if (paidMatch) {
-      const paid = cleanNumber(paidMatch[1]);
-      if (paid > 0) {
-        amountPaid = paid;
-      }
+      const val = cleanNumber(paidMatch[1]);
+      if (val > 0) amountPaid = val;
     }
 
-    // Notes / Payment instructions
-    if (/^(?:notes|remarks|terms|instructions|payment\s*terms)[\s:]+(.+)$/i.test(line)) {
-      const noteMatch = line.match(/^(?:notes|remarks|terms|instructions|payment\s*terms)[\s:]+(.+)$/i);
+    // Notes & Payment Instructions
+    if (/^(?:notes|remarks|terms|instructions|payment\s*terms|bank\s*details)[\s:=-]+(.+)$/i.test(line)) {
+      const noteMatch = line.match(/^(?:notes|remarks|terms|instructions|payment\s*terms|bank\s*details)[\s:=-]+(.+)$/i);
       if (noteMatch && noteMatch[1]) {
         notes = noteMatch[1].trim();
       }
     }
   }
 
-  // Calculate fallbacks if totals were zero
-  const calculatedItemsSubtotal = items.reduce((sum, it) => sum + it.amount, 0);
-  if (!subtotal && calculatedItemsSubtotal > 0) {
-    subtotal = calculatedItemsSubtotal;
+  // Fallbacks if calculated totals are missing
+  const calculatedItemsTotal = items.reduce((sum, it) => sum + it.amount, 0);
+  if (!subtotal && calculatedItemsTotal > 0) {
+    subtotal = calculatedItemsTotal;
   }
   if (!totalAmount && subtotal > 0) {
     const disc = discountPercent > 0 ? (subtotal * discountPercent) / 100 : discountAmount;
     const tax = includeVat ? (subtotal - disc) * 0.075 : taxAmount;
-    totalAmount = subtotal - disc + tax;
+    totalAmount = Math.max(0, subtotal - disc + tax);
+  } else if (!totalAmount && calculatedItemsTotal > 0) {
+    totalAmount = calculatedItemsTotal;
   }
 
-  const isPaid = (totalAmount > 0 && amountPaid >= totalAmount) || /official\s*payment\s*receipt|paid\s*in\s*full|receipt/i.test(fullText);
+  const isPaid =
+    (totalAmount > 0 && amountPaid >= totalAmount) ||
+    /official\s*payment\s*receipt|paid\s*in\s*full|\bpaid\b/i.test(fullText);
+
   if (isPaid && !amountPaid && totalAmount > 0) {
     amountPaid = totalAmount;
   }

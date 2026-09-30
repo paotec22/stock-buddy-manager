@@ -96,14 +96,20 @@ export const ImportPdfInvoiceModal = ({
 
   // Fetch inventory for item matching
   const { data: inventoryItems = [] } = useQuery({
-    queryKey: ["inventory", "for-pdf-matching"],
+    queryKey: ["inventory-list", "for-pdf-matching"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("inventory")
-        .select("id, item_description, item_number, unit_price, quantity")
+        .from("inventory list")
+        .select(`id, "Item Description", Price, Quantity, location`)
         .limit(300);
       if (error) return [];
-      return data ?? [];
+      return (data ?? []).map((i: any) => ({
+        id: i.id,
+        item_description: i["Item Description"] || "",
+        unit_price: i.Price || 0,
+        quantity: i.Quantity || 0,
+        location: i.location || "",
+      }));
     },
     enabled: isOpen,
   });
