@@ -64,8 +64,11 @@
 ### 💼 4. Sales & Order Processing (`/sales`)
 - **Fast Order Recording**: Multi-line item entry with instant showroom stock validation and live price calculation.
 - **Location-Specific Stock Decrementing**: Automatically updates inventory counts at the selected branch (Ikeja, Lekki, Abuja, Port Harcourt, etc.).
-- **Flexible Payment Statuses**: Track transactions as **Paid**, **Partial**, or **Credit / Outstanding**.
-- **Partial Payment Installment Management**: Record partial customer payments with instant recalculation of remaining balance and automatic transition to "Paid" once fully settled.
+- **Flexible Payment Statuses & Delayed Payment Tracking**:
+  - Record or change payment status on **any recorded sale** to **Fully Paid**, **Part Paid**, or **Unpaid / Delayed**.
+  - Delayed sales maintain their unpaid/credit status with balance tracking until explicitly updated or recorded as paid.
+  - **1-Click "Record as Paid" Action**: Instant 1-click button on table rows and mobile cards to settle delayed payments in real time.
+- **Partial Payment Installment Management**: Record partial customer deposits with instant recalculation of remaining balance and automatic transition to "Paid" once fully settled.
 - **Executive KPI Cards**: Real-time sales overview cards displaying gross revenue, total units sold, pending receivables, and average order value.
 - **Interactive Visual Charts**: Daily and monthly revenue trend charts powered by Recharts with date range selectors.
 - **Bulk CSV Sales Import**: Ingest historical sales datasets with schema validation and error reporting.

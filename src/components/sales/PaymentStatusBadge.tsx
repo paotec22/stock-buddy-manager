@@ -10,19 +10,19 @@ interface PaymentStatusBadgeProps {
 export function PaymentStatusBadge({ status, className }: PaymentStatusBadgeProps) {
   const config = {
     paid: {
-      label: "Paid",
+      label: "Fully Paid",
       icon: CheckCircle2,
-      style: "bg-emerald-500/10 text-emerald-700 border-emerald-500/25 dark:text-emerald-400 dark:border-emerald-500/30",
+      style: "bg-emerald-500/10 text-emerald-700 border-emerald-500/25 dark:text-emerald-400 dark:border-emerald-500/30 font-semibold",
     },
     part_paid: {
       label: "Part Paid",
       icon: Clock,
-      style: "bg-amber-500/10 text-amber-700 border-amber-500/25 dark:text-amber-400 dark:border-amber-500/30",
+      style: "bg-amber-500/10 text-amber-700 border-amber-500/25 dark:text-amber-400 dark:border-amber-500/30 font-semibold",
     },
     unpaid: {
-      label: "Unpaid",
+      label: "Unpaid / Delayed",
       icon: AlertCircle,
-      style: "bg-rose-500/10 text-rose-700 border-rose-500/25 dark:text-rose-400 dark:border-rose-500/30",
+      style: "bg-rose-500/10 text-rose-700 border-rose-500/25 dark:text-rose-400 dark:border-rose-500/30 font-semibold",
     },
   };
 
@@ -32,7 +32,7 @@ export function PaymentStatusBadge({ status, className }: PaymentStatusBadgeProp
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border tabular-nums whitespace-nowrap transition-colors",
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs border tabular-nums whitespace-nowrap transition-colors shadow-2xs",
         c.style,
         className
       )}
@@ -42,4 +42,3 @@ export function PaymentStatusBadge({ status, className }: PaymentStatusBadgeProp
     </span>
   );
 }
-

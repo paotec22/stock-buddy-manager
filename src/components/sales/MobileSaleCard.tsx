@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, ChevronDown, ChevronUp, MapPin, Package, Calendar as CalendarIcon, Pencil, Check, X, CreditCard } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, MapPin, Package, Calendar as CalendarIcon, Pencil, Check, X, CreditCard, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ interface MobileSaleCardProps {
   onDateUpdate?: (saleId: string, newDate: Date) => void;
   onPriceUpdate?: (saleId: string, newPrice: number) => void;
   onUpdatePayment?: (sale: Sale) => void;
+  onMarkAsPaid?: (sale: Sale) => void;
 }
 
 export function MobileSaleCard({ 
@@ -41,7 +42,8 @@ export function MobileSaleCard({
   onDelete,
   onDateUpdate,
   onPriceUpdate,
-  onUpdatePayment
+  onUpdatePayment,
+  onMarkAsPaid,
 }: MobileSaleCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -185,17 +187,29 @@ export function MobileSaleCard({
 
         {/* Actions */}
         <div className="mt-3 pt-3 border-t border-border flex flex-wrap justify-between items-center gap-2">
-          {sale.payment_status !== 'paid' && canEditDates && (
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onUpdatePayment?.(sale)}
               className="min-h-[38px] rounded-xl text-xs font-semibold active:scale-[0.98]"
             >
-              <CreditCard className="h-4 w-4 mr-1.5" />
-              Update Payment
+              <CreditCard className="h-4 w-4 mr-1.5 text-primary" />
+              <span>Change Status</span>
             </Button>
-          )}
+
+            {sale.payment_status !== 'paid' && onMarkAsPaid && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onMarkAsPaid(sale)}
+                className="min-h-[38px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white active:scale-[0.98]"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                <span>Record Paid</span>
+              </Button>
+            )}
+          </div>
           {isAdmin && (
             <div className="ml-auto">
               <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

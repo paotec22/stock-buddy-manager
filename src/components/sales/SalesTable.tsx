@@ -165,6 +165,29 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
     }
   };
 
+  const handleMarkAsPaid = async (sale: Sale) => {
+    try {
+      const { error } = await supabase
+        .from('sales')
+        .update({
+          payment_status: 'paid',
+          amount_paid: sale.total_amount,
+        })
+        .eq('id', sale.id);
+
+      if (error) throw error;
+
+      toast.success(`🎉 Recorded payment as Fully Paid for "${sale.item_name}"`);
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      queryClient.invalidateQueries({ queryKey: ['profit-analysis'] });
+    } catch (err: any) {
+      console.error('Error marking sale as paid:', err);
+      toast.error(err.message || 'Failed to record payment');
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -197,6 +220,7 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
               onDateUpdate={handleDateUpdate}
               onPriceUpdate={handlePriceUpdate}
               onUpdatePayment={setPaymentSale}
+              onMarkAsPaid={handleMarkAsPaid}
             />
           ))}
         </div>
@@ -314,6 +338,7 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
                     onPriceUpdate={handlePriceUpdate}
                     onDelete={handleDelete}
                     onUpdatePayment={setPaymentSale}
+                    onMarkAsPaid={handleMarkAsPaid}
                   />
                 ))}
               </TableBody>
