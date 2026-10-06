@@ -19,7 +19,11 @@ import {
   Moon,
   Sun,
   ClipboardList,
-  Wrench
+  Wrench,
+  Landmark,
+  ShoppingBag,
+  Users,
+  ShieldCheck
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -145,6 +149,15 @@ function SidebarContents() {
             <SidebarItem to="/request" icon={ClipboardList}>
               Request
             </SidebarItem>
+            <SidebarItem to="/customers" icon={Users}>
+              Customers
+            </SidebarItem>
+            <SidebarItem to="/reconciliation" icon={Landmark}>
+              Bank Reconciliation
+            </SidebarItem>
+            <SidebarItem to="/purchases" icon={ShoppingBag}>
+              Stock Purchases
+            </SidebarItem>
             <SidebarItem to="/expenses" icon={DollarSign}>
               Expenses
             </SidebarItem>
@@ -164,6 +177,9 @@ function SidebarContents() {
             Settings
           </SidebarItem>
         )}
+        <SidebarItem to="/privacy" icon={ShieldCheck}>
+          Privacy Policy
+        </SidebarItem>
       </div>
 
       {/* Footer actions */}

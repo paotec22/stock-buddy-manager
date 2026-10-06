@@ -28,6 +28,9 @@ import Customers from "./pages/Customers";
 import Catalogue from "./pages/Catalogue";
 import PublicCatalogue from "./pages/PublicCatalogue";
 import Accessories from "./pages/Accessories";
+import Reconciliation from "./pages/Reconciliation";
+import Purchases from "./pages/Purchases";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 // Animated Routes Component
 function AnimatedRoutes() {
@@ -49,6 +52,9 @@ function AnimatedRoutes() {
         <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
         <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
         <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
+        <Route path="/reconciliation" element={<AppLayout><Reconciliation /></AppLayout>} />
+        <Route path="/purchases" element={<AppLayout><Purchases /></AppLayout>} />
+        <Route path="/privacy" element={<AppLayout><PrivacyPolicy /></AppLayout>} />
         <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
         <Route path="/share/catalogue" element={<PublicCatalogue />} />
         <Route path="*" element={<Navigate to="/" replace />} />

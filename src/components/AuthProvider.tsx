@@ -12,7 +12,7 @@ interface AuthContextType {
 }
 
 // Routes that anyone can view without signing in
-const PUBLIC_PATHS = ["/share/catalogue"];
+const PUBLIC_PATHS = ["/share/catalogue", "/privacy"];
 const isPublicPath = (pathname: string) =>
   PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
@@ -50,18 +50,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [navigate]);
 
   useEffect(() => {
-    console.log("AuthProvider: Initializing with current location:", location.pathname);
+    if (import.meta.env.DEV) {
+      console.log("AuthProvider: Initializing with current location:", location.pathname);
+    }
     let mounted = true;
 
     const initializeAuth = async () => {
       try {
-        console.log("AuthProvider: Getting initial session");
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
-        if (!mounted) {
-          console.log("AuthProvider: Component unmounted during initialization");
-          return;
-        }
+        if (!mounted) return;
 
         if (error) {
           console.error("Error getting initial session:", error);
@@ -70,10 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        console.log("AuthProvider: Initial session retrieved", { 
-          hasSession: !!initialSession,
-          currentPath: location.pathname 
-        });
+        if (import.meta.env.DEV) {
+          console.log("AuthProvider: Initial session retrieved", { 
+            hasSession: !!initialSession,
+            currentPath: location.pathname 
+          });
+        }
         
         setSession(initialSession);
         setLoading(false);
@@ -82,10 +82,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (isPublicPath(location.pathname)) {
           // Public routes never redirect
         } else if (initialSession && location.pathname === '/') {
-          console.log("AuthProvider: Redirecting authenticated user to inventory");
           navigate('/inventory');
         } else if (!initialSession && location.pathname !== '/') {
-          console.log("AuthProvider: Redirecting unauthenticated user to login");
           navigate('/');
         }
       } catch (error) {
@@ -102,16 +100,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (!mounted) {
-        console.log("AuthProvider: Ignoring auth state change on unmounted component");
-        return;
-      }
+      if (!mounted) return;
 
-      console.log("AuthProvider: Auth state changed", { 
-        event, 
-        hasSession: !!currentSession,
-        currentPath: location.pathname 
-      });
+      if (import.meta.env.DEV) {
+        console.log("AuthProvider: Auth state changed", { 
+          event, 
+          hasSession: !!currentSession,
+          currentPath: location.pathname 
+        });
+      }
 
       setSession(currentSession);
 
@@ -126,7 +123,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
-      console.log("AuthProvider: Cleaning up");
       mounted = false;
       subscription.unsubscribe();
     };
@@ -138,12 +134,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signOut
   }), [session, loading, signOut]);
-
-  console.log("AuthProvider: Rendering", { 
-    hasSession: !!session, 
-    loading,
-    currentPath: location.pathname 
-  });
 
   return (
     <AuthContext.Provider value={value}>

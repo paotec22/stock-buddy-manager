@@ -35,6 +35,7 @@ const Settings = () => {
   const { session } = useAuth();
   const [resetType, setResetType] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmWord, setConfirmWord] = useState("");
   const [isResetting, setIsResetting] = useState(false);
 
   const { data: userProfile, isLoading, error } = useQuery({
@@ -85,6 +86,12 @@ const Settings = () => {
       return;
     }
 
+    const expectedPhrase = resetType === "all" ? "PURGE ALL" : `PURGE ${resetType.toUpperCase()}`;
+    if (confirmWord.trim() !== expectedPhrase) {
+      toast.error(`Safety Verification Required: Please type "${expectedPhrase}" exactly to confirm.`);
+      return;
+    }
+
     setIsResetting(true);
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({
@@ -128,6 +135,7 @@ const Settings = () => {
 
       setResetType("");
       setPassword("");
+      setConfirmWord("");
     } catch (err) {
       console.error("Error resetting data:", err);
       toast.error("Failed to execute data reset. Please verify database permissions.");
@@ -183,13 +191,24 @@ const Settings = () => {
                 : "Manage team users, view roles, and export database backups. Destructive actions require Super Admin."}
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-mono text-muted-foreground bg-muted/60 px-3 py-1.5 rounded-lg border border-border/60">
-            {isSuperAdmin ? (
-              <Crown className="h-3.5 w-3.5 text-amber-500" />
-            ) : (
-              <Shield className="h-3.5 w-3.5 text-primary" />
-            )}
-            <span>{session.user.email}</span>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/privacy")}
+              className="text-xs h-8 gap-1.5"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              <span>Privacy Policy</span>
+            </Button>
+            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-muted/60 px-3 py-1.5 rounded-lg border border-border/60">
+              {isSuperAdmin ? (
+                <Crown className="h-3.5 w-3.5 text-amber-500" />
+              ) : (
+                <Shield className="h-3.5 w-3.5 text-primary" />
+              )}
+              <span>{session.user.email}</span>
+            </div>
           </div>
         </div>
 
@@ -341,11 +360,38 @@ const Settings = () => {
                       </div>
                     </div>
 
+                    {resetType && (
+                      <div className="space-y-1.5 p-3 rounded-lg border border-destructive/30 bg-destructive/5 animate-in fade-in duration-200">
+                        <Label htmlFor="confirmWord" className="text-xs font-semibold text-destructive flex items-center justify-between">
+                          <span>Safety Keyword Verification</span>
+                          <span className="font-mono text-[10px] bg-destructive/10 px-1.5 py-0.5 rounded">
+                            {resetType === "all" ? "PURGE ALL" : `PURGE ${resetType.toUpperCase()}`}
+                          </span>
+                        </Label>
+                        <Input
+                          id="confirmWord"
+                          type="text"
+                          placeholder={`Type "${resetType === "all" ? "PURGE ALL" : `PURGE ${resetType.toUpperCase()}`}" to enable`}
+                          value={confirmWord}
+                          onChange={(e) => setConfirmWord(e.target.value)}
+                          className="h-9 text-xs font-mono uppercase bg-background"
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          This prevents accidental purges. Type the safety phrase above to unlock the button.
+                        </p>
+                      </div>
+                    )}
+
                     <Button
                       type="button"
                       variant="destructive"
                       onClick={handleReset}
-                      disabled={isResetting || !resetType || !password}
+                      disabled={
+                        isResetting ||
+                        !resetType ||
+                        !password ||
+                        confirmWord.trim() !== (resetType === "all" ? "PURGE ALL" : `PURGE ${resetType.toUpperCase()}`)
+                      }
                       className="w-full h-10 text-sm font-semibold shadow-xs"
                     >
                       {isResetting ? (

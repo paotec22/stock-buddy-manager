@@ -15,11 +15,8 @@ export function isSuperAdminUser(email?: string | null, role?: string | null): b
   if (role === "super_admin") return true;
   if (!email) return false;
   const normalizedEmail = email.toLowerCase().trim();
-  return (
-    normalizedEmail === "paotec22@gmail.com" ||
-    normalizedEmail.startsWith("paotec22@") ||
-    normalizedEmail.includes("paotec22")
-  );
+  // Strictly enforce exact canonical matching to prevent privilege escalation
+  return SUPER_ADMIN_IDENTIFIERS.includes(normalizedEmail);
 }
 
 /**

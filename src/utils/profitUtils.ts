@@ -11,6 +11,7 @@ import {
   endOfQuarter,
   isWithinInterval,
 } from "date-fns";
+import { getSecureItem, setSecureItem } from "./secureStorage";
 
 export type TimeRangePreset =
   | "this_month"
@@ -120,38 +121,25 @@ const LOCAL_STORAGE_COST_KEY = "si-manager-item-costs";
  * Retrieve cached/default item costs saved in localStorage.
  */
 export function getItemCostCache(): Record<string, number> {
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_COST_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+  return getSecureItem<Record<string, number>>(LOCAL_STORAGE_COST_KEY, {});
 }
 
 /**
- * Persist an item's default unit purchase cost to localStorage.
+ * Persist an item's default unit purchase cost to secure storage.
  */
 export function setItemCostCache(itemId: string | number, cost: number): void {
-  try {
-    const existing = getItemCostCache();
-    existing[String(itemId)] = cost;
-    localStorage.setItem(LOCAL_STORAGE_COST_KEY, JSON.stringify(existing));
-  } catch (e) {
-    console.error("Failed to save item cost to localStorage:", e);
-  }
+  const existing = getItemCostCache();
+  existing[String(itemId)] = cost;
+  setSecureItem(LOCAL_STORAGE_COST_KEY, existing);
 }
 
 /**
- * Bulk persist item costs to localStorage.
+ * Bulk persist item costs to secure storage.
  */
 export function bulkSetItemCostCache(costs: Record<string, number>): void {
-  try {
-    const existing = getItemCostCache();
-    const merged = { ...existing, ...costs };
-    localStorage.setItem(LOCAL_STORAGE_COST_KEY, JSON.stringify(merged));
-  } catch (e) {
-    console.error("Failed to bulk save item costs:", e);
-  }
+  const existing = getItemCostCache();
+  const merged = { ...existing, ...costs };
+  setSecureItem(LOCAL_STORAGE_COST_KEY, merged);
 }
 
 /**

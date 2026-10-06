@@ -61,6 +61,25 @@
 
 ---
 
+### 🏛️ 4. Bank Account & Sales Reconciliation Module (`/reconciliation`)
+- **Company Accounts & Cash Tills Ledger**: Register and track multiple bank accounts (FirstBank, GTBank), POS merchant terminals, and showroom physical cash tills.
+- **Statement Import & Transaction Logger**: Upload CSV bank statements or manually record bank deposits, POS card settlements, and cash drops.
+- **Smart Automated Reconciliation Engine**:
+  - **Auto-Reconcile**: Multi-point matching algorithm aligning bank deposits with recorded sales based on payment channel (NIP Transfer, POS, Cash), date, and amount.
+  - **1-Click Manual Match**: Select an incoming bank deposit and link it to one or multiple logged sales/invoices.
+  - **Unreconciled Sales Alerts**: Highlights sales logged in POS that have not yet hit the company bank account or cash till.
+  - **Account Balance vs. Ledger Gap**: Monitors actual bank statement balances against system ledger calculations with discrepancy badges.
+
+---
+
+### 🛍️ 5. Stock Purchase & Procurement Analysis (`/purchases`)
+- **Vendor Bill & Stock Arrival Logger**: Record inventory replenishment purchases with supplier name, unit cost price, quantity acquired, location, and payment account used.
+- **Supplier Spend Leaderboard**: Ranks top wholesalers and importers by total naira expenditure and restock volume.
+- **Cost Price vs. Retail Margin Analysis**: Evaluates gross margin percentages per item (Cost Price vs Retail Selling Price) to prevent low-margin selling and track supplier price inflation.
+- **Procurement CSV Export**: Export comprehensive stock purchase logs and vendor reports.
+
+---
+
 ### 💼 4. Sales & Order Processing (`/sales`)
 - **Fast Order Recording**: Multi-line item entry with instant showroom stock validation and live price calculation.
 - **Location-Specific Stock Decrementing**: Automatically updates inventory counts at the selected branch (Ikeja, Lekki, Abuja, Port Harcourt, etc.).
@@ -243,6 +262,19 @@ SI Manager is built with a responsive design philosophy:
 - **Navigation**: Switch between key modules with the **Mobile Bottom Navigation Bar** or open the **Top Right Menu Drawer** for all administrative and system tools.
 - **Sales & Invoicing**: Access the **Mobile Quick Dock** on `/create-invoice` or tap the **Floating Action Button (+)** on `/sales` and `/inventory` to initiate transactions instantly on any smartphone or tablet.
 - **PDF Uploads**: Use the mobile file picker to upload PDF invoices and receipts directly from your mobile camera scanner or cloud storage.
+
+---
+
+## 🔒 Data Protection, Privacy & International Compliance
+
+SI Manager is architected with strict adherence to international data protection, privacy, and commercial compliance standards:
+- **Comprehensive Privacy Document**: Read our full [Privacy Policy & Data Protection Charter](PRIVACY_POLICY.md) governing global operations.
+- **In-App Interactive Portal**: Accessible directly at the [`/privacy`](/privacy) route with search, section jumping, and print/PDF export.
+- **Standards Complied With**:
+  - **EU/UK GDPR**: Art. 5 Data Minimization, Art. 6 Lawful Bases, Art. 15-22 Data Subject Rights (Access, Portability, Erasure).
+  - **California CCPA / CPRA**: Notice at collection, consumer rights, and zero commercial sale/sharing of personal data.
+  - **Nigeria Data Protection Act (NDPA 2023)**: Full compliance with the NDPC requirements for commercial business operations.
+  - **Client-Side PDF Sandboxing**: PDF document parsing runs completely inside the client's browser memory via sandboxed WebAssembly (`pdfjs-dist`). Raw invoices are never sent to external AI scrapers.
 
 ---
 
