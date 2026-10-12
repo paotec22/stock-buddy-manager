@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Minus, Trash2, ShoppingBag, Percent, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Minus, Trash2, ShoppingBag, Percent, CheckCircle2, AlertCircle, Tag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ItemDescriptionAutocomplete } from "./ItemDescriptionAutocomplete";
 import { formatCurrency } from "@/utils/formatters";
@@ -24,14 +24,22 @@ interface InvoiceItemsTableProps {
   totals: {
     subtotal: number;
     total: number;
+    discount_amount?: number;
+    discount_percent?: number;
+    discount_type?: "amount" | "percent";
   };
   currency: Currency;
   amountPaid: number;
   onAmountPaidChange: (amount: number) => void;
   includeVat: boolean;
   onVatChange: (include: boolean) => void;
-  discountPercent: number;
-  onDiscountChange: (percent: number) => void;
+  discountType?: "amount" | "percent";
+  onDiscountTypeChange?: (type: "amount" | "percent") => void;
+  discountAmount?: number;
+  onDiscountAmountChange?: (amount: number) => void;
+  discountPercent?: number;
+  onDiscountChange?: (percent: number) => void;
+  onDiscountPercentChange?: (percent: number) => void;
   notes?: string;
   onNotesChange?: (notes: string) => void;
 }
@@ -47,8 +55,13 @@ export const InvoiceItemsTable = ({
   onAmountPaidChange,
   includeVat,
   onVatChange,
-  discountPercent,
+  discountType = "amount",
+  onDiscountTypeChange,
+  discountAmount = 0,
+  onDiscountAmountChange,
+  discountPercent = 0,
   onDiscountChange,
+  onDiscountPercentChange,
 }: InvoiceItemsTableProps) => {
   const [newItem, setNewItem] = useState<InvoiceItem>({
     description: "",
@@ -114,11 +127,18 @@ export const InvoiceItemsTable = ({
 
   // Calculate amounts
   const subtotal = totals.subtotal;
-  const discountAmount = (subtotal * discountPercent) / 100;
-  const afterDiscount = subtotal - discountAmount;
+  const effectiveDiscountAmount = totals.discount_amount !== undefined
+    ? totals.discount_amount
+    : (discountType === "amount"
+        ? Math.min(subtotal, Math.max(0, discountAmount))
+        : (subtotal * (discountPercent || 0)) / 100);
+  const effectiveDiscountPercent = totals.discount_percent !== undefined
+    ? totals.discount_percent
+    : (subtotal > 0 ? (effectiveDiscountAmount / subtotal) * 100 : 0);
+  const afterDiscount = Math.max(0, subtotal - effectiveDiscountAmount);
   const vatAmount = includeVat ? (afterDiscount * VAT_RATE) / 100 : 0;
-  const grandTotal = afterDiscount + vatAmount;
-  const balance = grandTotal - amountPaid;
+  const grandTotal = Math.max(0, afterDiscount + vatAmount);
+  const balance = Math.max(0, grandTotal - amountPaid);
 
   const getPaymentBadge = () => {
     if (grandTotal === 0) return null;
@@ -471,12 +491,17 @@ export const InvoiceItemsTable = ({
           </div>
 
           {/* Adjustments: VAT & Discount Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-2.5 rounded-lg bg-muted/40 border border-border/60 print:hidden">
+          <div className="space-y-2.5 p-3 rounded-lg bg-muted/40 border border-border/60 print:hidden">
             {/* VAT Switch */}
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="vat-toggle" className="text-xs font-medium cursor-pointer">
-                Apply VAT ({VAT_RATE}%)
-              </Label>
+            <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/40">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="vat-toggle" className="text-xs font-semibold cursor-pointer text-foreground">
+                  Apply VAT
+                </Label>
+                <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border/60">
+                  {VAT_RATE}%
+                </span>
+              </div>
               <Switch
                 id="vat-toggle"
                 checked={includeVat}
@@ -485,24 +510,142 @@ export const InvoiceItemsTable = ({
               />
             </div>
 
-            {/* Discount % Input */}
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="discount" className="text-xs font-medium flex items-center gap-1">
-                <Percent className="h-3 w-3 text-primary shrink-0" />
-                Discount (%):
-              </Label>
-              <Input
-                id="discount"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                max="100"
-                step="0.5"
-                value={discountPercent || ""}
-                onChange={(e) => onDiscountChange(Math.min(100, Math.max(0, Number(e.target.value) || 0)))}
-                className="w-20 sm:w-16 !min-h-0 h-8 sm:h-7 text-sm sm:text-xs font-mono text-right bg-background"
-                placeholder="0"
-              />
+            {/* Discount Section */}
+            <div className="space-y-1.5 pt-0.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <Label className="text-xs font-semibold text-foreground">
+                    Discount
+                  </Label>
+                </div>
+
+                {/* Toggle between Fixed Amount and Percentage */}
+                <div className="inline-flex items-center p-0.5 rounded-md bg-background border border-border/70 text-[11px] font-medium shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onDiscountTypeChange) onDiscountTypeChange("amount");
+                      if (discountPercent > 0 && discountAmount === 0 && subtotal > 0) {
+                        const amt = Math.round(((subtotal * discountPercent) / 100) * 100) / 100;
+                        if (onDiscountAmountChange) onDiscountAmountChange(amt);
+                      }
+                    }}
+                    className={`px-2 py-0.5 rounded text-xs transition-colors font-medium flex items-center gap-1 ${
+                      discountType === "amount"
+                        ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <span>{currency.symbol || "₦"} Amount</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onDiscountTypeChange) onDiscountTypeChange("percent");
+                      if (discountAmount > 0 && discountPercent === 0 && subtotal > 0) {
+                        const pct = Math.round(((discountAmount / subtotal) * 100) * 10) / 10;
+                        if (onDiscountPercentChange) onDiscountPercentChange(pct);
+                        else if (onDiscountChange) onDiscountChange(pct);
+                      }
+                    }}
+                    className={`px-2 py-0.5 rounded text-xs transition-colors font-medium flex items-center gap-1 ${
+                      discountType === "percent"
+                        ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Percent className="h-3 w-3" />
+                    <span>Percent</span>
+                  </button>
+                </div>
+              </div>
+
+              {discountType === "amount" ? (
+                <div className="space-y-1">
+                  <div className="relative flex items-center">
+                    <span className="absolute left-2.5 text-xs font-semibold text-muted-foreground font-mono select-none">
+                      {currency.symbol || "₦"}
+                    </span>
+                    <Input
+                      id="discount-amount"
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      max={subtotal > 0 ? subtotal : undefined}
+                      step="any"
+                      value={discountAmount === 0 ? "" : discountAmount}
+                      onChange={(e) => {
+                        const rawVal = e.target.value === "" ? 0 : Number(e.target.value);
+                        const clamped = subtotal > 0 ? Math.min(subtotal, Math.max(0, rawVal)) : Math.max(0, rawVal);
+                        if (onDiscountAmountChange) onDiscountAmountChange(clamped);
+                        const pct = subtotal > 0 ? Math.round(((clamped / subtotal) * 100) * 10) / 10 : 0;
+                        if (onDiscountPercentChange) onDiscountPercentChange(pct);
+                        else if (onDiscountChange) onDiscountChange(pct);
+                      }}
+                      className="pl-7 pr-16 !min-h-0 h-8 text-sm font-mono text-right bg-background"
+                      placeholder="Enter exact discount amount"
+                    />
+                    {discountAmount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onDiscountAmountChange) onDiscountAmountChange(0);
+                          if (onDiscountPercentChange) onDiscountPercentChange(0);
+                          else if (onDiscountChange) onDiscountChange(0);
+                        }}
+                        className="absolute right-2 text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded bg-muted/60 transition-colors"
+                        title="Remove discount"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  {subtotal > 0 && discountAmount > 0 && (
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+                      <span>Equivalent percentage:</span>
+                      <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                        {((discountAmount / subtotal) * 100).toFixed(1).replace(/\.0$/, '')}% of subtotal
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="relative flex items-center">
+                    <Input
+                      id="discount-percent"
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={discountPercent === 0 ? "" : discountPercent}
+                      onChange={(e) => {
+                        const rawVal = e.target.value === "" ? 0 : Number(e.target.value);
+                        const pct = Math.min(100, Math.max(0, rawVal));
+                        if (onDiscountPercentChange) onDiscountPercentChange(pct);
+                        else if (onDiscountChange) onDiscountChange(pct);
+                        const amt = Math.round(((subtotal * pct) / 100) * 100) / 100;
+                        if (onDiscountAmountChange) onDiscountAmountChange(amt);
+                      }}
+                      className="pr-16 !min-h-0 h-8 text-sm font-mono text-right bg-background"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-2.5 text-xs font-semibold text-muted-foreground font-mono select-none">
+                      %
+                    </span>
+                  </div>
+                  {subtotal > 0 && discountPercent > 0 && (
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
+                      <span>Calculated discount:</span>
+                      <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                        -{formatCurrency((subtotal * discountPercent) / 100, currency)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -513,10 +656,12 @@ export const InvoiceItemsTable = ({
               <span className="font-mono font-medium text-xs sm:text-sm text-foreground">{formatCurrency(subtotal, currency)}</span>
             </div>
 
-            {discountPercent > 0 && (
+            {effectiveDiscountAmount > 0 && (
               <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 py-0.5">
-                <span className="text-xs sm:text-sm">Discount ({discountPercent}%)</span>
-                <span className="font-mono font-medium text-xs sm:text-sm">-{formatCurrency(discountAmount, currency)}</span>
+                <span className="text-xs sm:text-sm">
+                  Discount {effectiveDiscountPercent > 0 ? `(${effectiveDiscountPercent % 1 === 0 ? effectiveDiscountPercent : effectiveDiscountPercent.toFixed(1)}%)` : ""}
+                </span>
+                <span className="font-mono font-medium text-xs sm:text-sm">-{formatCurrency(effectiveDiscountAmount, currency)}</span>
               </div>
             )}
 

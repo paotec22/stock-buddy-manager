@@ -445,9 +445,9 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
             <span>Subtotal</span>
             <span style="font-family: monospace; font-weight: 600;">${formatCurrency(subtotal, currency)}</span>
           </div>
-          ${discountPercent > 0 ? `
+          ${(discountAmount > 0 || discountPercent > 0) ? `
             <div class="summary-row" style="color: #059669;">
-              <span>Discount (${discountPercent}%)</span>
+              <span>Discount${discountPercent > 0 ? ` (${discountPercent % 1 === 0 ? discountPercent : discountPercent.toFixed(1)}%)` : ""}</span>
               <span style="font-family: monospace;">-${formatCurrency(discountAmount, currency)}</span>
             </div>
           ` : ""}
@@ -787,10 +787,13 @@ export const exportInvoiceToPdf = (data: InvoicePrintData): void => {
     doc.text("Subtotal:", totalsXLabel, totalsY);
     doc.text(formatCurrency(subtotal, currency), totalsXVal, totalsY, { align: "right" });
 
-    if (discountPercent > 0) {
+    if (discountAmount > 0 || discountPercent > 0) {
       totalsY += 5;
       doc.setTextColor(5, 150, 105);
-      doc.text(`Discount (${discountPercent}%):`, totalsXLabel, totalsY);
+      const discLabel = discountPercent > 0
+        ? `Discount (${discountPercent % 1 === 0 ? discountPercent : discountPercent.toFixed(1)}%):`
+        : `Discount:`;
+      doc.text(discLabel, totalsXLabel, totalsY);
       doc.text(`-${formatCurrency(discountAmount, currency)}`, totalsXVal, totalsY, { align: "right" });
     }
 

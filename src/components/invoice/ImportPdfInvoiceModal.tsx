@@ -58,6 +58,8 @@ interface ImportPdfInvoiceModalProps {
     items: NewInvoiceItem[];
     includeVat: boolean;
     discountPercent: number;
+    discountAmount?: number;
+    discountType?: "amount" | "percent";
     selectedCustomerId: string | null;
     amountPaid: number;
     currency: Currency;
@@ -318,6 +320,8 @@ export const ImportPdfInvoiceModal = ({
       items: validNewItems,
       includeVat: extractedData.includeVat,
       discountPercent: extractedData.discountPercent,
+      discountAmount: extractedData.discountAmount,
+      discountType: extractedData.discountAmount > 0 ? "amount" : "amount",
       selectedCustomerId: matchedCustomerId,
       amountPaid: extractedData.amountPaid,
       currency: extractedData.currency,
@@ -757,25 +761,52 @@ export const ImportPdfInvoiceModal = ({
                     </div>
 
                     <div className="flex items-center justify-between gap-2">
-                      <Label className="font-medium">Discount (%)</Label>
+                      <Label className="font-medium text-xs">Discount Amount ({extractedData.currency?.symbol || "₦"})</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={extractedData.subtotal}
+                        step="any"
+                        value={extractedData.discountAmount || ""}
+                        onChange={(e) => {
+                          const val = Math.min(extractedData.subtotal, Math.max(0, Number(e.target.value) || 0));
+                          const pct = extractedData.subtotal > 0 ? Math.round(((val / extractedData.subtotal) * 100) * 10) / 10 : 0;
+                          const tax = extractedData.includeVat ? (extractedData.subtotal - val) * 0.075 : 0;
+                          setExtractedData({
+                            ...extractedData,
+                            discountAmount: val,
+                            discountPercent: pct,
+                            taxAmount: tax,
+                            totalAmount: extractedData.subtotal - val + tax,
+                          });
+                        }}
+                        className="h-8 w-28 text-xs text-right font-mono"
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="font-medium text-xs text-muted-foreground">Discount (%)</Label>
                       <Input
                         type="number"
                         min="0"
                         max="100"
-                        value={extractedData.discountPercent}
+                        step="0.5"
+                        value={extractedData.discountPercent || ""}
                         onChange={(e) => {
-                          const val = Number(e.target.value) || 0;
-                          const disc = (extractedData.subtotal * val) / 100;
+                          const pct = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                          const disc = Math.round(((extractedData.subtotal * pct) / 100) * 100) / 100;
                           const tax = extractedData.includeVat ? (extractedData.subtotal - disc) * 0.075 : 0;
                           setExtractedData({
                             ...extractedData,
-                            discountPercent: val,
+                            discountPercent: pct,
                             discountAmount: disc,
                             taxAmount: tax,
                             totalAmount: extractedData.subtotal - disc + tax,
                           });
                         }}
-                        className="h-8 w-24 text-xs text-right font-mono"
+                        className="h-8 w-24 text-xs text-right font-mono text-muted-foreground"
+                        placeholder="0"
                       />
                     </div>
 
@@ -801,9 +832,9 @@ export const ImportPdfInvoiceModal = ({
                       <span>Subtotal:</span>
                       <span className="font-mono">{formatCurrency(extractedData.subtotal, extractedData.currency)}</span>
                     </div>
-                    {extractedData.discountPercent > 0 && (
+                    {(extractedData.discountAmount > 0 || extractedData.discountPercent > 0) && (
                       <div className="flex justify-between text-amber-600 dark:text-amber-400">
-                        <span>Discount ({extractedData.discountPercent}%):</span>
+                        <span>Discount{extractedData.discountPercent > 0 ? ` (${extractedData.discountPercent}%):` : ":"}</span>
                         <span className="font-mono">- {formatCurrency(extractedData.discountAmount, extractedData.currency)}</span>
                       </div>
                     )}

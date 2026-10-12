@@ -40,10 +40,14 @@ export const useInvoiceOperations = (
     items: NewInvoiceItem[];
     includeVat: boolean;
     discountPercent: number;
+    discountAmount?: number;
+    discountType?: "amount" | "percent";
     selectedCustomerId: string | null;
   }) => void,
   amountPaid: number = 0,
-  selectedCurrency?: Currency
+  selectedCurrency?: Currency,
+  discountAmount: number = 0,
+  discountType: "amount" | "percent" = "amount"
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedInvoices, setSavedInvoices] = useState<Invoice[]>([]);
@@ -58,10 +62,21 @@ export const useInvoiceOperations = (
 
   const calculateTotals = () => {
     const subtotal = validItems.reduce((sum, item) => sum + Number(item.amount), 0);
-    const discountAmount = (subtotal * discountPercent) / 100;
-    const afterDiscount = subtotal - discountAmount;
+    
+    let effectiveDiscountAmount = 0;
+    let effectiveDiscountPercent = 0;
+
+    if (discountType === "percent") {
+      effectiveDiscountPercent = Math.min(100, Math.max(0, discountPercent));
+      effectiveDiscountAmount = (subtotal * effectiveDiscountPercent) / 100;
+    } else {
+      effectiveDiscountAmount = Math.min(subtotal, Math.max(0, discountAmount));
+      effectiveDiscountPercent = subtotal > 0 ? (effectiveDiscountAmount / subtotal) * 100 : 0;
+    }
+
+    const afterDiscount = Math.max(0, subtotal - effectiveDiscountAmount);
     const taxAmount = includeVat ? (afterDiscount * VAT_RATE) / 100 : 0;
-    const totalAmount = afterDiscount + taxAmount;
+    const totalAmount = Math.max(0, afterDiscount + taxAmount);
     const balance = Math.max(0, totalAmount - amountPaid);
     const isPaidInFull = totalAmount > 0 && amountPaid >= totalAmount;
     
@@ -69,8 +84,9 @@ export const useInvoiceOperations = (
       subtotal,
       tax_rate: includeVat ? VAT_RATE : 0,
       tax_amount: taxAmount,
-      discount_percent: discountPercent,
-      discount_amount: discountAmount,
+      discount_percent: effectiveDiscountPercent,
+      discount_amount: effectiveDiscountAmount,
+      discount_type: discountType,
       total_amount: totalAmount,
       total: subtotal,
       amount_paid: amountPaid,
@@ -219,7 +235,7 @@ export const useInvoiceOperations = (
       items: validItems,
       currency: selectedCurrency,
       subtotal: totals.subtotal,
-      discountPercent,
+      discountPercent: totals.discount_percent,
       discountAmount: totals.discount_amount,
       vatRate: totals.tax_rate,
       vatAmount: totals.tax_amount,
@@ -244,7 +260,7 @@ export const useInvoiceOperations = (
       items: validItems,
       currency: selectedCurrency,
       subtotal: totals.subtotal,
-      discountPercent,
+      discountPercent: totals.discount_percent,
       discountAmount: totals.discount_amount,
       vatRate: totals.tax_rate,
       vatAmount: totals.tax_amount,
@@ -312,6 +328,15 @@ export const useInvoiceOperations = (
       const invDate = invoice.invoice_date ? new Date(invoice.invoice_date) : new Date();
       const dDate = invoice.due_date ? new Date(invoice.due_date) : addDays(new Date(), 14);
 
+      const loadedSubtotal = loadedItems.reduce((s, it) => s + Number(it.amount), 0);
+      const loadedTotal = Number(invoice.total_amount || 0);
+      const loadedTax = Number(invoice.tax_amount || 0);
+      // Inferred discount if subtotal + tax > total
+      const loadedDiscountAmount = Math.max(0, Math.round((loadedSubtotal + loadedTax - loadedTotal) * 100) / 100);
+      const loadedDiscountPercent = loadedSubtotal > 0 && loadedDiscountAmount > 0
+        ? Math.round(((loadedDiscountAmount / loadedSubtotal) * 100) * 10) / 10
+        : 0;
+
       if (onLoadInvoice) {
         onLoadInvoice({
           customerName: invoice.customer_name || "",
@@ -324,7 +349,9 @@ export const useInvoiceOperations = (
           notes: invoice.notes || "",
           items: loadedItems,
           includeVat: Number(invoice.tax_rate) > 0,
-          discountPercent: 0,
+          discountPercent: loadedDiscountPercent,
+          discountAmount: loadedDiscountAmount,
+          discountType: "amount",
           selectedCustomerId: invoice.customer_id || null
         });
         toast.success(`Invoice ${invoice.invoice_number} loaded into editor`);
@@ -355,6 +382,13 @@ export const useInvoiceOperations = (
       }));
 
       const grandTotal = Number(invoice.total_amount || 0);
+      const subtotal = Number(invoice.subtotal || grandTotal);
+      const vatRate = Number(invoice.tax_rate || 0);
+      const vatAmount = Number(invoice.tax_amount || 0);
+      const discountAmount = Math.max(0, Math.round((subtotal + vatAmount - grandTotal) * 100) / 100);
+      const discountPercent = subtotal > 0 && discountAmount > 0
+        ? Math.round(((discountAmount / subtotal) * 100) * 10) / 10
+        : 0;
 
       printInvoiceDocument({
         invoiceNumber: invoice.invoice_number || `INV-${invoice.id}`,
@@ -365,9 +399,11 @@ export const useInvoiceOperations = (
         customerAddress: invoice.customer_address?.trim() || undefined,
         items: itemsList,
         currency: selectedCurrency,
-        subtotal: Number(invoice.subtotal || grandTotal),
-        vatRate: Number(invoice.tax_rate || 0),
-        vatAmount: Number(invoice.tax_amount || 0),
+        subtotal,
+        discountPercent,
+        discountAmount,
+        vatRate,
+        vatAmount,
         grandTotal,
         amountPaid: 0,
         balance: grandTotal,

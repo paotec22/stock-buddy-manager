@@ -33,6 +33,8 @@ const CreateInvoice = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]); // Default to NGN
   const [amountPaid, setAmountPaid] = useState(0);
   const [includeVat, setIncludeVat] = useState(false);
+  const [discountType, setDiscountType] = useState<"amount" | "percent">("amount");
+  const [discountAmount, setDiscountAmount] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
 
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
@@ -52,6 +54,8 @@ const CreateInvoice = () => {
     items: NewInvoiceItem[];
     includeVat: boolean;
     discountPercent: number;
+    discountAmount?: number;
+    discountType?: "amount" | "percent";
     selectedCustomerId: string | null;
   }) => {
     setCustomerName(data.customerName);
@@ -64,7 +68,9 @@ const CreateInvoice = () => {
     setNotes(data.notes);
     setItems(data.items);
     setIncludeVat(data.includeVat);
-    setDiscountPercent(data.discountPercent);
+    setDiscountPercent(data.discountPercent || 0);
+    setDiscountAmount(data.discountAmount !== undefined ? data.discountAmount : 0);
+    setDiscountType(data.discountType || "amount");
     setSelectedCustomerId(data.selectedCustomerId);
   };
 
@@ -80,6 +86,8 @@ const CreateInvoice = () => {
     items: NewInvoiceItem[];
     includeVat: boolean;
     discountPercent: number;
+    discountAmount?: number;
+    discountType?: "amount" | "percent";
     selectedCustomerId: string | null;
     amountPaid: number;
     currency: Currency;
@@ -94,7 +102,9 @@ const CreateInvoice = () => {
     setNotes(data.notes);
     setItems(data.items);
     setIncludeVat(data.includeVat);
-    setDiscountPercent(data.discountPercent);
+    setDiscountPercent(data.discountPercent || 0);
+    setDiscountAmount(data.discountAmount !== undefined ? data.discountAmount : 0);
+    setDiscountType(data.discountType || (data.discountAmount && data.discountAmount > 0 ? "amount" : "amount"));
     setSelectedCustomerId(data.selectedCustomerId);
     setAmountPaid(data.amountPaid);
     setSelectedCurrency(data.currency);
@@ -113,6 +123,8 @@ const CreateInvoice = () => {
     setItems([]);
     setAmountPaid(0);
     setIncludeVat(false);
+    setDiscountType("amount");
+    setDiscountAmount(0);
     setDiscountPercent(0);
     toast.info("Invoice form reset");
   };
@@ -148,7 +160,9 @@ const CreateInvoice = () => {
     selectedCustomerId,
     handleLoadInvoiceData,
     amountPaid,
-    selectedCurrency
+    selectedCurrency,
+    discountAmount,
+    discountType
   );
 
   const totals = calculateTotals();
@@ -251,7 +265,12 @@ const CreateInvoice = () => {
           onAmountPaidChange={setAmountPaid}
           includeVat={includeVat}
           onVatChange={setIncludeVat}
+          discountType={discountType}
+          onDiscountTypeChange={setDiscountType}
+          discountAmount={discountAmount}
+          onDiscountAmountChange={setDiscountAmount}
           discountPercent={discountPercent}
+          onDiscountPercentChange={setDiscountPercent}
           onDiscountChange={setDiscountPercent}
         />
       </div>
