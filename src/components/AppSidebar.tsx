@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { 
   Menu, 
+  LayoutDashboard,
   Package, 
   TrendingUp, 
   DollarSign, 
@@ -138,6 +139,9 @@ function SidebarContents() {
 
       {/* Navigation */}
       <div className="flex-1 space-y-2 py-4 px-3">
+        <SidebarItem to="/dashboard" icon={LayoutDashboard}>
+          Dashboard
+        </SidebarItem>
         <SidebarItem to="/inventory" icon={Package}>
           Inventory
         </SidebarItem>

@@ -24,7 +24,7 @@ const Index = () => {
 
   useEffect(() => {
     if (session?.user) {
-      navigate("/inventory");
+      navigate("/dashboard");
     }
   }, [session, navigate]);
 
@@ -51,7 +51,7 @@ const Index = () => {
 
       if (data?.session) {
         toast.success("Welcome back!");
-        navigate("/inventory");
+        navigate("/dashboard");
       }
     } catch {
       toast.error("An unexpected error occurred during login");

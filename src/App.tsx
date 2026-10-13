@@ -3,12 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AuthProvider } from "@/components/AuthProvider";
+import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { AppLayout } from "@/components/AppLayout";
+import { PageLoader } from "@/components/PageLoader";
 import { initializeDB } from "@/lib/indexedDB";
 import { CommandPalette } from "@/components/CommandPalette";
 import { OnboardingTour } from "@/components/OnboardingTour";
@@ -32,6 +33,20 @@ import Reconciliation from "./pages/Reconciliation";
 import Purchases from "./pages/Purchases";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
+function RootLandingRoute() {
+  const { session, loading } = useAuth();
+  if (loading) {
+    return <PageLoader />;
+  }
+  return session?.user ? (
+    <AppLayout>
+      <Dashboard />
+    </AppLayout>
+  ) : (
+    <Index />
+  );
+}
+
 // Animated Routes Component
 function AnimatedRoutes() {
   const location = useLocation();
@@ -39,7 +54,7 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Index />} />
+        <Route path="/" element={<RootLandingRoute />} />
         <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
         <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
         <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />
