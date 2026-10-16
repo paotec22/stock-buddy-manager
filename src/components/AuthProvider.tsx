@@ -81,9 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Only handle navigation after we've confirmed the session state
         if (isPublicPath(location.pathname)) {
           // Public routes never redirect
-        } else if (initialSession && location.pathname === '/') {
-          navigate('/inventory');
-        } else if (!initialSession && location.pathname !== '/') {
+        } else if (!initialSession && location.pathname !== '/' && location.pathname !== '/login') {
           navigate('/');
         }
       } catch (error) {
@@ -115,9 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Handle navigation based on new auth state
       if (isPublicPath(location.pathname)) {
         // Public routes never redirect
-      } else if (currentSession && location.pathname === '/') {
-        navigate('/inventory');
-      } else if (!currentSession && location.pathname !== '/') {
+      } else if (!currentSession && location.pathname !== '/' && location.pathname !== '/login') {
         navigate('/');
       }
     });

@@ -55,6 +55,7 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<RootLandingRoute />} />
+        <Route path="/login" element={<Index />} />
         <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
         <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
         <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />

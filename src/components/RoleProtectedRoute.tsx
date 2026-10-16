@@ -14,7 +14,7 @@ interface RoleProtectedRouteProps {
 export function RoleProtectedRoute({ 
   children, 
   allowedRoles, 
-  redirectTo = "/inventory" 
+  redirectTo = "/" 
 }: RoleProtectedRouteProps) {
   const { session } = useAuth();
   const navigate = useNavigate();

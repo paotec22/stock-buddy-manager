@@ -110,6 +110,8 @@ function MobileNavItem({
   tourId?: string;
   end?: boolean;
 }) {
+  const location = useLocation();
+  const isDashboardActive = to === "/" && (location.pathname === "/" || location.pathname === "/dashboard");
   return (
     <NavLink
       to={to}
@@ -119,7 +121,7 @@ function MobileNavItem({
       className={({ isActive }) =>
         cn(
           "flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-xs font-medium transition-colors duration-150 min-h-[42px]",
-          isActive
+          (isActive || isDashboardActive)
             ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/70 active:bg-muted"
         )
@@ -197,7 +199,8 @@ export function TopNavbar() {
     window.dispatchEvent(new CustomEvent("open-command-palette"));
   };
 
-  const roleLabel = getRoleLabel(session.user.email, userRole);
+  const roleLabel = getRoleLabel(session?.user?.email, userRole);
+  const isDashboardActive = location.pathname === "/" || location.pathname === "/dashboard";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-card/95 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 print:hidden">
@@ -205,7 +208,7 @@ export function TopNavbar() {
         {/* Left: Brand / Logo */}
         <div className="flex items-center gap-3 shrink-0">
           <NavLink
-            to="/dashboard"
+            to="/"
             className="flex items-center gap-2.5 group select-none"
           >
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-xs group-hover:scale-105 transition-transform">
@@ -221,12 +224,12 @@ export function TopNavbar() {
         <nav className="hidden md:flex items-center gap-1.5">
           {/* Dashboard Direct Nav */}
           <NavLink
-            to="/dashboard"
+            to="/"
             end
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all duration-150 outline-none select-none",
-                isActive
+                (isActive || isDashboardActive)
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
               )
@@ -526,7 +529,7 @@ export function TopNavbar() {
                   {/* Overview Group */}
                   <div className="space-y-1">
                     <MobileNavItem
-                      to="/dashboard"
+                      to="/"
                       icon={LayoutDashboard}
                       onClick={closeMobile}
                       end

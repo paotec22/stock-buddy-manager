@@ -17,7 +17,6 @@ import {
 } from "@/hooks/useDashboardData";
 import { formatCurrency } from "@/utils/formatters";
 import { currencies } from "@/components/invoice/CurrencyChanger";
-import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { useAuth } from "@/components/AuthProvider";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -114,8 +113,7 @@ const Dashboard = () => {
   }
 
   return (
-    <RoleProtectedRoute allowedRoles={['admin', 'uploader', 'inventory_manager', 'user']}>
-      <div className="space-y-6 animate-fade-in pb-12">
+    <div className="space-y-6 animate-fade-in pb-12">
         {/* =========================================================================
             1. HERO / COMMAND HEADER
            ========================================================================= */}
@@ -887,7 +885,6 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
-    </RoleProtectedRoute>
   );
 };
 

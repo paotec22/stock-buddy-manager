@@ -27,7 +27,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { ThemeToggle } from "./ThemeToggle";
 import { supabase } from "@/lib/supabase";
@@ -46,16 +46,22 @@ export function Sidebar({ className, ...props }: SidebarProps) {
 interface SidebarItemProps extends React.HTMLAttributes<HTMLAnchorElement> {
   to: string;
   icon: React.ElementType;
+  end?: boolean;
 }
 
-function SidebarItem({ className, to, icon: Icon, children, ...props }: SidebarItemProps) {
+function SidebarItem({ className, to, icon: Icon, children, end, ...props }: SidebarItemProps) {
+  const location = useLocation();
+  const isDashboard = to === "/";
+  const isDashboardActive = isDashboard && (location.pathname === "/" || location.pathname === "/dashboard");
+
   return (
     <NavLink
       to={to}
+      end={end !== undefined ? end : (to === "/")}
       className={({ isActive }) =>
         cn(
           "group flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
-          isActive 
+          (isActive || isDashboardActive)
             ? "bg-primary text-primary-foreground font-semibold shadow-sm" 
             : "text-muted-foreground hover:text-foreground hover:bg-muted/70",
           className
@@ -139,7 +145,7 @@ function SidebarContents() {
 
       {/* Navigation */}
       <div className="flex-1 space-y-2 py-4 px-3">
-        <SidebarItem to="/dashboard" icon={LayoutDashboard}>
+        <SidebarItem to="/" icon={LayoutDashboard}>
           Dashboard
         </SidebarItem>
         <SidebarItem to="/inventory" icon={Package}>

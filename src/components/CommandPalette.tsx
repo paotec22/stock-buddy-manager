@@ -71,7 +71,7 @@ export function CommandPalette() {
 
     const commands: CommandAction[] = [
       // Navigation
-      { label: "Dashboard", description: "Go to dashboard overview", shortcut: "G D", icon: LayoutDashboard, action: () => { navigate("/dashboard"); setOpen(false); }, section: "Navigation", keywords: ["home", "overview", "stats"] },
+      { label: "Dashboard", description: "Go to dashboard overview", shortcut: "G D", icon: LayoutDashboard, action: () => { navigate("/"); setOpen(false); }, section: "Navigation", keywords: ["home", "overview", "stats"] },
       { label: "Inventory", description: "Manage stock items", shortcut: "G I", icon: Package, action: () => { navigate("/inventory"); setOpen(false); }, section: "Navigation", keywords: ["stock", "items", "products"] },
       { label: "Accessories (Spare Parts)", description: "Spare parts & unpriced accessories", shortcut: "G A", icon: Wrench, action: () => { navigate("/inventory/accessories"); setOpen(false); }, section: "Navigation", keywords: ["spares", "parts", "accessories", "hardware", "unpriced"] },
       { label: "Catalogue", description: "Visual product catalogue", shortcut: "G C", icon: ImageIcon, action: () => { navigate("/catalogue"); setOpen(false); }, section: "Navigation", keywords: ["products", "gallery", "visual"] },
