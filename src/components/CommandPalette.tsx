@@ -42,6 +42,7 @@ import {
   Moon,
   Sun,
   LayoutDashboard,
+  User,
   Palette,
   Keyboard,
   ExternalLink,
@@ -81,8 +82,8 @@ export function CommandPalette() {
       { label: "Profit Analysis", description: "Profit & loss breakdown", shortcut: "G P", icon: PieChart, action: () => { navigate("/profit-analysis"); setOpen(false); }, section: "Navigation", keywords: ["profit", "loss", "margin"] },
       { label: "Expenses", description: "Track expenses", shortcut: "G E", icon: DollarSign, action: () => { navigate("/expenses"); setOpen(false); }, section: "Navigation", keywords: ["costs", "spending", "bills"] },
       { label: "Requests", description: "Stock requests", shortcut: "G Q", icon: ClipboardList, action: () => { navigate("/request"); setOpen(false); }, section: "Navigation", keywords: ["requisition", "orders", "pending"] },
-      { label: "Create Invoice", description: "Generate new invoice", shortcut: "G N", icon: FileSpreadsheet, action: () => { navigate("/create-invoice"); setOpen(false); }, section: "Navigation", keywords: ["bill", "invoice", "pdf"] },
-      { label: "Settings", description: "App settings", shortcut: "G ,", icon: Settings, action: () => { navigate("/settings"); setOpen(false); }, section: "Navigation", keywords: ["preferences", "config", "options"] },
+      { label: "Profile Settings", description: "Edit your profile details and greeting name", shortcut: "G P", icon: User, action: () => { navigate("/settings?tab=profile"); setOpen(false); }, section: "Navigation", keywords: ["profile", "name", "account", "user"] },
+      { label: "Settings", description: "App settings and administration", shortcut: "G ,", icon: Settings, action: () => { navigate("/settings"); setOpen(false); }, section: "Navigation", keywords: ["preferences", "config", "options"] },
 
       // Actions
       { label: "Add Inventory Item", description: "Create new stock item", shortcut: "⌘⇧N", icon: Plus, action: () => { /* handled by page FAB */ setOpen(false); }, section: "Actions", keywords: ["new", "create", "item", "product"] },

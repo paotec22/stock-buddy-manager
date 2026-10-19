@@ -42,6 +42,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "./ThemeProvider";
 import { CompanyLogo } from "./CompanyLogo";
 import { isSuperAdminUser, isAdminUser, getRoleLabel } from "@/utils/roles";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface GroupDropdownItemProps {
   to: string;
@@ -139,6 +140,7 @@ export function TopNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const { displayName, initials } = useUserProfile();
 
   const { data: userRole } = useQuery({
     queryKey: ["user-role", session?.user?.id],
@@ -423,11 +425,11 @@ export function TopNavbar() {
                   className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-lg border border-border/70 hover:bg-muted/60 transition-colors text-left select-none cursor-pointer"
                 >
                   <div className="h-6 w-6 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center">
-                    {session.user.email?.charAt(0).toUpperCase() || "U"}
+                    {initials}
                   </div>
                   <div className="flex flex-col items-start leading-none">
-                    <span className="text-[11px] font-medium text-foreground max-w-[100px] truncate">
-                      {session.user.email?.split("@")[0]}
+                    <span className="text-[11px] font-medium text-foreground max-w-[110px] truncate capitalize">
+                      {displayName}
                     </span>
                     <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
                       {roleLabel}
@@ -438,7 +440,10 @@ export function TopNavbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 p-1.5 shadow-lg">
                 <div className="px-2 py-1.5">
-                  <p className="text-xs font-semibold text-foreground truncate">
+                  <p className="text-xs font-semibold text-foreground truncate capitalize">
+                    {displayName}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate font-mono">
                     {session.user.email}
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
@@ -456,10 +461,16 @@ export function TopNavbar() {
 
                 <DropdownMenuSeparator />
 
+                {/* My Profile Settings - Available to EVERY user */}
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  <User className="mr-2 h-4 w-4 text-primary" />
+                  <span>Profile Settings</span>
+                </DropdownMenuItem>
+
                 {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  <DropdownMenuItem onClick={() => navigate("/settings?tab=users")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{isSuperAdmin ? "Super Admin Settings" : "Admin Settings"}</span>
+                    <span>{isSuperAdmin ? "Super Admin System" : "Admin Administration"}</span>
                   </DropdownMenuItem>
                 )}
 
@@ -638,29 +649,41 @@ export function TopNavbar() {
                     </div>
                   )}
 
-                  {/* Settings */}
-                  {isAdmin && (
-                    <div className="space-y-1">
-                      <span className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        System
-                      </span>
+                  {/* Account & Settings */}
+                  <div className="space-y-1">
+                    <span className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Account &amp; Settings
+                    </span>
+                    <MobileNavItem
+                      to="/settings"
+                      icon={User}
+                      onClick={closeMobile}
+                    >
+                      Profile Settings
+                    </MobileNavItem>
+                    {isAdmin && (
                       <MobileNavItem
-                        to="/settings"
+                        to="/settings?tab=users"
                         icon={Settings}
                         onClick={closeMobile}
                       >
-                        {isSuperAdmin ? "Super Admin Settings" : "Admin Settings"}
+                        {isSuperAdmin ? "Super Admin System" : "Admin Administration"}
                       </MobileNavItem>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Mobile Drawer Footer */}
                 <div className="border-t border-border/80 p-3 bg-muted/20 space-y-2">
                   <div className="flex items-center justify-between px-2 py-1">
-                    <span className="text-xs text-muted-foreground font-mono truncate max-w-[180px]">
-                      {session.user.email}
-                    </span>
+                    <div className="flex flex-col max-w-[180px] leading-tight">
+                      <span className="text-xs font-semibold text-foreground truncate capitalize">
+                        {displayName}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono truncate">
+                        {session.user.email}
+                      </span>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"

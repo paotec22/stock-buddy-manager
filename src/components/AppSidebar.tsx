@@ -182,11 +182,9 @@ function SidebarContents() {
             </SidebarItem>
           </>
         )}
-        {isAdmin && (
-          <SidebarItem to="/settings" icon={Settings}>
-            Settings
-          </SidebarItem>
-        )}
+        <SidebarItem to="/settings" icon={Settings}>
+          {isAdmin ? "Settings" : "Profile Settings"}
+        </SidebarItem>
         <SidebarItem to="/privacy" icon={ShieldCheck}>
           Privacy Policy
         </SidebarItem>

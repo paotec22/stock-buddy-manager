@@ -18,6 +18,7 @@ import {
 import { formatCurrency } from "@/utils/formatters";
 import { currencies } from "@/components/invoice/CurrencyChanger";
 import { useAuth } from "@/components/AuthProvider";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { getRoleLabel } from "@/utils/roles";
@@ -89,10 +90,11 @@ const Dashboard = () => {
     location: selectedLocation
   });
 
+  const { displayName, hasCustomName } = useUserProfile();
+
   // Time-based greeting
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const userDisplayName = session?.user?.email?.split('@')[0] || "Team Member";
 
   if (error) {
     return (
@@ -133,9 +135,21 @@ const Dashboard = () => {
                   {format(new Date(), "EEEE, MMMM d, yyyy")}
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
-                {greeting}, <span className="capitalize">{userDisplayName}</span>
-              </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
+                  {greeting}, <span className="capitalize">{displayName}</span>
+                </h1>
+                {!hasCustomName && (
+                  <Link
+                    to="/settings"
+                    className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1 bg-primary/10 hover:bg-primary/15 px-2.5 py-1 rounded-full transition-colors"
+                    title="Fill your user details in Profile Settings"
+                  >
+                    <span>Set your name in Profile</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
                 Real-time inventory valuation, revenue performance, order volume, and pending tasks across your sales channels.
               </p>
