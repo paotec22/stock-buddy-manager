@@ -5,33 +5,34 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { AppLayout } from "@/components/AppLayout";
 import { PageLoader } from "@/components/PageLoader";
 import { initializeDB } from "@/lib/indexedDB";
 import { CommandPalette } from "@/components/CommandPalette";
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { OnboardingTour } from "@/components/OnboardingTour";
 
-// Import all pages directly to ensure they're bundled (needed for offline support)
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Inventory from "./pages/Inventory";
-import Sales from "./pages/Sales";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
-import Expenses from "./pages/Expenses";
-import CreateInvoice from "./pages/CreateInvoice";
-import ProfitAnalysis from "./pages/ProfitAnalysis";
-import Request from "./pages/Request";
-import Customers from "./pages/Customers";
-import Catalogue from "./pages/Catalogue";
-import PublicCatalogue from "./pages/PublicCatalogue";
-import Accessories from "./pages/Accessories";
-import Reconciliation from "./pages/Reconciliation";
-import Purchases from "./pages/Purchases";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
+// Lazy-loaded routes for ultra-fast initial bundle and speed optimization
+const Index = lazy(() => import("./pages/Index"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const Sales = lazy(() => import("./pages/Sales"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Expenses = lazy(() => import("./pages/Expenses"));
+const CreateInvoice = lazy(() => import("./pages/CreateInvoice"));
+const ProfitAnalysis = lazy(() => import("./pages/ProfitAnalysis"));
+const Request = lazy(() => import("./pages/Request"));
+const Customers = lazy(() => import("./pages/Customers"));
+const Catalogue = lazy(() => import("./pages/Catalogue"));
+const PublicCatalogue = lazy(() => import("./pages/PublicCatalogue"));
+const Accessories = lazy(() => import("./pages/Accessories"));
+const Reconciliation = lazy(() => import("./pages/Reconciliation"));
+const Purchases = lazy(() => import("./pages/Purchases"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 
 function RootLandingRoute() {
   const { session, loading } = useAuth();
@@ -47,52 +48,81 @@ function RootLandingRoute() {
   );
 }
 
-// Animated Routes Component
+// Animated Routes Component with Suspense Fallback
 function AnimatedRoutes() {
   const location = useLocation();
-  
+
+  // Background prefetch high-frequency pages during browser idle time
+  useEffect(() => {
+    const prefetchKeyPages = () => {
+      import("./pages/Dashboard");
+      import("./pages/Inventory");
+      import("./pages/Sales");
+      import("./pages/CreateInvoice");
+      import("./pages/Reports");
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
+        prefetchKeyPages,
+        { timeout: 3000 }
+      );
+      return () => {
+        if ("cancelIdleCallback" in window) {
+          (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        }
+      };
+    } else {
+      const timer = setTimeout(prefetchKeyPages, 1800);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<RootLandingRoute />} />
-        <Route path="/login" element={<Index />} />
-        <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-        <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
-        <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />
-        <Route path="/accessories" element={<Navigate to="/inventory/accessories" replace />} />
-        <Route path="/sales" element={<AppLayout><Sales /></AppLayout>} />
-        <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
-        <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
-        <Route path="/expenses" element={<AppLayout><Expenses /></AppLayout>} />
-        <Route path="/create-invoice" element={<AppLayout><CreateInvoice /></AppLayout>} />
-        <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
-        <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
-        <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
-        <Route path="/reconciliation" element={<AppLayout><Reconciliation /></AppLayout>} />
-        <Route path="/purchases" element={<AppLayout><Purchases /></AppLayout>} />
-        <Route path="/privacy" element={<AppLayout><PrivacyPolicy /></AppLayout>} />
-        <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
-        <Route path="/share/catalogue" element={<PublicCatalogue />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<RootLandingRoute />} />
+          <Route path="/login" element={<Index />} />
+          <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+          <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
+          <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />
+          <Route path="/accessories" element={<Navigate to="/inventory/accessories" replace />} />
+          <Route path="/sales" element={<AppLayout><Sales /></AppLayout>} />
+          <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
+          <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+          <Route path="/expenses" element={<AppLayout><Expenses /></AppLayout>} />
+          <Route path="/create-invoice" element={<AppLayout><CreateInvoice /></AppLayout>} />
+          <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
+          <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
+          <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
+          <Route path="/reconciliation" element={<AppLayout><Reconciliation /></AppLayout>} />
+          <Route path="/purchases" element={<AppLayout><Purchases /></AppLayout>} />
+          <Route path="/privacy" element={<AppLayout><PrivacyPolicy /></AppLayout>} />
+          <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
+          <Route path="/share/catalogue" element={<PublicCatalogue />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 }
 
-// Configure React Query for optimal performance
+// Configure React Query with optimal caching, stale times & background revalidation
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // Data stays fresh for 5 minutes
-      gcTime: 1000 * 60 * 30, // Cache persists for 30 minutes
-      refetchOnWindowFocus: false, // Prevent unnecessary refetches
-      retry: 1, // Limit retry attempts
+      gcTime: 1000 * 60 * 30, // Cache persists in memory for 30 minutes
+      refetchOnWindowFocus: false, // Prevent unnecessary refetches on tab switch
+      refetchOnReconnect: true, // Auto-sync when internet reconnects
+      retry: 1, // Fast failure recovery
     },
   },
 });
 
 const App = () => {
-  // Initialize IndexedDB on app startup
+  // Initialize IndexedDB on app startup for offline persistence
   useEffect(() => {
     initializeDB().catch(console.error);
   }, []);
@@ -106,6 +136,7 @@ const App = () => {
           <BrowserRouter>
             <ConnectionBanner />
             <CommandPalette />
+            <KeyboardShortcutsModal />
             <OnboardingTour />
             <AuthProvider>
               <AnimatedRoutes />

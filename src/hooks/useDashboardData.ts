@@ -46,6 +46,9 @@ export interface LowStockItem {
   quantity: number;
   price: number;
   location: string;
+  unitsSold30d?: number;
+  runwayDays?: number | null;
+  recommendedReorder?: number;
 }
 
 export interface ChartDataPoint {
@@ -91,6 +94,13 @@ export interface DashboardData {
   
   paymentBreakdown: PaymentStatusBreakdown[];
   chartData: ChartDataPoint[];
+
+  stockRunwaySummary: {
+    criticalCount: number;
+    warningCount: number;
+    healthyCount: number;
+  };
+  queryDurationMs?: number;
 }
 
 export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: '30d', location: 'all' }) => {
@@ -130,62 +140,61 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         prevEndDate = endOfDay(subDays(now, 30));
       }
 
+      const startTime = performance.now();
       const costCache = getItemCostCache();
 
-      // 1. Fetch Sales
-      const salesQuery = supabase
-        .from('sales')
-        .select(`
-          id,
-          total_amount,
-          sale_price,
-          quantity,
-          actual_purchase_price,
-          sale_date,
-          payment_status,
-          amount_paid,
-          notes,
-          item_id,
-          "inventory list" (
-            "Item Description",
-            location
-          )
-        `)
-        .order('sale_date', { ascending: false });
+      // Parallel execution of all database queries for ultra-low latency & maximum speed
+      const [
+        { data: rawSales, error: salesError },
+        { data: rawExpenses, error: expensesError },
+        { data: rawInventory, error: inventoryError },
+        { data: rawInvoices, error: invoicesError },
+        { data: pendingInstallations, error: installationsError }
+      ] = await Promise.all([
+        supabase
+          .from('sales')
+          .select(`
+            id,
+            total_amount,
+            sale_price,
+            quantity,
+            actual_purchase_price,
+            sale_date,
+            payment_status,
+            amount_paid,
+            notes,
+            item_id,
+            "inventory list" (
+              "Item Description",
+              location
+            )
+          `)
+          .order('sale_date', { ascending: false }),
 
-      const { data: rawSales, error: salesError } = await salesQuery;
+        supabase
+          .from('expenses')
+          .select('id, amount, category, description, expense_date, location')
+          .order('expense_date', { ascending: false }),
+
+        supabase
+          .from('inventory list')
+          .select('id, "Item Description", location, Price, Quantity, Total'),
+
+        supabase
+          .from('invoices')
+          .select('id, invoice_number, customer_name, total_amount, invoice_date, due_date, created_at')
+          .order('created_at', { ascending: false }),
+
+        supabase
+          .from('installation_requests')
+          .select('id, status, location')
+          .eq('status', 'Not installed')
+      ]);
+
       if (salesError) throw salesError;
-
-      // 2. Fetch Expenses
-      const expensesQuery = supabase
-        .from('expenses')
-        .select('id, amount, category, description, expense_date, location')
-        .order('expense_date', { ascending: false });
-
-      const { data: rawExpenses, error: expensesError } = await expensesQuery;
       if (expensesError) throw expensesError;
-
-      // 3. Fetch Inventory items
-      const { data: rawInventory, error: inventoryError } = await supabase
-        .from('inventory list')
-        .select('id, "Item Description", location, Price, Quantity, Total');
-
       if (inventoryError) throw inventoryError;
-
-      // 4. Fetch Invoices
-      const { data: rawInvoices, error: invoicesError } = await supabase
-        .from('invoices')
-        .select('id, invoice_number, customer_name, total_amount, invoice_date, due_date, created_at')
-        .order('created_at', { ascending: false });
-
       if (invoicesError) throw invoicesError;
-
-      // 5. Fetch Pending Installations
-      const { data: pendingInstallations, error: installationsError } = await supabase
-        .from('installation_requests')
-        .select('id, status, location')
-        .eq('status', 'Not installed');
-
       if (installationsError) throw installationsError;
 
       // Filter Inventory by location
@@ -294,11 +303,26 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       const netProfit = grossProfit - totalExpenses;
       const profitMarginPct = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
 
-      // Inventory valuation & low stock items
+      // Compute 30-day sales velocity per item for runway forecasting
+      const thirtyDaysAgo = subDays(now, 30);
+      const item30dUnitsSold = new Map<number, number>();
+      (rawSales || []).forEach((sale: any) => {
+        if (!sale.sale_date || !sale.item_id) return;
+        const sDate = new Date(sale.sale_date);
+        if (sDate >= thirtyDaysAgo) {
+          const prev = item30dUnitsSold.get(sale.item_id) || 0;
+          item30dUnitsSold.set(sale.item_id, prev + Number(sale.quantity || 0));
+        }
+      });
+
+      // Inventory valuation & low stock items with Runway Intelligence
       let inventoryValuation = 0;
       let totalStockUnits = 0;
       const totalSkus = inventory.length;
       let outOfStockCount = 0;
+      let criticalRunwayCount = 0;
+      let warningRunwayCount = 0;
+      let healthyRunwayCount = 0;
       const lowStockItems: LowStockItem[] = [];
 
       inventory.forEach(item => {
@@ -309,22 +333,44 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         inventoryValuation += lineTotal;
         totalStockUnits += qty;
 
+        const sold30d = item30dUnitsSold.get(item.id) || 0;
+        const dailyBurnRate = sold30d / 30;
+        const runwayDays = dailyBurnRate > 0 ? Math.round(qty / dailyBurnRate) : (qty === 0 ? 0 : null);
+        const recommendedReorder = qty <= 5 ? Math.max(10, Math.ceil(dailyBurnRate * 30 * 1.5)) : 0;
+
         if (qty <= 0) {
           outOfStockCount++;
+          criticalRunwayCount++;
+        } else if (runwayDays !== null && runwayDays <= 7) {
+          criticalRunwayCount++;
+        } else if ((runwayDays !== null && runwayDays <= 14) || qty <= 5) {
+          warningRunwayCount++;
+        } else {
+          healthyRunwayCount++;
         }
-        if (qty <= 5) {
+
+        if (qty <= 5 || (runwayDays !== null && runwayDays <= 7)) {
           lowStockItems.push({
             id: item.id,
             description: item["Item Description"] || "Unnamed product",
             quantity: qty,
             price: price,
-            location: item.location || "Default"
+            location: item.location || "Default",
+            unitsSold30d: sold30d,
+            runwayDays,
+            recommendedReorder
           });
         }
       });
 
-      // Sort low stock items so 0 qty comes first, up to 10
-      lowStockItems.sort((a, b) => a.quantity - b.quantity);
+      // Sort low stock items so 0 qty comes first, then lowest runway days
+      lowStockItems.sort((a, b) => {
+        if (a.quantity <= 0 && b.quantity > 0) return -1;
+        if (b.quantity <= 0 && a.quantity > 0) return 1;
+        const aRunway = a.runwayDays ?? 999;
+        const bRunway = b.runwayDays ?? 999;
+        return aRunway - bRunway || a.quantity - b.quantity;
+      });
 
       // Invoices
       const totalInvoicesCount = (rawInvoices || []).length;
@@ -427,6 +473,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         profit: Math.round(vals.profit)
       }));
 
+      const queryDurationMs = Math.round(performance.now() - startTime);
+
       return {
         totalRevenue,
         previousRevenue,
@@ -441,7 +489,7 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         inventoryValuation,
         totalStockUnits,
         totalSkus,
-        lowStockItems: lowStockItems.slice(0, 8),
+        lowStockItems: lowStockItems.slice(0, 10),
         outOfStockCount,
         availableLocations,
         totalInvoicesCount,
@@ -450,7 +498,13 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         recentSales,
         pendingInstallationsCount: filteredInstallations.length,
         paymentBreakdown,
-        chartData
+        chartData,
+        stockRunwaySummary: {
+          criticalCount: criticalRunwayCount,
+          warningCount: warningRunwayCount,
+          healthyCount: healthyRunwayCount
+        },
+        queryDurationMs
       };
     },
     enabled: !!session,

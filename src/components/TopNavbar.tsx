@@ -32,8 +32,10 @@ import {
   Shield,
   UserCheck,
   User,
+  ScanBarcode,
+  Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { supabase } from "@/lib/supabase";
@@ -43,6 +45,8 @@ import { useTheme } from "./ThemeProvider";
 import { CompanyLogo } from "./CompanyLogo";
 import { isSuperAdminUser, isAdminUser, getRoleLabel } from "@/utils/roles";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { NotificationCenter } from "./notifications/NotificationCenter";
+import { BarcodeScannerModal } from "./inventory/BarcodeScannerModal";
 
 interface GroupDropdownItemProps {
   to: string;
@@ -141,6 +145,25 @@ export function TopNavbar() {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { displayName, initials } = useUserProfile();
+  const [barcodeScannerOpen, setBarcodeScannerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA" ||
+        (document.activeElement as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+      if ((e.key === "b" || e.key === "B") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setBarcodeScannerOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const { data: userRole } = useQuery({
     queryKey: ["user-role", session?.user?.id],
@@ -400,6 +423,33 @@ export function TopNavbar() {
           >
             <Search className="h-4 w-4" />
           </Button>
+
+          {/* Quick Barcode & SKU Scanner */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setBarcodeScannerOpen(true)}
+            aria-label="Scan Barcode or SKU"
+            title="Scan Barcode / SKU (Press B)"
+            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          >
+            <ScanBarcode className="h-4 w-4" />
+          </Button>
+
+          {/* Quick Speed & Health Diagnostics */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/?speed=true")}
+            aria-label="System Speed & Health"
+            title="System Speed & Operational Pulse"
+            className="h-8 w-8 rounded-lg text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10"
+          >
+            <Zap className="h-4 w-4" />
+          </Button>
+
+          {/* Operational Alerts & Notifications Bell */}
+          <NotificationCenter />
 
           {/* Direct 1-Click Theme Toggle */}
           <Button
@@ -715,6 +765,7 @@ export function TopNavbar() {
           </div>
         </div>
       </div>
+      <BarcodeScannerModal open={barcodeScannerOpen} onOpenChange={setBarcodeScannerOpen} />
     </header>
   );
 }
