@@ -52,7 +52,6 @@ import {
   Download,
   Flame
 } from "lucide-react";
-import { SystemSpeedHealthModal } from "@/components/dashboard/SystemSpeedHealthModal";
 import { QuickExportHubModal } from "@/components/dashboard/QuickExportHubModal";
 import {
   Area,
@@ -71,7 +70,6 @@ import { format, formatDistanceToNow } from "date-fns";
 const Dashboard = () => {
   const [timeRange, setTimeRange] = useState<DashboardTimeRange>('30d');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
-  const [speedModalOpen, setSpeedModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -82,7 +80,7 @@ const Dashboard = () => {
       setExportModalOpen(true);
       setSearchParams({}, { replace: true });
     } else if (searchParams.get("speed") === "true") {
-      setSpeedModalOpen(true);
+      window.dispatchEvent(new CustomEvent("open-speed-health-modal"));
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);
@@ -156,7 +154,7 @@ const Dashboard = () => {
                 <span className="text-xs text-muted-foreground">·</span>
                 <button
                   type="button"
-                  onClick={() => setSpeedModalOpen(true)}
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-speed-health-modal"))}
                   className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-medium transition-colors cursor-pointer"
                   title="Click to view real-time system performance & latency"
                 >
@@ -345,7 +343,7 @@ const Dashboard = () => {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setSpeedModalOpen(true)}
+              onClick={() => window.dispatchEvent(new CustomEvent("open-speed-health-modal"))}
               className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted text-foreground"
               title="Real-time latency, cache diagnostics & 1-click speed optimization"
             >
@@ -991,11 +989,6 @@ const Dashboard = () => {
         </div>
 
         {/* Global Executive Modals */}
-        <SystemSpeedHealthModal
-          open={speedModalOpen}
-          onOpenChange={setSpeedModalOpen}
-          lastQueryTimeMs={data?.queryDurationMs}
-        />
         <QuickExportHubModal
           open={exportModalOpen}
           onOpenChange={setExportModalOpen}

@@ -12,7 +12,7 @@ export function useInventoryData(selectedLocation: string) {
   const queryClient = useQueryClient();
 
   const { data: inventoryItems = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['inventory', selectedLocation, isOnline],
+    queryKey: ['inventory', selectedLocation],
     queryFn: async () => {
       console.log('Fetching inventory for location:', selectedLocation, '| Online:', isOnline);
       

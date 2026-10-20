@@ -92,7 +92,7 @@ export function CommandPalette() {
       { label: "Record Sale", description: "Log a new sale", shortcut: "⌘⇧S", icon: ShoppingCart, action: () => { navigate("/sales"); setOpen(false); }, section: "Actions", keywords: ["sell", "transaction", "revenue"] },
       { label: "Bulk Upload", description: "Import items via CSV", shortcut: "⌘⇧U", icon: Upload, action: () => { /* handled by page FAB */ setOpen(false); }, section: "Actions", keywords: ["import", "csv", "batch"] },
       { label: "Executive Export Hub", description: "Download CSV/JSON reports & backups", shortcut: "⌘E", icon: Download, action: () => { navigate("/?export=true"); setOpen(false); }, section: "Actions", keywords: ["export", "download", "csv", "json", "backup", "data"] },
-      { label: "System Speed & Health Pulse", description: "Real-time latency, cache diagnostics & optimizer", shortcut: "⌘⇧P", icon: Zap, action: () => { navigate("/?speed=true"); setOpen(false); }, section: "Actions", keywords: ["speed", "latency", "cache", "ping", "optimize", "health", "fast"] },
+      { label: "System Speed & Health Pulse", description: "Real-time latency, cache diagnostics & optimizer", shortcut: "⌘⇧P", icon: Zap, action: () => { window.dispatchEvent(new CustomEvent("open-speed-health-modal")); setOpen(false); }, section: "Actions", keywords: ["speed", "latency", "cache", "ping", "optimize", "health", "fast"] },
 
       // UI
       { label: "Toggle Theme", description: "Switch light/dark mode", shortcut: "⌘⇧T", icon: Palette, action: () => { /* theme toggle */ setOpen(false); }, section: "Interface", keywords: ["dark", "light", "appearance", "mode"] },

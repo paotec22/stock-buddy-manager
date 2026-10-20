@@ -440,7 +440,7 @@ export function TopNavbar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/?speed=true")}
+            onClick={() => window.dispatchEvent(new CustomEvent("open-speed-health-modal"))}
             aria-label="System Speed & Health"
             title="System Speed & Operational Pulse"
             className="h-8 w-8 rounded-lg text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10"
@@ -720,6 +720,17 @@ export function TopNavbar() {
                         {isSuperAdmin ? "Super Admin System" : "Admin Administration"}
                       </MobileNavItem>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeMobile();
+                        window.dispatchEvent(new CustomEvent("open-speed-health-modal"));
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer text-left"
+                    >
+                      <Zap className="h-4 w-4 shrink-0" />
+                      <span>Speed &amp; System Pulse</span>
+                    </button>
                   </div>
                 </div>
 

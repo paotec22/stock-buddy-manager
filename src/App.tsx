@@ -14,6 +14,7 @@ import { initializeDB } from "@/lib/indexedDB";
 import { CommandPalette } from "@/components/CommandPalette";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import { SystemSpeedHealthModal } from "@/components/dashboard/SystemSpeedHealthModal";
 
 // Lazy-loaded routes for ultra-fast initial bundle and speed optimization
 const Index = lazy(() => import("./pages/Index"));
@@ -138,6 +139,7 @@ const App = () => {
             <CommandPalette />
             <KeyboardShortcutsModal />
             <OnboardingTour />
+            <SystemSpeedHealthModal />
             <AuthProvider>
               <AnimatedRoutes />
             </AuthProvider>

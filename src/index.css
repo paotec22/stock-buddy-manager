@@ -583,3 +583,20 @@
     page-break-inside: avoid !important;
   }
 }
+
+/* =========================================================================
+   Turbo / Ultra-Low Latency Performance Mode
+   Disables expensive GPU compositing, backdrop blurs, and animation delay
+   ========================================================================= */
+html.turbo-speed-mode *,
+html.turbo-speed-mode *::before,
+html.turbo-speed-mode *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+
+html.turbo-speed-mode body {
+  text-rendering: optimizeSpeed !important;
+}
