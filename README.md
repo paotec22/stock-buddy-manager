@@ -271,7 +271,7 @@ SI Manager is architected with strict adherence to international data protection
 - **Comprehensive Privacy Document**: Read our full [Privacy Policy & Data Protection Charter](PRIVACY_POLICY.md) governing global operations.
 - **In-App Interactive Portal**: Accessible directly at the [`/privacy`](/privacy) route with search, section jumping, and print/PDF export.
 - **Standards Complied With**:
-  - **EU/UK GDPR**: Art. 5 Data Minimization, Art. 6 Lawful Bases, Art. 15-22 Data Subject Rights (Access, Portability, Erasure).
+  - **EU/UK GDPR**: Art. 5 Data Minimisation, Art. 6 Lawful Bases, Art. 15-22 Data Subject Rights (Access, Portability, Erasure).
   - **California CCPA / CPRA**: Notice at collection, consumer rights, and zero commercial sale/sharing of personal data.
   - **Nigeria Data Protection Act (NDPA 2023)**: Full compliance with the NDPC requirements for commercial business operations.
   - **Client-Side PDF Sandboxing**: PDF document parsing runs completely inside the client's browser memory via sandboxed WebAssembly (`pdfjs-dist`). Raw invoices are never sent to external AI scrapers.
