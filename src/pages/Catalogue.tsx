@@ -15,6 +15,8 @@ import {
   Loader2,
   Share2,
   Package,
+  CheckSquare,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MobileFAB } from "@/components/MobileFAB";
@@ -85,6 +87,48 @@ export default function Catalogue() {
 
   // Share link builder modal
   const [shareOpen, setShareOpen] = useState(false);
+
+  // Batch selection state for custom share and multi-item quotation
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(new Set());
+
+  const toggleSelectItem = (id: number) => {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedItemIds(new Set());
+    setIsSelectMode(false);
+  };
+
+  const handleQuickShareSingleItem = (id: number) => {
+    setSelectedItemIds(new Set([id]));
+    setShareOpen(true);
+  };
+
+  const handleSendSelectedWhatsApp = () => {
+    const selectedList = items.filter((i) => selectedItemIds.has(i.id));
+    if (selectedList.length === 0) return;
+
+    const total = selectedList.reduce((acc, curr) => acc + (curr.Price || 0), 0);
+    let msg = `*PUIDO SMART SOLUTIONS — PRODUCT QUOTATION*\n`;
+    msg += `Curated Selection (${selectedList.length} products):\n`;
+    msg += `----------------------------------------\n`;
+    selectedList.forEach((it, idx) => {
+      msg += `${idx + 1}. *${it["Item Description"]}* — ₦${(it.Price || 0).toLocaleString()} (SKU #${it.id})\n`;
+    });
+    msg += `----------------------------------------\n`;
+    msg += `*Total Budget:* ₦${total.toLocaleString()}\n\n`;
+    msg += `🔗 *View Interactive Collection:* ${window.location.origin}/share/catalogue?ids=${Array.from(selectedItemIds).join(",")}\n\n`;
+    msg += `Please let us know if you would like to confirm this order or schedule delivery.`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+  };
 
   // View mode
   const [view, setView] = useState<ViewMode>(() => {
@@ -438,7 +482,27 @@ export default function Catalogue() {
         </div>
 
         {/* Action buttons */}
-        <div className="grid grid-cols-3 gap-2 relative z-10 w-full md:flex md:w-auto md:items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 relative z-10 w-full md:flex md:w-auto md:items-center">
+          <Button
+            variant={isSelectMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setIsSelectMode((v) => !v);
+              if (isSelectMode) setSelectedItemIds(new Set());
+            }}
+            title="Toggle batch selection mode to quote or share multiple products"
+            className={`h-11 sm:h-10 rounded-xl font-semibold transition-all px-2.5 sm:px-3 text-xs flex items-center justify-center active:scale-[0.98] ${
+              isSelectMode
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "hover:bg-primary/5 hover:text-primary border-border/70"
+            }`}
+          >
+            <CheckSquare className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+            <span className="truncate">
+              {isSelectMode ? `Selected (${selectedItemIds.size})` : "Select Mode"}
+            </span>
+          </Button>
+
           <Button
             variant="outline"
             size="sm"
@@ -470,7 +534,7 @@ export default function Catalogue() {
             className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3.5 text-xs flex items-center justify-center active:scale-[0.98]"
           >
             <Share2 className="h-4 w-4 text-primary mr-1 sm:mr-1.5 shrink-0" />
-            <span className="truncate"><span className="hidden xs:inline">Share </span>Link</span>
+            <span className="truncate"><span className="hidden xs:inline">Share </span>Showroom</span>
           </Button>
 
           <Button
@@ -631,6 +695,10 @@ export default function Catalogue() {
                 setSelectedCategory(catId as CategoryId);
                 setShowAllProductsFlat(false);
               }}
+              isSelectMode={isSelectMode}
+              selectedIds={selectedItemIds}
+              onToggleSelect={toggleSelectItem}
+              onQuickShareItem={handleQuickShareSingleItem}
             />
           ))}
         </div>
@@ -645,6 +713,10 @@ export default function Catalogue() {
                   item={item}
                   url={item.image_url ? signed[item.image_url] ?? null : null}
                   onClick={() => setSelectedItem(item)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedItemIds.has(item.id)}
+                  onToggleSelect={() => toggleSelectItem(item.id)}
+                  onQuickShare={() => handleQuickShareSingleItem(item.id)}
                 />
               ))}
             </div>
@@ -658,6 +730,9 @@ export default function Catalogue() {
                   item={item}
                   url={item.image_url ? signed[item.image_url] ?? null : null}
                   onClick={() => setSelectedItem(item)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedItemIds.has(item.id)}
+                  onToggleSelect={() => toggleSelectItem(item.id)}
                 />
               ))}
             </div>
@@ -671,6 +746,10 @@ export default function Catalogue() {
                   item={item}
                   url={item.image_url ? signed[item.image_url] ?? null : null}
                   onClick={() => setSelectedItem(item)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedItemIds.has(item.id)}
+                  onToggleSelect={() => toggleSelectItem(item.id)}
+                  onQuickShare={() => handleQuickShareSingleItem(item.id)}
                 />
               ))}
             </div>
@@ -695,18 +774,78 @@ export default function Catalogue() {
         </div>
       )}
 
+      {/* ── FLOATING SELECTION ACTION DOCK (When items are checked) ───────── */}
+      {selectedItemIds.size > 0 && (
+        <aside
+          aria-label="Selected products action dock"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[94vw] max-w-xl animate-fade-in print:hidden"
+        >
+          <div className="bg-card/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="h-8 w-8 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0 font-mono">
+                {selectedItemIds.size}
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">
+                  {selectedItemIds.size} Product{selectedItemIds.size === 1 ? "" : "s"} Selected
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  Ready to share proposal or send WhatsApp quote
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearSelection}
+                className="h-8.5 text-xs rounded-xl"
+              >
+                Clear
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => setShareOpen(true)}
+                className="h-8.5 text-xs font-semibold rounded-xl bg-primary text-primary-foreground gap-1.5 shadow-xs"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                <span>Share Link</span>
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handleSendSelectedWhatsApp}
+                className="h-8.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-xs"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </Button>
+            </div>
+          </div>
+        </aside>
+      )}
+
       {/* ── QUICK VIEW DIALOG ────────────────────────────────────────────── */}
       <CatalogueQuickView
         item={selectedItem}
         imageUrl={selectedItem?.image_url ? signed[selectedItem.image_url] ?? null : null}
         onClose={() => setSelectedItem(null)}
+        onShareItem={handleQuickShareSingleItem}
       />
 
       {/* ── SHARE CATALOGUE DIALOG ───────────────────────────────────────── */}
       <CatalogueShareDialog
         open={shareOpen}
-        onOpenChange={setShareOpen}
+        onOpenChange={(open) => {
+          setShareOpen(open);
+          if (!open && selectedItemIds.size > 0 && !isSelectMode) {
+            setSelectedItemIds(new Set());
+          }
+        }}
         items={items}
+        initialSelectedIds={Array.from(selectedItemIds)}
       />
 
       {/* ── MOBILE QUICK ACTION FAB ──────────────────────────────────────── */}

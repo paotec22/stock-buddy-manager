@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -18,30 +19,35 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
-import { formatCurrency } from "@/utils/formatters";
 import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   ImageOff,
   Search,
   LayoutGrid,
   List,
-  SlidersHorizontal,
   Package,
   X,
-  Camera,
-  TrendingUp,
   Eye,
-  Copy,
   Check,
   MessageCircle,
   Phone,
-  RefreshCw,
   Printer,
-  FolderTree,
-  Layers,
-  ChevronDown,
-  ChevronUp,
+  ShoppingBag,
+  Plus,
+  Minus,
+  Trash2,
+  Sparkles,
+  ShieldCheck,
+  DollarSign,
+  Euro,
+  PoundSterling,
+  Share2,
+  FileText,
+  Building,
+  CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -49,6 +55,7 @@ import {
   PRODUCT_CATEGORIES,
   getProductCategory,
 } from "@/utils/catalogueCategories";
+import { supabase } from "@/lib/supabase";
 
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ?? "https://itycbazttpidqlgmmrot.supabase.co";
@@ -57,15 +64,25 @@ const SUPABASE_ANON_KEY =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNiYXp0dHBpZHFsZ21tcm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUwNTU3MDEsImV4cCI6MjA1MDYzMTcwMX0.S5Pa5PcYBQiOdJbDvTR_cAHKIfM8uGq-OVONyhpws9o";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 24;
 const VIEW_KEY = "pub_catalogue_view_mode";
 
-// Business contact — powers the enquiry CTAs on the public page
+// Business contact constants
 const BUSINESS_PHONE = "08131927116";
 const WHATSAPP_NUMBER = "2348131927116";
-const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-  "Hello! I just viewed your product catalogue online and would like to make an enquiry."
-)}`;
+
+// Supported Currencies with live conversion multipliers from NGN
+type CurrencyCode = "NGN" | "USD" | "EUR" | "GBP";
+
+const CURRENCIES: Record<
+  CurrencyCode,
+  { symbol: string; rate: number; label: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  NGN: { symbol: "₦", rate: 1, label: "NGN (₦)", icon: DollarSign },
+  USD: { symbol: "$", rate: 1 / 1550, label: "USD ($)", icon: DollarSign },
+  EUR: { symbol: "€", rate: 1 / 1680, label: "EUR (€)", icon: Euro },
+  GBP: { symbol: "£", rate: 1 / 1980, label: "GBP (£)", icon: PoundSterling },
+};
 
 type SortKey = "name_asc" | "name_desc" | "price_asc" | "price_desc";
 type ViewMode = "grid" | "list";
@@ -77,194 +94,66 @@ const SORT_OPTIONS: { value: SortKey; label: string; short: string }[] = [
   { value: "price_desc", label: "Price: High → Low", short: "Price ↓" },
 ];
 
-interface PublicItem {
+export interface PublicItem {
   id: number;
   description: string;
   price: number | null;
   location: string;
   image: string | null;
   features?: string[] | null;
+  quantity?: number;
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-function SkeletonCard({ view }: { view: ViewMode }) {
-  if (view === "list") {
-    return (
-      <div className="flex items-center gap-4 p-3 rounded-xl border bg-card/60 animate-pulse">
-        <div className="h-16 w-16 rounded-lg bg-muted flex-shrink-0" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 bg-muted rounded w-3/4" />
-          <div className="h-3 bg-muted rounded w-1/2" />
-        </div>
-        <div className="h-6 bg-muted rounded w-20" />
-      </div>
-    );
-  }
-  return (
-    <div className="rounded-2xl border bg-card/60 overflow-hidden animate-pulse">
-      <div className="aspect-square bg-muted" />
-      <div className="p-3.5 space-y-2">
-        <div className="h-4 bg-muted rounded w-4/5" />
-        <div className="h-3 bg-muted rounded w-1/2" />
-        <div className="h-5 bg-muted rounded w-1/3 mt-1" />
-      </div>
-    </div>
-  );
-}
-
-// ─── Grid Card ────────────────────────────────────────────────────────────────
-function GridCard({
-  item,
-  onClick,
-}: {
+export interface BasketItem {
   item: PublicItem;
-  onClick: () => void;
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className="rounded-2xl border border-border/60 bg-card overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer hover:border-primary/40"
-    >
-      <div className="aspect-square bg-muted relative overflow-hidden">
-        {item.image ? (
-          <>
-            <img
-              src={item.image}
-              alt={item.description}
-              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-              decoding="async"
-              width={400}
-              height={400}
-            />
-            <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white/95 text-slate-900 shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                <Eye className="h-3 w-3 text-primary" /> Quick View
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-1 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
-            <ImageOff className="h-7 w-7 opacity-30 text-primary" />
-            <span className="text-[10px] opacity-50">No image</span>
-          </div>
-        )}
-      </div>
-
-      <div className="p-3 sm:p-3.5 space-y-1.5">
-        <h3 className="font-semibold text-[13px] sm:text-sm leading-snug line-clamp-2 min-h-[2.1rem] group-hover:text-primary transition-colors">
-          {item.description}
-        </h3>
-        <div className="pt-0.5">
-          <span className="text-base sm:text-lg font-bold text-primary tracking-tight">
-            {formatCurrency(item.price || 0)}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
+  quantity: number;
 }
 
-// ─── List Row ─────────────────────────────────────────────────────────────────
-function ListRow({
-  item,
-  onClick,
-}: {
-  item: PublicItem;
-  onClick: () => void;
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-all cursor-pointer group hover:border-primary/30"
-    >
-      <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
-        {item.image ? (
-          <img
-            src={item.image}
-            alt={item.description}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            decoding="async"
-            width={48}
-            height={48}
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-            <ImageOff className="h-4 w-4 opacity-30" />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[13px] sm:text-sm truncate group-hover:text-primary transition-colors">
-          {item.description}
-        </p>
-      </div>
-
-      <div className="flex-shrink-0 text-right">
-        <p className="font-bold text-sm sm:text-base text-primary">
-          {formatCurrency(item.price || 0)}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Print-Only Card Component ────────────────────────────────────────────────
-function PrintCard({ item }: { item: PublicItem }) {
-  return (
-    <div className="print-card-item rounded-lg border border-slate-300 bg-white overflow-hidden p-0 flex flex-col justify-between text-slate-900 shadow-none">
-      <div>
-        <div className="aspect-square bg-slate-100 relative overflow-hidden border-b border-slate-200 flex items-center justify-center">
-          {item.image ? (
-            <img
-              src={item.image}
-              alt={item.description}
-              className="h-full w-full object-cover"
-              decoding="sync"
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-0.5 text-slate-400">
-              <ImageOff className="h-6 w-6" />
-              <span className="text-[9px]">No image</span>
-            </div>
-          )}
-        </div>
-
-        <div className="p-2 space-y-1">
-          <h4 className="font-bold text-[11px] leading-tight line-clamp-2 text-slate-900">
-            {item.description}
-          </h4>
-        </div>
-      </div>
-
-      <div className="px-2 pb-2 pt-1 border-t border-slate-100 flex items-center justify-between mt-auto">
-        <span className="text-[9px] uppercase font-bold text-slate-400">Price</span>
-        <span className="text-xs font-extrabold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-          {formatCurrency(item.price || 0)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function PublicCatalogue() {
   const location = "Ikeja";
+
+  // URL Query Parameters
+  const queryParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const initialIds = queryParams.get("ids");
+  const proposalTitle = queryParams.get("title");
+  const hidePricesParam = queryParams.get("hidePrice") === "1" || queryParams.get("hidePrice") === "true";
+  const initialCurrency = (queryParams.get("curr") as CurrencyCode) || "NGN";
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("name_asc");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>("all");
-  const [groupByCategory, setGroupByCategory] = useState<boolean>(true);
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>(
+    CURRENCIES[initialCurrency] ? initialCurrency : "NGN"
+  );
+  const [activeIdsFilter, setActiveIdsFilter] = useState<string | null>(initialIds);
 
+  // Selected item for Lightbox Quick View
   const [selectedItem, setSelectedItem] = useState<PublicItem | null>(null);
+
+  // Customer Enquiry Basket State
+  const [basket, setBasket] = useState<BasketItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("pub_catalogue_enquiry_basket");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [basketOpen, setBasketOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerCity, setCustomerCity] = useState("");
+  const [customerNotes, setCustomerNotes] = useState("");
+
+  // Persist basket
+  useEffect(() => {
+    try {
+      localStorage.setItem("pub_catalogue_enquiry_basket", JSON.stringify(basket));
+    } catch {
+      // Ignore
+    }
+  }, [basket]);
 
   const [view, setView] = useState<ViewMode>(() => {
     try {
@@ -274,7 +163,6 @@ export default function PublicCatalogue() {
     }
   });
   const [page, setPage] = useState(1);
-  const [retryCount, setRetryCount] = useState(0);
 
   const [items, setItems] = useState<PublicItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -283,46 +171,144 @@ export default function PublicCatalogue() {
   useEffect(() => {
     try {
       localStorage.setItem(VIEW_KEY, view);
-    } catch { }
+    } catch {}
     setPage(1);
   }, [view]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, sort, minPrice, maxPrice, selectedCategory, groupByCategory]);
+  }, [search, sort, minPrice, maxPrice, selectedCategory, activeIdsFilter]);
 
+  // Resilient Dual-Tier Data Fetcher:
+  // Tier 1: Public catalogue Edge Function
+  // Tier 2: Direct Supabase client query with storage signing fallback
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const sharedIds = new URLSearchParams(window.location.search).get("ids");
-    const qs =
-      `?location=${encodeURIComponent(location)}` +
-      (sharedIds ? `&ids=${encodeURIComponent(sharedIds)}` : "");
-    fetch(`${SUPABASE_URL}/functions/v1/public-catalogue${qs}`, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-    })
-      .then(async (res) => {
-        const json = await res.json().catch(() => ({}));
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(json?.error || `Request failed (${res.status})`);
-          setItems([]);
-        } else {
-          setItems((json.items as PublicItem[]) ?? []);
+
+    const loadData = async () => {
+      const qs =
+        `?location=${encodeURIComponent(location)}` +
+        (activeIdsFilter ? `&ids=${encodeURIComponent(activeIdsFilter)}` : "");
+
+      try {
+        // Attempt Tier 1: Edge Function
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/public-catalogue${qs}`, {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (!cancelled) {
+            setItems((json.items as PublicItem[]) ?? []);
+            setLoading(false);
+            return;
+          }
         }
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e.message);
-      })
-      .finally(() => !cancelled && setLoading(false));
+      } catch (err) {
+        // Edge function failure, proceeding to fallback
+        console.warn("Public catalogue Edge Function error, falling back to direct query:", err);
+      }
+
+      // Tier 2 Fallback: Direct Supabase query
+      try {
+        let q = supabase
+          .from("inventory list")
+          .select('id, "Item Description", Price, Quantity, location, image_url, features')
+          .eq("location", "Ikeja")
+          .order("Item Description", { ascending: true });
+
+        if (activeIdsFilter) {
+          const parsedIds = activeIdsFilter
+            .split(",")
+            .map((s) => Number(s.trim()))
+            .filter((n) => Number.isFinite(n) && n > 0);
+          if (parsedIds.length > 0) {
+            q = q.in("id", parsedIds);
+          }
+        }
+
+        const { data, error: dbError } = await q;
+        if (dbError) throw dbError;
+
+        if (cancelled) return;
+
+        const rawList = data || [];
+        const imagePaths = rawList
+          .map((i: any) => i.image_url)
+          .filter(
+            (p: any): p is string =>
+              typeof p === "string" && p.length > 0 && !/^https?:\/\//.test(p)
+          );
+
+        const urlMap: Record<string, string> = {};
+        if (imagePaths.length > 0) {
+          const uniquePaths = Array.from(new Set(imagePaths));
+          const { data: signed } = await supabase.storage
+            .from("inventory-images")
+            .createSignedUrls(uniquePaths, 3600);
+
+          signed?.forEach((entry, idx) => {
+            if (entry.signedUrl) {
+              urlMap[uniquePaths[idx]] = entry.signedUrl;
+            }
+          });
+        }
+
+        const formattedItems: PublicItem[] = rawList.map((i: any) => ({
+          id: i.id,
+          description: i["Item Description"],
+          price: i.Price,
+          location: i.location,
+          quantity: i.Quantity,
+          image: i.image_url
+            ? /^https?:\/\//.test(i.image_url)
+              ? i.image_url
+              : urlMap[i.image_url] ?? null
+            : null,
+          features: i.features,
+        }));
+
+        if (!cancelled) {
+          setItems(formattedItems);
+          setLoading(false);
+        }
+      } catch (fallbackErr: any) {
+        if (!cancelled) {
+          setError(fallbackErr.message || "Unable to load catalogue items");
+          setItems([]);
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
     return () => {
       cancelled = true;
     };
-  }, [location, retryCount]);
+  }, [location, activeIdsFilter]);
+
+  // Format currency with live multi-currency conversion
+  const formatPrice = (ngnPrice: number | null): string => {
+    if (hidePricesParam) {
+      return "Price on Request";
+    }
+    if (ngnPrice === null || ngnPrice === undefined) return "Price on Request";
+    const curr = CURRENCIES[selectedCurrency];
+    const converted = ngnPrice * curr.rate;
+    if (selectedCurrency === "NGN") {
+      return `₦${Math.round(converted).toLocaleString()}`;
+    }
+    return `${curr.symbol}${converted.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
 
   // Category counts
   const categoryCounts = useMemo(() => {
@@ -340,20 +326,9 @@ export default function PublicCatalogue() {
     return counts as Record<CategoryId | "all", number>;
   }, [items]);
 
-  // Stats
-  const stats = useMemo(() => {
-    if (items.length === 0) return null;
-    const prices = items.map((i) => i.price || 0).filter((p) => p > 0);
-    return {
-      total: items.length,
-      withImages: items.filter((i) => i.image).length,
-      maxPrice: prices.length ? Math.max(...prices) : 0,
-    };
-  }, [items]);
-
+  // Filtered & sorted products
   const filtered = useMemo(() => {
     let out = items.filter((it) => {
-      // Category filter
       if (selectedCategory !== "all") {
         const cat = getProductCategory({
           "Item Description": it.description,
@@ -364,9 +339,12 @@ export default function PublicCatalogue() {
 
       if (
         search.trim() &&
-        !it.description?.toLowerCase().includes(search.toLowerCase())
-      )
+        !it.description?.toLowerCase().includes(search.toLowerCase()) &&
+        !String(it.id).includes(search.trim())
+      ) {
         return false;
+      }
+
       const min = parseFloat(minPrice);
       const max = parseFloat(maxPrice);
       if (!isNaN(min) && (it.price || 0) < min) return false;
@@ -392,43 +370,100 @@ export default function PublicCatalogue() {
     return out;
   }, [items, search, sort, minPrice, maxPrice, selectedCategory]);
 
-  // Category Groups for grouped layout
-  const categoryGroups = useMemo(() => {
-    const groups = new Map<CategoryId, PublicItem[]>();
-    for (const cat of PRODUCT_CATEGORIES) {
-      groups.set(cat.id, []);
-    }
-    for (const item of filtered) {
-      const cat = getProductCategory({
-        "Item Description": item.description,
-        features: item.features,
-      });
-      const list = groups.get(cat.id) || [];
-      list.push(item);
-      groups.set(cat.id, list);
-    }
-    const result: { category: typeof PRODUCT_CATEGORIES[0]; items: PublicItem[] }[] = [];
-    for (const cat of PRODUCT_CATEGORIES) {
-      const catItems = groups.get(cat.id) || [];
-      if (catItems.length > 0) {
-        result.push({ category: cat, items: catItems });
-      }
-    }
-    return result;
-  }, [filtered]);
-
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = page * PAGE_SIZE < filtered.length;
 
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (search.trim()) count++;
-    if (minPrice) count++;
-    if (maxPrice) count++;
-    if (sort !== "name_asc") count++;
-    if (selectedCategory !== "all") count++;
-    return count;
-  }, [search, minPrice, maxPrice, sort, selectedCategory]);
+  // Basket Management Functions
+  const addToBasket = (item: PublicItem, qty = 1) => {
+    setBasket((prev) => {
+      const existing = prev.find((b) => b.item.id === item.id);
+      if (existing) {
+        return prev.map((b) =>
+          b.item.id === item.id ? { ...b, quantity: b.quantity + qty } : b
+        );
+      }
+      return [...prev, { item, quantity: qty }];
+    });
+    toast.success(`Added "${item.description.slice(0, 32)}..." to quote enquiry`);
+  };
+
+  const updateBasketQty = (itemId: number, delta: number) => {
+    setBasket((prev) =>
+      prev
+        .map((b) => {
+          if (b.item.id === itemId) {
+            const next = b.quantity + delta;
+            return next > 0 ? { ...b, quantity: next } : null;
+          }
+          return b;
+        })
+        .filter(Boolean) as BasketItem[]
+    );
+  };
+
+  const removeFromBasket = (itemId: number) => {
+    setBasket((prev) => prev.filter((b) => b.item.id !== itemId));
+    toast.info("Item removed from enquiry");
+  };
+
+  const clearBasket = () => {
+    setBasket([]);
+    toast.info("Enquiry basket cleared");
+  };
+
+  const basketItemCount = useMemo(
+    () => basket.reduce((acc, curr) => acc + curr.quantity, 0),
+    [basket]
+  );
+
+  const basketTotalNgn = useMemo(
+    () =>
+      basket.reduce(
+        (acc, curr) => acc + (curr.item.price || 0) * curr.quantity,
+        0
+      ),
+    [basket]
+  );
+
+  // Generate structured WhatsApp enquiry message
+  const handleSendWhatsAppEnquiry = () => {
+    if (basket.length === 0) return;
+
+    let msg = `*PRODUCT ORDER ENQUIRY — PUIDO SMART SOLUTIONS*\n`;
+    if (proposalTitle?.trim()) {
+      msg += `*Ref Proposal:* ${proposalTitle.trim()}\n`;
+    }
+    if (customerName.trim()) {
+      msg += `*Customer Name:* ${customerName.trim()}\n`;
+    }
+    if (customerCity.trim()) {
+      msg += `*Delivery Location:* ${customerCity.trim()}\n`;
+    }
+    if (customerNotes.trim()) {
+      msg += `*Customer Notes:* ${customerNotes.trim()}\n`;
+    }
+    msg += `----------------------------------------\n`;
+
+    basket.forEach((b, index) => {
+      const unitPrice = b.item.price || 0;
+      const lineTotal = unitPrice * b.quantity;
+      msg += `${index + 1}. *${b.item.description}*\n`;
+      if (!hidePricesParam) {
+        msg += `   Qty: ${b.quantity} × ₦${unitPrice.toLocaleString()} = ₦${lineTotal.toLocaleString()} (SKU #${b.item.id})\n`;
+      } else {
+        msg += `   Qty: ${b.quantity} units (SKU #${b.item.id})\n`;
+      }
+    });
+
+    msg += `----------------------------------------\n`;
+    if (!hidePricesParam) {
+      msg += `*Estimated Budget:* ₦${basketTotalNgn.toLocaleString()} (${formatPrice(basketTotalNgn)})\n\n`;
+    }
+    msg += `Please confirm stock availability, delivery lead time, and installation terms. Thank you!`;
+
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(whatsappUrl, "_blank");
+  };
 
   const clearFilters = () => {
     setSearch("");
@@ -438,25 +473,10 @@ export default function PublicCatalogue() {
     setSelectedCategory("all");
   };
 
-  const currentDateFormatted = useMemo(() => {
-    return new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }, []);
-
-  // Per-product WhatsApp enquiry link
-  const enquiryLink = (item: PublicItem) =>
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      `Hello! I'm interested in "${item.description}" (${item.price ? formatCurrency(item.price) : "price available on enquiry"
-      }) from your catalogue. Is it available?`
-    )}`;
-
   return (
-    <div className="min-h-screen bg-background text-foreground catalogue-bg">
-      {/* ── PRINT-ONLY STUNNING CATALOGUE HEADER ──────────────────────────── */}
-      <div className="hidden print:block px-6 pt-4 print:mb-6">
+    <div className="min-h-screen bg-background text-foreground catalogue-bg pb-24">
+      {/* ── PRINT-ONLY CATALOGUE HEADER ──────────────────────────────────── */}
+      <div className="hidden print:block px-6 pt-4 mb-6">
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
           <div className="flex items-center gap-4">
             <CompanyLogo
@@ -466,8 +486,15 @@ export default function PublicCatalogue() {
             />
             <div>
               <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-                PRODUCT CATALOGUE
+                PRODUCT SHOWROOM CATALOGUE
               </h2>
+              {proposalTitle ? (
+                <p className="text-sm font-bold text-slate-800 mt-1">
+                  Proposal: {proposalTitle}
+                </p>
+              ) : (
+                <p className="text-xs text-slate-600 mt-1">Official Price &amp; Specification Sheet</p>
+              )}
             </div>
           </div>
           <div className="text-right">
@@ -475,348 +502,254 @@ export default function PublicCatalogue() {
               {location.toUpperCase()} BRANCH
             </span>
             <p className="text-[11px] text-slate-500 font-mono mt-1">
-              Date: {currentDateFormatted}
+              Call: {BUSINESS_PHONE}
             </p>
           </div>
         </div>
-
-        <div className="flex items-center justify-between py-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 rounded mt-2 border border-slate-200">
-          <span>Total Products: <strong>{filtered.length}</strong></span>
-          <span>Currency: <strong>NGN (₦)</strong></span>
-          <span>Public Catalogue</span>
-        </div>
       </div>
 
-      {/* ── SCREEN HEADER (Hidden when printing) ─────────────────────────── */}
-      <header className="border-b border-border/40 bg-background/85 backdrop-blur-md sticky top-0 z-30 print:hidden">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
+      {/* ── SCREEN SHOWROOM HEADER ───────────────────────────────────────── */}
+      <header className="border-b border-border/50 bg-background/90 backdrop-blur-md sticky top-0 z-30 print:hidden shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3 flex items-center justify-between gap-3">
+          {/* Brand & Showroom Identity */}
+          <div className="flex items-center gap-3 min-w-0">
             <CompanyLogo
               alt="Puido Smart Solutions"
-              className="h-9 md:h-11 w-auto object-contain flex-shrink-0"
+              className="h-9 md:h-11 w-auto object-contain shrink-0"
             />
             <div className="min-w-0">
-              <h1 className="text-sm md:text-xl font-bold tracking-tight truncate bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                Product Catalogue
-              </h1>
-              <p className="hidden md:block text-xs text-muted-foreground">
-                Browse our available inventory — {location} Branch
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm sm:text-base md:text-lg font-bold tracking-tight text-foreground truncate">
+                  Puido Store Showroom
+                </h1>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <ShieldCheck className="h-3 w-3" /> Verified Inventory
+                </span>
+              </div>
+              <p className="hidden md:block text-xs text-muted-foreground truncate">
+                Smart Locks, Automation, Solar &amp; Security Systems — {location} Branch
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Print / Save PDF Button */}
+          {/* Action Hub: Direct Calls, WhatsApp, Currency, Print */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Multi-Currency Selector */}
+            {!hidePricesParam && (
+              <Select
+                value={selectedCurrency}
+                onValueChange={(val) => setSelectedCurrency(val as CurrencyCode)}
+              >
+                <SelectTrigger className="h-8.5 w-24 sm:w-28 text-xs bg-muted/40 border-border/70 font-semibold">
+                  <SelectValue placeholder="Currency" />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {Object.entries(CURRENCIES).map(([code, c]) => (
+                    <SelectItem key={code} value={code} className="text-xs">
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Direct Call Sales Rep */}
             <Button
+              asChild
               variant="outline"
               size="sm"
+              className="hidden lg:flex h-8.5 px-3 text-xs font-semibold gap-1.5 border-border/70 bg-card hover:bg-muted"
+            >
+              <a href={`tel:${BUSINESS_PHONE}`}>
+                <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Call Store</span>
+              </a>
+            </Button>
+
+            {/* Direct WhatsApp Chat */}
+            <Button
+              asChild
+              size="sm"
+              className="h-8.5 px-3 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+            >
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                  `Hello! I am browsing your showroom catalogue${
+                    proposalTitle ? ` (${proposalTitle})` : ""
+                  } and would like to speak with a sales advisor.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </a>
+            </Button>
+
+            {/* Print / PDF Button */}
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => window.print()}
-              className="h-9 px-3 rounded-xl border-border/60 bg-card/65 hover:bg-muted text-xs font-semibold flex items-center gap-1.5 active:scale-95"
-              title="Print or export catalogue to PDF"
-              aria-label="Print catalogue"
+              className="h-8.5 w-8.5 rounded-lg border-border/70 hover:bg-muted"
+              title="Print catalogue or Save as PDF"
             >
-              <Printer className="h-3.5 w-3.5 text-foreground" />
-              <span className="hidden sm:inline">Print / PDF</span>
+              <Printer className="h-4 w-4 text-muted-foreground" />
             </Button>
 
-            {/* Desktop WhatsApp CTA */}
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-semibold shadow-sm hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 hover:scale-[1.03]"
-              aria-label="Enquire on WhatsApp"
+            {/* Basket Trigger Icon */}
+            <button
+              type="button"
+              onClick={() => setBasketOpen(true)}
+              className="relative p-2 rounded-lg border border-border/70 bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
+              title="View your enquiry basket"
             >
-              <MessageCircle className="h-3.5 w-3.5" /> Enquire
-            </a>
+              <ShoppingBag className="h-4 w-4 text-primary" />
+              {basketItemCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 h-4.5 min-w-4.5 px-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center font-mono">
+                  {basketItemCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
 
-            {/* Grouped by category toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setGroupByCategory((v) => !v)}
-              className={`h-9 px-2.5 rounded-xl border-border/60 text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                groupByCategory
-                  ? "bg-primary/10 border-primary/40 text-primary"
-                  : "bg-card/65 text-muted-foreground hover:text-foreground"
-              }`}
-              title={groupByCategory ? "Category grouping active" : "Group products by category"}
-            >
-              <FolderTree className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Grouped</span>
-            </Button>
+      {/* ── PROPOSAL BANNER (When shared with custom title or specific items) ── */}
+      {proposalTitle && (
+        <div className="bg-gradient-to-r from-primary/10 via-background to-secondary/10 border-b border-border/60 py-4 px-4 sm:px-6 md:px-8 print:hidden">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-primary bg-primary/15 px-2 py-0.5 rounded-md">
+                  Curated Client Proposal
+                </span>
+                <span className="text-xs text-muted-foreground">·</span>
+                <span className="text-xs text-muted-foreground">Puido Smart Solutions</span>
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                {proposalTitle}
+              </h2>
+            </div>
 
-            {/* View toggle */}
-            <div className="flex rounded-xl border border-border/60 bg-card/65 backdrop-blur-xs overflow-hidden p-0.5">
+            {activeIdsFilter && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveIdsFilter(null)}
+                className="self-start sm:self-auto h-8 text-xs font-semibold rounded-xl border-border/70 gap-1.5 bg-background"
+              >
+                <span>View Full Showroom ({items.length}+ items)</span>
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── SHOWROOM CONTROLS: CATEGORIES + SEARCH ───────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-5 space-y-4 print:hidden">
+        {/* Search & Layout Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search smart locks, panels, inverters..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-9 h-9.5 text-xs bg-card border-border/70 rounded-xl"
+            />
+            {search && (
               <button
-                id="pub-view-grid-btn"
-                title="Grid view"
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {/* Sort Dropdown */}
+            <Select value={sort} onValueChange={(val) => setSort(val as SortKey)}>
+              <SelectTrigger className="h-9 w-36 text-xs bg-card border-border/70 rounded-xl font-medium">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {SORT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Grid vs List View toggle */}
+            <div className="inline-flex items-center p-0.5 rounded-xl border border-border/70 bg-card">
+              <button
+                type="button"
                 onClick={() => setView("grid")}
-                className={`px-3 py-1 rounded-lg transition-all duration-200 ${view === "grid"
-                  ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                  : "text-muted-foreground hover:bg-muted"
-                  }`}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  view === "grid"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Grid view"
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
               <button
-                id="pub-view-list-btn"
-                title="List view"
+                type="button"
                 onClick={() => setView("list")}
-                className={`px-3 py-1 rounded-lg transition-all duration-200 ${view === "list"
-                  ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                  : "text-muted-foreground hover:bg-muted"
-                  }`}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  view === "list"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="List view"
               >
                 <List className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-6 space-y-4 pb-28 md:pb-10">
-        {/* ── HERO BANNER (Hidden when printing) ──────────────────────────── */}
-        <section className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-card via-card/85 to-card/50 p-5 md:p-7 shadow-sm backdrop-blur-md print:hidden flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Glow decorations */}
-          <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-secondary/80 blur-3xl opacity-10 pointer-events-none" />
-
-          <div className="flex items-center gap-3.5 relative z-10 min-w-0">
-            <div className="h-11 w-11 md:h-14 md:w-14 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner flex-shrink-0">
-              <CompanyLogo
-                alt="Puido Smart Solutions"
-                className="h-7 md:h-8 w-auto object-contain"
-              />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-lg md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight">
-                Discover Our Catalogue
-              </h2>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5 font-medium truncate">
-                Quality products from{" "}
-                <span className="text-primary font-semibold">{location}</span> — updated daily
-              </p>
-            </div>
-          </div>
-
-          {/* CTA buttons */}
-          <div className="flex flex-wrap gap-2 relative z-10 w-full sm:w-auto">
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 hover:scale-[1.02] flex-1 sm:flex-none"
-              aria-label="Ask for price on WhatsApp"
-            >
-              <MessageCircle className="h-4 w-4" /> Ask for Price
-            </a>
-            <a
-              href={`tel:${BUSINESS_PHONE}`}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl border border-border/80 bg-card/50 text-foreground text-sm font-semibold hover:bg-muted transition-all duration-300 hover:scale-[1.02] flex-1 sm:flex-none"
-              aria-label={`Call us at ${BUSINESS_PHONE}`}
-            >
-              <Phone className="h-4 w-4 text-primary" /> Call Us
-            </a>
-          </div>
-        </section>
-
-        {/* Stats (Hidden when printing) */}
-        {stats && !loading && (
-          <div className="grid grid-cols-3 gap-2 md:gap-4 print:hidden">
-            <div className="relative overflow-hidden flex items-center gap-3 rounded-2xl border border-border/40 bg-card/65 p-3.5 md:p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-primary/25 group">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary-light" />
-              <div className="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-                <Package className="h-4 md:h-5 w-4 md:w-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] md:text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Products</p>
-                <p className="text-sm md:text-lg font-extrabold mt-1.5 truncate text-foreground">{stats.total}</p>
-              </div>
-            </div>
-            <div className="relative overflow-hidden flex items-center gap-3 rounded-2xl border border-border/40 bg-card/65 p-3.5 md:p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-emerald-500/25 group">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-emerald-400" />
-              <div className="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-                <Camera className="h-4 md:h-5 w-4 md:w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] md:text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">With Photos</p>
-                <p className="text-sm md:text-lg font-extrabold mt-1.5 truncate text-foreground">{stats.withImages}</p>
-              </div>
-            </div>
-            <div className="relative overflow-hidden flex items-center gap-3 rounded-2xl border border-border/40 bg-card/65 p-3.5 md:p-4 shadow-xs backdrop-blur-xs transition-all duration-300 hover:shadow-md hover:border-violet-500/25 group">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 to-violet-400" />
-              <div className="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-                <TrendingUp className="h-4 md:h-5 w-4 md:w-5 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] md:text-[11px] text-muted-foreground leading-none font-semibold uppercase tracking-wider">Max Price</p>
-                <p className="text-xs md:text-sm font-extrabold mt-1.5 truncate text-primary dark:text-violet-400">
-                  {formatCurrency(stats.maxPrice)}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Search + Filter bar (Hidden when printing) */}
-        <div className="space-y-2 print:hidden">
-          {/* Mobile view: collapsible search + filter toolbar */}
-          <div className="sm:hidden">
-            {mobileSearchOpen || Boolean(search) ? (
-              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                  <Input
-                    id="pub-catalogue-search-mobile"
-                    placeholder="Search products…"
-                    value={search}
-                    autoFocus
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 pr-9 h-11 bg-card/90 backdrop-blur-xs border-primary/40 focus-visible:ring-primary/20 rounded-xl text-sm shadow-xs"
-                  />
-                  {search && (
-                    <button
-                      onClick={() => setSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (search) setSearch("");
-                    setMobileSearchOpen(false);
-                  }}
-                  className="h-11 px-3.5 rounded-xl border-border/80 bg-card font-semibold text-xs shrink-0 active:scale-[0.98]"
-                >
-                  Done
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  id="pub-mobile-search-btn"
-                  variant="outline"
-                  onClick={() => setMobileSearchOpen(true)}
-                  className="h-11 px-3 rounded-xl border-border/70 bg-card/80 backdrop-blur-xs flex items-center justify-center gap-2 text-xs font-semibold hover:border-primary/40 text-foreground transition-all active:scale-[0.98]"
-                >
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <span>Search</span>
-                </Button>
-
-                <Button
-                  id="pub-open-mobile-filters-btn"
-                  variant="outline"
-                  onClick={() => setMobileFiltersOpen(true)}
-                  className={`h-11 px-3 rounded-xl border-border/70 backdrop-blur-xs flex items-center justify-center gap-2 text-xs font-semibold transition-all active:scale-[0.98] ${
-                    activeFilterCount > 0
-                      ? "bg-primary/10 border-primary text-primary font-bold shadow-xs"
-                      : "bg-card/80 text-foreground hover:border-primary/40"
-                  }`}
-                >
-                  <SlidersHorizontal className={`h-4 w-4 ${activeFilterCount > 0 ? "text-primary" : "text-muted-foreground"}`} />
-                  <span>Filters</span>
-                  {activeFilterCount > 0 && (
-                    <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Desktop search + filter row (hidden on mobile) */}
-          <div className="hidden sm:flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                id="pub-catalogue-search"
-                placeholder="Search products…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-10 bg-card/65 backdrop-blur-xs border-border/60 focus-visible:ring-primary/20 rounded-xl"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Desktop filter button → toggles inline panel */}
-            <Button
-              id="pub-toggle-filters-btn"
-              variant="outline"
-              onClick={() => setFiltersOpen((v) => !v)}
-              className={`h-10 px-4 rounded-xl border-border/60 bg-card/65 backdrop-blur-xs transition-all duration-300 hover:scale-[1.02] flex items-center gap-2 ${filtersOpen ? "border-primary text-primary bg-primary/5" : ""
-                }`}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="text-xs font-semibold">Filters</span>
-              {activeFilterCount > 0 && (
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              )}
-            </Button>
-          </div>
-
-          {/* Category Navigation Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar scroll-smooth">
+        {/* Category Filter Tabs */}
+        <div className="overflow-x-auto pb-1.5 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
+          <div className="flex items-center gap-1.5 min-w-max">
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 border ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
                 selectedCategory === "all"
                   ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                  : "bg-card/70 text-muted-foreground hover:text-foreground hover:bg-muted/80 border-border/70"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/40"
               }`}
             >
-              <Layers className="h-3.5 w-3.5" />
-              <span>All Categories</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
-                  selectedCategory === "all"
-                    ? "bg-primary-foreground/20 text-primary-foreground font-bold"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {categoryCounts.all || items.length}
-              </span>
+              All Products ({categoryCounts.all || 0})
             </button>
-
             {PRODUCT_CATEGORIES.map((cat) => {
               const count = categoryCounts[cat.id] || 0;
-              if (count === 0 && selectedCategory !== cat.id) return null;
               const Icon = cat.icon;
-              const isSelected = selectedCategory === cat.id;
-
+              const active = selectedCategory === cat.id;
               return (
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => setSelectedCategory(isSelected ? "all" : cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 border ${
-                    isSelected
-                      ? cat.pillActiveClass
-                      : "bg-card/70 text-muted-foreground hover:text-foreground hover:bg-muted/80 border-border/70"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
+                      : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/40"
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <Icon className={`h-3.5 w-3.5 ${active ? "text-primary-foreground" : "text-muted-foreground"}`} />
                   <span>{cat.shortName}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
-                      isSelected
-                        ? "bg-white/20 text-white font-bold"
-                        : "bg-muted text-muted-foreground"
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      active ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {count}
@@ -825,548 +758,619 @@ export default function PublicCatalogue() {
               );
             })}
           </div>
-
-          {/* Active filter chips */}
-          {activeFilterCount > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 px-0.5">
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors min-h-[26px]"
-                >
-                  &ldquo;{search}&rdquo; <X className="h-3 w-3" />
-                </button>
-              )}
-              {minPrice && (
-                <button
-                  onClick={() => setMinPrice("")}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors min-h-[26px]"
-                >
-                  Min ₦{minPrice} <X className="h-3 w-3" />
-                </button>
-              )}
-              {maxPrice && (
-                <button
-                  onClick={() => setMaxPrice("")}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors min-h-[26px]"
-                >
-                  Max ₦{maxPrice} <X className="h-3 w-3" />
-                </button>
-              )}
-              {sort !== "name_asc" && (
-                <button
-                  onClick={() => setSort("name_asc")}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors min-h-[26px]"
-                >
-                  {SORT_OPTIONS.find((o) => o.value === sort)?.short} <X className="h-3 w-3" />
-                </button>
-              )}
-              <button
-                onClick={clearFilters}
-                className="text-[11px] text-primary underline underline-offset-2 hover:text-primary/80 ml-1 min-h-[26px]"
-              >
-                Reset all
-              </button>
-            </div>
-          )}
-
-          {/* Inline collapsible filters — desktop only */}
-          {filtersOpen && (
-            <div className="hidden sm:block rounded-2xl border border-border/40 bg-card/80 p-4 space-y-3.5 shadow-md backdrop-blur-md animate-[fadeIn_0.2s_ease-out] relative">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-0.5">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Sort Order
-                  </label>
-                  <Select
-                    value={sort}
-                    onValueChange={(v) => setSort(v as SortKey)}
-                  >
-                    <SelectTrigger id="pub-sort-select" className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name_asc">Name: A → Z</SelectItem>
-                      <SelectItem value="name_desc">Name: Z → A</SelectItem>
-                      <SelectItem value="price_asc">
-                        Price: Low → High
-                      </SelectItem>
-                      <SelectItem value="price_desc">
-                        Price: High → Low
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Min Price (₦)
-                  </label>
-                  <Input
-                    id="pub-min-price"
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Max Price (₦)
-                  </label>
-                  <Input
-                    id="pub-max-price"
-                    type="number"
-                    min={0}
-                    placeholder="Any"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    className="h-9.5 text-sm rounded-xl bg-background/50 border-border/60"
-                  />
-                </div>
-              </div>
-              {activeFilterCount > 0 && (
-                <div className="flex justify-end pt-1 border-t border-border/40 mt-1">
-                  <Button
-                    id="pub-clear-filters-btn"
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="text-xs text-muted-foreground h-8 hover:text-foreground font-semibold hover:bg-transparent"
-                  >
-                    <X className="h-3.5 w-3.5 mr-1 text-destructive" />
-                    Reset all filters
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!loading && (
-            <p className="text-xs text-muted-foreground px-0.5">
-              Showing{" "}
-              <span className="font-medium text-foreground">
-                {Math.min(paginated.length, filtered.length)}
-              </span>{" "}
-              of{" "}
-              <span className="font-medium text-foreground">
-                {filtered.length}
-              </span>{" "}
-              product{filtered.length !== 1 ? "s" : ""}
-            </p>
-          )}
         </div>
 
-        {/* Content */}
+        {/* Result counts & Active filter bar */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+          <div>
+            Showing <strong className="text-foreground">{filtered.length}</strong> available item
+            {filtered.length === 1 ? "" : "s"}
+            {selectedCategory !== "all" && (
+              <span> in {PRODUCT_CATEGORIES.find((c) => c.id === selectedCategory)?.name}</span>
+            )}
+            {activeIdsFilter && (
+              <span className="ml-1.5 text-primary font-semibold">· Curated Selection</span>
+            )}
+          </div>
+          {(search || selectedCategory !== "all" || minPrice || maxPrice || activeIdsFilter) && (
+            <button
+              type="button"
+              onClick={() => {
+                clearFilters();
+                setActiveIdsFilter(null);
+              }}
+              className="text-primary hover:underline font-semibold text-xs flex items-center gap-1"
+            >
+              <X className="h-3 w-3" /> Reset all
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── PRODUCTS SECTION ─────────────────────────────────────────────── */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-4">
         {loading ? (
-          view === "grid" ? (
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 print:hidden">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <SkeletonCard key={i} view="grid" />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2 print:hidden">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} view="list" />
-              ))}
-            </div>
-          )
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-border/50 bg-card/60 p-0 overflow-hidden animate-pulse"
+              >
+                <div className="aspect-square bg-muted/80" />
+                <div className="p-3.5 space-y-2">
+                  <div className="h-4 bg-muted/80 rounded w-4/5" />
+                  <div className="h-3 bg-muted/60 rounded w-1/2" />
+                  <div className="h-5 bg-muted/80 rounded w-1/3 pt-1" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-3.5 print:hidden">
-            <div className="h-14 w-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
-              <Package className="h-7 w-7 text-destructive opacity-60" />
-            </div>
-            <div>
-              <p className="font-semibold">Could not load catalogue</p>
-              <p className="text-sm text-muted-foreground mt-1">{error}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setRetryCount((c) => c + 1)}>
-              <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Try again
+          <div className="py-16 text-center space-y-3 bg-card/60 rounded-3xl border border-border/70 p-8 max-w-lg mx-auto">
+            <p className="text-destructive font-semibold text-sm">Failed to load catalogue items</p>
+            <p className="text-xs text-muted-foreground">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.reload()}
+              className="text-xs rounded-xl"
+            >
+              Reload Page
             </Button>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-3 print:hidden">
-            <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center">
-              <Package className="h-7 w-7 text-muted-foreground opacity-50" />
-            </div>
-            <div>
-              <p className="font-semibold">No products found</p>
-              <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                {activeFilterCount > 0
-                  ? "Try adjusting your search or filters."
-                  : "No products are available right now."}
-              </p>
-            </div>
-            {activeFilterCount > 0 && (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear filters
-              </Button>
-            )}
+          <div className="py-16 text-center space-y-3 bg-card/40 rounded-3xl border border-border/60 p-8 max-w-md mx-auto">
+            <Package className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+            <h3 className="text-base font-bold text-foreground">No Products Found</h3>
+            <p className="text-xs text-muted-foreground">
+              No products match your current search or category filter. Try resetting your filters.
+            </p>
+            <Button variant="outline" size="sm" onClick={clearFilters} className="text-xs rounded-xl">
+              Clear All Filters
+            </Button>
+          </div>
+        ) : view === "grid" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+            {paginated.map((item) => (
+              <ProductCard
+                key={item.id}
+                item={item}
+                formattedPrice={formatPrice(item.price)}
+                onQuickView={() => setSelectedItem(item)}
+                onAddToBasket={() => addToBasket(item)}
+                inBasketQty={basket.find((b) => b.item.id === item.id)?.quantity || 0}
+                hidePrices={hidePricesParam}
+              />
+            ))}
           </div>
         ) : (
-          <>
-            {/* Screen view */}
-            {groupByCategory ? (
-              <div className="space-y-7 md:space-y-8 print:hidden">
-                {categoryGroups.map((group) => {
-                  const Icon = group.category.icon;
-                  return (
-                    <section key={group.category.id} className="space-y-3">
-                      <div
-                        className={`rounded-2xl border ${group.category.accentBorder} bg-card/90 backdrop-blur-xs p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-3`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center border shrink-0 ${group.category.badgeClass}`}
-                          >
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="font-bold text-sm sm:text-base text-foreground tracking-tight">
-                                {group.category.name}
-                              </h3>
-                              <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${group.category.badgeClass}`}
-                              >
-                                {group.items.length}{" "}
-                                {group.items.length === 1 ? "product" : "products"}
-                              </span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 sm:line-clamp-none">
-                              {group.category.tagline}
-                            </p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => setSelectedCategory(group.category.id)}
-                          className="text-xs text-primary hover:underline font-medium shrink-0 hidden sm:inline-block"
-                        >
-                          Focus Category
-                        </button>
-                      </div>
-
-                      {view === "grid" ? (
-                        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                          {group.items.map((item) => (
-                            <GridCard
-                              key={`${item.location}-${item.id}`}
-                              item={item}
-                              onClick={() => setSelectedItem(item)}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {group.items.map((item) => (
-                            <ListRow
-                              key={`${item.location}-${item.id}`}
-                              item={item}
-                              onClick={() => setSelectedItem(item)}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </section>
-                  );
-                })}
-              </div>
-            ) : view === "grid" ? (
-              <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 print:hidden">
-                {paginated.map((item) => (
-                  <GridCard
-                    key={`${item.location}-${item.id}`}
-                    item={item}
-                    onClick={() => setSelectedItem(item)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2 print:hidden">
-                {paginated.map((item) => (
-                  <ListRow
-                    key={`${item.location}-${item.id}`}
-                    item={item}
-                    onClick={() => setSelectedItem(item)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Print-only view (grouped by category for official aesthetic) */}
-            <div className="hidden print:block print:space-y-5">
-              {categoryGroups.map((group) => (
-                <div
-                  key={`print-cat-${group.category.id}`}
-                  className="print:break-inside-avoid space-y-2"
-                >
-                  <div className="flex items-center justify-between py-1.5 px-3 bg-slate-900 text-white rounded font-bold text-xs">
-                    <span className="uppercase tracking-wider">
-                      {group.category.name}
-                    </span>
-                    <span className="text-[11px] font-normal opacity-90">
-                      {group.items.length}{" "}
-                      {group.items.length === 1 ? "item" : "items"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2.5">
-                    {group.items.map((item) => (
-                      <PrintCard
-                        key={`print-${item.location}-${item.id}`}
-                        item={item}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
+          <div className="space-y-2.5">
+            {paginated.map((item) => (
+              <ProductListRow
+                key={item.id}
+                item={item}
+                formattedPrice={formatPrice(item.price)}
+                onQuickView={() => setSelectedItem(item)}
+                onAddToBasket={() => addToBasket(item)}
+                inBasketQty={basket.find((b) => b.item.id === item.id)?.quantity || 0}
+                hidePrices={hidePricesParam}
+              />
+            ))}
+          </div>
         )}
 
-        {/* Show more (Hidden when printing, only in flat mode) */}
-        {!loading && !groupByCategory && hasMore && (
-          <div className="flex justify-center pt-2 print:hidden">
+        {/* Load More Pagination */}
+        {hasMore && (
+          <div className="py-8 text-center print:hidden">
             <Button
-              id="pub-show-more-btn"
               variant="outline"
               onClick={() => setPage((p) => p + 1)}
-              className="w-full sm:w-auto px-6 font-medium"
+              className="px-6 h-10 rounded-xl text-xs font-semibold shadow-xs hover:bg-muted"
             >
-              Show more ({filtered.length - paginated.length} remaining)
+              Load More Products ({filtered.length - paginated.length} remaining)
             </Button>
           </div>
         )}
       </main>
 
-      {/* Product Quick View Modal */}
-      {selectedItem && (
-        <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-          <DialogContent className="max-w-[92vw] sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl animate-[scaleIn_0.3s_ease-out]">
-            <div className="grid grid-cols-1 md:grid-cols-2 w-full max-h-[85vh] md:max-h-[70vh] overflow-y-auto md:overflow-hidden">
-              {/* Left: Image */}
-              <div className="relative aspect-square md:aspect-auto md:h-full w-full bg-muted border-b md:border-b-0 md:border-r border-border/40">
-                {selectedItem.image ? (
-                  <img
-                    src={selectedItem.image}
-                    alt={selectedItem.description}
-                    className="h-full w-full object-cover md:absolute md:inset-0"
-                  />
-                ) : (
-                  <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-12 md:absolute md:inset-0">
-                    <ImageOff className="h-16 w-16 opacity-20 text-primary" />
-                    <span className="text-xs font-semibold text-muted-foreground/60">
-                      No image available
-                    </span>
+      {/* ── FLOATING ENQUIRY BASKET DOCK (High-Converting WhatsApp CTA) ───── */}
+      {basketItemCount > 0 && (
+        <aside
+          aria-label="Enquiry basket notification"
+          className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40 animate-fade-in print:hidden"
+        >
+          <div className="bg-card/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-2xl p-2.5 sm:p-3 flex items-center gap-3 max-w-md">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 pr-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground">
+                  {basketItemCount} Item{basketItemCount === 1 ? "" : "s"} in Enquiry
+                </span>
+              </div>
+              {!hidePricesParam && (
+                <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatPrice(basketTotalNgn)}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setBasketOpen(true)}
+                className="h-8.5 text-xs font-semibold px-2.5 rounded-xl"
+              >
+                Review
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSendWhatsAppEnquiry}
+                className="h-8.5 text-xs font-semibold px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>Send WhatsApp</span>
+              </Button>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* ── ENQUIRY BASKET DRAWER / SHEET ─────────────────────────────────── */}
+      <Sheet open={basketOpen} onOpenChange={setBasketOpen}>
+        <SheetContent side="right" className="w-[94vw] sm:w-[480px] p-0 flex flex-col bg-card">
+          <SheetHeader className="p-4 sm:p-5 border-b border-border/70 bg-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <ShoppingBag className="h-4 w-4" />
+                </div>
+                <div>
+                  <SheetTitle className="text-base font-bold text-foreground">
+                    Product Order &amp; Quotation Enquiry
+                  </SheetTitle>
+                  <SheetDescription className="text-xs text-muted-foreground">
+                    Review your items and send directly to Puido sales team via WhatsApp
+                  </SheetDescription>
+                </div>
+              </div>
+            </div>
+          </SheetHeader>
+
+          {/* Basket Items List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {basket.length === 0 ? (
+              <div className="py-16 text-center space-y-2">
+                <ShoppingBag className="h-10 w-10 text-muted-foreground/30 mx-auto" />
+                <p className="text-xs font-semibold text-foreground">Your quote enquiry is empty</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Browse products and click "+ Add to Enquiry" to build your order list.
+                </p>
+              </div>
+            ) : (
+              basket.map(({ item, quantity }) => (
+                <div
+                  key={item.id}
+                  className="p-3 rounded-xl border border-border/70 bg-card hover:bg-muted/30 transition-colors flex items-start gap-3"
+                >
+                  <div className="h-14 w-14 rounded-lg bg-muted overflow-hidden shrink-0">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.description}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-muted-foreground/40">
+                        <ImageOff className="h-5 w-5" />
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-semibold text-foreground line-clamp-2 leading-tight">
+                      {item.description}
+                    </h4>
+                    {!hidePricesParam && (
+                      <p className="text-xs font-mono font-bold text-primary mt-1">
+                        {formatPrice(item.price)}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between mt-2">
+                      {/* Quantity Controls */}
+                      <div className="inline-flex items-center rounded-lg border border-border/70 bg-background p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => updateBasketQty(item.id, -1)}
+                          className="h-6 w-6 rounded flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground"
+                          title="Decrease quantity"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-8 text-center text-xs font-mono font-bold">
+                          {quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateBasketQty(item.id, 1)}
+                          className="h-6 w-6 rounded flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground"
+                          title="Increase quantity"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        type="button"
+                        onClick={() => removeFromBasket(item.id)}
+                        className="text-muted-foreground hover:text-destructive text-[11px] p-1"
+                        title="Remove item"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Customer Details & Checkout Footer */}
+          {basket.length > 0 && (
+            <div className="p-4 border-t border-border/70 bg-card space-y-3">
+              {/* Optional Name & City inputs */}
+              <div className="space-y-2">
+                <Input
+                  placeholder="Your Name / Company (e.g. Arc. Johnson)"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="h-8.5 text-xs bg-muted/20 rounded-xl"
+                />
+                <Input
+                  placeholder="Delivery City / Address (e.g. Lekki Phase 1, Lagos)"
+                  value={customerCity}
+                  onChange={(e) => setCustomerCity(e.target.value)}
+                  className="h-8.5 text-xs bg-muted/20 rounded-xl"
+                />
+                <Input
+                  placeholder="Special Requests (e.g. Need installation quotation)"
+                  value={customerNotes}
+                  onChange={(e) => setCustomerNotes(e.target.value)}
+                  className="h-8.5 text-xs bg-muted/20 rounded-xl"
+                />
               </div>
 
-              {/* Right: Details */}
-              <div className="flex flex-col justify-between p-5 md:p-7 space-y-4 md:overflow-y-auto">
-                <div className="space-y-3">
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {selectedItem.location} Branch
-                  </span>
-                  <DialogTitle className="text-lg md:text-xl font-extrabold text-foreground leading-snug">
-                    {selectedItem.description}
-                  </DialogTitle>
-
-                  {/* Price card */}
-                  <div className="p-3.5 rounded-2xl bg-primary/5 border border-primary/10 shadow-3xs">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary/70 block">
-                      Price
-                    </span>
-                    <strong className="text-xl md:text-2xl text-primary font-black tracking-tight mt-1 block">
-                      {formatCurrency(selectedItem.price || 0)}
-                    </strong>
+              {/* Total Summary */}
+              {!hidePricesParam && (
+                <div className="p-3 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-muted-foreground font-medium">Estimated Budget</p>
+                    <p className="text-[10px] text-muted-foreground">In {selectedCurrency}</p>
                   </div>
+                  <p className="text-base font-black font-mono text-foreground">
+                    {formatPrice(basketTotalNgn)}
+                  </p>
+                </div>
+              )}
 
-                  {/* Features */}
-                  {selectedItem.features && selectedItem.features.length > 0 && (
-                    <div className="pt-1">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
-                        Key Product Features
-                      </h4>
-                      <ul className="space-y-2">
-                        {selectedItem.features.map((feature, idx) => (
-                          <li
-                            key={idx}
-                            className="flex items-start gap-2.5 text-xs text-foreground/80 leading-relaxed"
-                          >
-                            <span className="mt-0.5 h-4 w-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                              <Check className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
-                            </span>
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
+              {/* Send WhatsApp CTA */}
+              <Button
+                type="button"
+                onClick={handleSendWhatsAppEnquiry}
+                className="w-full h-10 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span>Send Order Proposal on WhatsApp</span>
+              </Button>
+
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                <button
+                  type="button"
+                  onClick={clearBasket}
+                  className="hover:text-destructive underline"
+                >
+                  Clear enquiry
+                </button>
+                <span>Call sales: {BUSINESS_PHONE}</span>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── LIGHTBOX QUICK VIEW MODAL ────────────────────────────────────── */}
+      <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        <DialogContent className="max-w-md sm:max-w-2xl p-0 overflow-hidden bg-card border-border/70 rounded-3xl shadow-2xl">
+          {selectedItem && (
+            <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2">
+                {/* Media Section */}
+                <div className="aspect-square bg-muted/30 relative overflow-hidden flex items-center justify-center p-4">
+                  {selectedItem.image ? (
+                    <img
+                      src={selectedItem.image}
+                      alt={selectedItem.description}
+                      className="max-h-full max-w-full object-contain rounded-xl"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-muted-foreground/40 gap-2">
+                      <ImageOff className="h-12 w-12" />
+                      <span className="text-xs">No image available</span>
                     </div>
                   )}
                 </div>
 
-                {/* Footer actions */}
-                <div className="flex flex-col gap-2.5 pt-4 border-t border-border/40 mt-auto">
-                  <a
-                    href={enquiryLink(selectedItem)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 hover:scale-[1.02]"
-                    aria-label="Enquire about this product on WhatsApp"
-                  >
-                    <MessageCircle className="h-4 w-4" /> Enquire on WhatsApp
-                  </a>
-                  <div className="flex gap-2">
+                {/* Details Section */}
+                <div className="p-5 sm:p-6 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                      {getProductCategory({
+                        "Item Description": selectedItem.description,
+                        features: selectedItem.features,
+                      }).name}
+                    </span>
+
+                    <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">
+                      {selectedItem.description}
+                    </h2>
+
+                    <div className="pt-1">
+                      <p className="text-xl sm:text-2xl font-black font-mono text-primary">
+                        {formatPrice(selectedItem.price)}
+                      </p>
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 flex items-center gap-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Verified Stock · Ikeja Showroom
+                      </p>
+                    </div>
+
+                    {/* Features list */}
+                    {selectedItem.features && selectedItem.features.length > 0 && (
+                      <div className="pt-2 border-t border-border/60 space-y-1.5">
+                        <p className="text-xs font-semibold text-foreground">Specifications:</p>
+                        <ul className="space-y-1 text-xs text-muted-foreground">
+                          {selectedItem.features.map((feat, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-primary font-bold">✓</span>
+                              <span>{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal Action Buttons */}
+                  <div className="pt-3 border-t border-border/70 space-y-2">
                     <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-10 rounded-xl hover:bg-primary/5 border-border/80 transition-all font-semibold"
+                      type="button"
                       onClick={() => {
-                        navigator.clipboard.writeText(
-                          `${selectedItem.description} - ${formatCurrency(
-                            selectedItem.price || 0
-                          )}`
-                        );
-                        toast.success("Product details copied to clipboard");
+                        addToBasket(selectedItem);
+                        setSelectedItem(null);
                       }}
+                      className="w-full h-9.5 text-xs font-bold rounded-xl gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                     >
-                      <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Add to Quote Enquiry</span>
                     </Button>
+
                     <Button
-                      variant="default"
-                      size="sm"
-                      className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all"
-                      onClick={() => setSelectedItem(null)}
+                      asChild
+                      variant="outline"
+                      className="w-full h-9.5 text-xs font-semibold rounded-xl gap-2 border-emerald-600/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                     >
-                      Close
+                      <a
+                        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                          `Hello! I am inquiring about "${selectedItem.description}" (${formatPrice(
+                            selectedItem.price
+                          )}) from your showroom catalogue.`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        <span>Instant WhatsApp Inquiry</span>
+                      </a>
                     </Button>
                   </div>
                 </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
-      {/* ── MOBILE STICKY ACTION BAR (Hidden when printing) ─────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden print:hidden border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="flex items-center gap-2 px-3 py-2.5 pb-safe-bottom">
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 inline-flex items-center justify-center gap-1.5 h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold shadow-md active:scale-[0.98] transition-transform"
-            aria-label="Ask for price on WhatsApp"
+// ─── Single Product Card (Grid View) ─────────────────────────────────────────
+function ProductCard({
+  item,
+  formattedPrice,
+  onQuickView,
+  onAddToBasket,
+  inBasketQty,
+  hidePrices,
+}: {
+  item: PublicItem;
+  formattedPrice: string;
+  onQuickView: () => void;
+  onAddToBasket: () => void;
+  inBasketQty: number;
+  hidePrices: boolean;
+}) {
+  return (
+    <div className="group rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+      <div>
+        {/* Media Container with Quick View */}
+        <div
+          onClick={onQuickView}
+          className="aspect-square bg-muted/40 relative overflow-hidden flex items-center justify-center cursor-pointer"
+        >
+          {item.image ? (
+            <>
+              <img
+                src={item.image}
+                alt={item.description}
+                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                width={360}
+                height={360}
+              />
+              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-2xs">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/95 text-slate-900 shadow-md">
+                  <Eye className="h-3.5 w-3.5 text-primary" /> Quick View
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground/40 gap-1">
+              <ImageOff className="h-8 w-8" />
+              <span className="text-[10px]">No image</span>
+            </div>
+          )}
+
+          {/* In-basket indicator */}
+          {inBasketQty > 0 && (
+            <span className="absolute top-2.5 right-2.5 h-6 px-2 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center gap-1 shadow-sm font-mono">
+              <Check className="h-3 w-3" /> {inBasketQty} in quote
+            </span>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="p-3 sm:p-3.5 space-y-1.5">
+          <h3
+            onClick={onQuickView}
+            className="font-semibold text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2.3rem] text-foreground group-hover:text-primary transition-colors cursor-pointer"
           >
-            <MessageCircle className="h-4 w-4" /> Ask for Price
-          </a>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.print()}
-            className="h-11 w-11 rounded-xl flex-shrink-0 border-border/60 bg-card active:scale-[0.98]"
-            title="Print or export catalogue to PDF"
-            aria-label="Print catalogue"
-          >
-            <Printer className="h-4 w-4 text-foreground" />
-          </Button>
-          <Button
-            id="pub-mobile-filter-fab"
-            variant="outline"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="h-11 w-11 rounded-xl flex-shrink-0 relative border-border/60 bg-card"
-            aria-label="Open filters"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            {activeFilterCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shadow-sm">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
+            {item.description}
+          </h3>
+
+          <div className="pt-0.5">
+            <span className="text-sm sm:text-base font-black text-primary font-mono tracking-tight">
+              {formattedPrice}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* ── MOBILE FILTER BOTTOM SHEET (Hidden when printing) ───────────── */}
-      <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl p-0 pb-safe-bottom sm:hidden border-t border-border/40">
-          <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-muted-foreground/20" />
-          <SheetHeader className="px-4 pb-2 pt-3">
-            <SheetTitle className="text-base text-center">Filters & Sort</SheetTitle>
-          </SheetHeader>
-          <div className="px-4 pb-6 pt-2 space-y-5 max-h-[70vh] overflow-y-auto">
-            {/* Sort segmented control */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Sort by
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {SORT_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setSort(opt.value)}
-                    className={`px-3 py-2.5 rounded-xl text-xs font-medium border transition-all ${sort === opt.value
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-card text-foreground border-border/60 hover:border-primary/30"
-                      }`}
-                  >
-                    {opt.short}
-                  </button>
-                ))}
-              </div>
-            </div>
+      {/* Action Strip: Add to Enquiry & WhatsApp */}
+      <div className="p-2 sm:p-3 pt-0 flex items-center gap-1.5 mt-auto">
+        <Button
+          type="button"
+          onClick={onAddToBasket}
+          size="sm"
+          className="flex-1 h-8 text-xs font-semibold rounded-xl gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span>Add to Quote</span>
+        </Button>
 
-            {/* Price range */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Price Range (₦)
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  id="pub-mobile-min-price"
-                  type="number"
-                  min={0}
-                  placeholder="Min"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="h-11 text-sm rounded-xl bg-background/50 border-border/60"
-                />
-                <Input
-                  id="pub-mobile-max-price"
-                  type="number"
-                  min={0}
-                  placeholder="Max"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="h-11 text-sm rounded-xl bg-background/50 border-border/60"
-                />
-              </div>
-            </div>
+        <Button
+          asChild
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-xl border-emerald-600/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0"
+          title="Inquire directly on WhatsApp"
+        >
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+              `Hello! I am inquiring about "${item.description}" (${formattedPrice}) from your online catalogue.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-            {/* Actions */}
-            <div className="flex gap-2.5 pt-1">
-              <Button
-                id="pub-mobile-clear-filters"
-                variant="outline"
-                onClick={() => clearFilters()}
-                className="flex-1 h-11 rounded-xl font-semibold"
-              >
-                <X className="h-4 w-4 mr-1" /> Clear
-              </Button>
-              <Button
-                id="pub-mobile-apply-filters"
-                onClick={() => setMobileFiltersOpen(false)}
-                className="flex-1 h-11 rounded-xl font-semibold"
-              >
-                Show {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-              </Button>
-            </div>
+// ─── Single Product Row (List View) ──────────────────────────────────────────
+function ProductListRow({
+  item,
+  formattedPrice,
+  onQuickView,
+  onAddToBasket,
+  inBasketQty,
+  hidePrices,
+}: {
+  item: PublicItem;
+  formattedPrice: string;
+  onQuickView: () => void;
+  onAddToBasket: () => void;
+  inBasketQty: number;
+  hidePrices: boolean;
+}) {
+  return (
+    <div className="p-3 rounded-xl border border-border/70 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between gap-3 group">
+      <div
+        onClick={onQuickView}
+        className="h-14 w-14 rounded-lg bg-muted overflow-hidden shrink-0 cursor-pointer"
+      >
+        {item.image ? (
+          <img
+            src={item.image}
+            alt={item.description}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+            loading="lazy"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-muted-foreground/40">
+            <ImageOff className="h-5 w-5" />
           </div>
-        </SheetContent>
-      </Sheet>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h4
+          onClick={onQuickView}
+          className="text-xs sm:text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors cursor-pointer"
+        >
+          {item.description}
+        </h4>
+        <p className="text-xs font-mono font-bold text-primary mt-0.5">
+          {formattedPrice}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <Button
+          type="button"
+          onClick={onAddToBasket}
+          size="sm"
+          className="h-8 text-xs font-semibold rounded-xl gap-1 bg-primary text-primary-foreground"
+        >
+          <Plus className="h-3 w-3" />
+          <span className="hidden sm:inline">Add</span>
+        </Button>
+
+        <Button
+          asChild
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+          title="WhatsApp inquiry"
+        >
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+              `Hello! I am inquiring about "${item.description}" (${formattedPrice}) from your online catalogue.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }

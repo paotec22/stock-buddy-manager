@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { format, addDays } from "date-fns";
 
 import { InvoiceHeader } from "@/components/invoice/InvoiceHeader";
@@ -40,7 +40,16 @@ const CreateInvoice = () => {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { session, loading } = useAuth();
+
+  useEffect(() => {
+    const prefilled = (location.state as any)?.prefilledItems;
+    if (prefilled && Array.isArray(prefilled) && prefilled.length > 0) {
+      setItems(prefilled);
+      toast.success(`Loaded ${prefilled.length} item(s) from Catalogue into Invoice!`);
+    }
+  }, [location.state]);
 
   const handleLoadInvoiceData = (data: {
     customerName: string;

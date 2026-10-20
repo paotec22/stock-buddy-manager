@@ -14,6 +14,10 @@ interface CatalogueCategorySectionProps {
   onSelectItem: (item: InventoryItem) => void;
   onSelectCategoryFilter?: (catId: string) => void;
   defaultExpanded?: boolean;
+  isSelectMode?: boolean;
+  selectedIds?: Set<number>;
+  onToggleSelect?: (id: number) => void;
+  onQuickShareItem?: (id: number) => void;
 }
 
 export function CatalogueCategorySection({
@@ -24,6 +28,10 @@ export function CatalogueCategorySection({
   onSelectItem,
   onSelectCategoryFilter,
   defaultExpanded = true,
+  isSelectMode,
+  selectedIds,
+  onToggleSelect,
+  onQuickShareItem,
 }: CatalogueCategorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const Icon = category.icon || Layers;
@@ -111,6 +119,10 @@ export function CatalogueCategorySection({
                   item={item}
                   url={item.image_url ? signedUrls[item.image_url] ?? null : null}
                   onClick={() => onSelectItem(item)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedIds?.has(item.id)}
+                  onToggleSelect={() => onToggleSelect?.(item.id)}
+                  onQuickShare={() => onQuickShareItem?.(item.id)}
                 />
               ))}
             </div>
@@ -124,6 +136,9 @@ export function CatalogueCategorySection({
                   item={item}
                   url={item.image_url ? signedUrls[item.image_url] ?? null : null}
                   onClick={() => onSelectItem(item)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedIds?.has(item.id)}
+                  onToggleSelect={() => onToggleSelect?.(item.id)}
                 />
               ))}
             </div>
@@ -137,21 +152,16 @@ export function CatalogueCategorySection({
                   item={item}
                   url={item.image_url ? signedUrls[item.image_url] ?? null : null}
                   onClick={() => onSelectItem(item)}
+                  isSelectMode={isSelectMode}
+                  isSelected={selectedIds?.has(item.id)}
+                  onToggleSelect={() => onToggleSelect?.(item.id)}
+                  onQuickShare={() => onQuickShareItem?.(item.id)}
                 />
               ))}
             </div>
           )}
         </div>
-      ) : (
-        <div
-          onClick={() => setIsExpanded(true)}
-          className="rounded-xl border border-dashed border-border/70 bg-card/40 hover:bg-card/70 p-3 text-center cursor-pointer transition-colors"
-        >
-          <span className="text-xs text-muted-foreground font-medium">
-            {items.length} {category.shortName} hidden. Click to show products.
-          </span>
-        </div>
-      )}
+      ) : null}
     </section>
   );
 }
