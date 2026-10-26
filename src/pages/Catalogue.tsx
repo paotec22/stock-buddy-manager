@@ -87,6 +87,7 @@ export default function Catalogue() {
 
   // Share link builder modal
   const [shareOpen, setShareOpen] = useState(false);
+  const [includePricesInShare, setIncludePricesInShare] = useState<boolean>(true);
 
   // Batch selection state for custom share and multi-item quotation
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -116,15 +117,21 @@ export default function Catalogue() {
     if (selectedList.length === 0) return;
 
     const total = selectedList.reduce((acc, curr) => acc + (curr.Price || 0), 0);
-    let msg = `*PUIDO SMART SOLUTIONS — PRODUCT QUOTATION*\n`;
+    let msg = `*PUIDO SMART SOLUTIONS — PRODUCT COLLECTION*\n`;
     msg += `Curated Selection (${selectedList.length} products):\n`;
     msg += `----------------------------------------\n`;
     selectedList.forEach((it, idx) => {
-      msg += `${idx + 1}. *${it["Item Description"]}* — ₦${(it.Price || 0).toLocaleString()} (SKU #${it.id})\n`;
+      if (includePricesInShare) {
+        msg += `${idx + 1}. *${it["Item Description"]}* — ₦${(it.Price || 0).toLocaleString()} (SKU #${it.id})\n`;
+      } else {
+        msg += `${idx + 1}. *${it["Item Description"]}* (SKU #${it.id})\n`;
+      }
     });
     msg += `----------------------------------------\n`;
-    msg += `*Total Budget:* ₦${total.toLocaleString()}\n\n`;
-    msg += `🔗 *View Interactive Collection:* ${window.location.origin}/share/catalogue?ids=${Array.from(selectedItemIds).join(",")}\n\n`;
+    if (includePricesInShare) {
+      msg += `*Total Budget:* ₦${total.toLocaleString()}\n\n`;
+    }
+    msg += `🔗 *View Interactive Collection:* ${window.location.origin}/share/catalogue?ids=${Array.from(selectedItemIds).join(",")}${includePricesInShare ? "" : "&hidePrice=1"}\n\n`;
     msg += `Please let us know if you would like to confirm this order or schedule delivery.`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");

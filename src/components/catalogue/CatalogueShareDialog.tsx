@@ -41,6 +41,7 @@ interface CatalogueShareDialogProps {
   onOpenChange: (open: boolean) => void;
   items: InventoryItem[];
   initialSelectedIds?: number[];
+  initialHidePrices?: boolean;
 }
 
 type ShareMode = "presets" | "custom" | "qrcode";
@@ -50,6 +51,7 @@ export function CatalogueShareDialog({
   onOpenChange,
   items,
   initialSelectedIds = [],
+  initialHidePrices = false,
 }: CatalogueShareDialogProps) {
   // Tab Mode
   const [activeTab, setActiveTab] = useState<ShareMode>("presets");
@@ -62,7 +64,14 @@ export function CatalogueShareDialog({
 
   // Link customization options
   const [proposalTitle, setProposalTitle] = useState("");
-  const [hidePrices, setHidePrices] = useState(false);
+  const [hidePrices, setHidePrices] = useState(initialHidePrices);
+
+  useEffect(() => {
+    if (initialHidePrices !== undefined) {
+      setHidePrices(initialHidePrices);
+    }
+  }, [initialHidePrices]);
+
   const [targetCurrency, setTargetCurrency] = useState<"NGN" | "USD" | "EUR" | "GBP">("NGN");
 
   // QR Code State

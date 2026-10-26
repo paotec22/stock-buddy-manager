@@ -34,6 +34,7 @@ const Accessories = lazy(() => import("./pages/Accessories"));
 const Reconciliation = lazy(() => import("./pages/Reconciliation"));
 const Purchases = lazy(() => import("./pages/Purchases"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const MarketingAgent = lazy(() => import("./pages/MarketingAgent"));
 
 function RootLandingRoute() {
   const { session, loading } = useAuth();
@@ -101,6 +102,7 @@ function AnimatedRoutes() {
           <Route path="/purchases" element={<AppLayout><Purchases /></AppLayout>} />
           <Route path="/privacy" element={<AppLayout><PrivacyPolicy /></AppLayout>} />
           <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
+          <Route path="/marketing" element={<AppLayout><MarketingAgent /></AppLayout>} />
           <Route path="/share/catalogue" element={<PublicCatalogue />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

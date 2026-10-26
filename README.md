@@ -183,6 +183,14 @@
 
 ---
 
+### 🤖 17. AI Marketing Agent & Sales Data Preservation (`/marketing`)
+- **Inventory Item Picker & Campaign Generator**: Hand-pick specific inventory items, set custom promotion goals, and choose target platforms (WhatsApp, Instagram, Twitter/X, LinkedIn, TikTok).
+- **Server-Side Gemini AI Integration**: Powered by `@google/genai` (`gemini-3.8-flash`) running securely on the Express backend, generating high-converting professional marketing copy, hooks, and CTAs tailored to each platform.
+- **1-Click Copy & Direct WhatsApp Dispatch**: Instant clipboard copying and direct WhatsApp sharing links.
+- **Robust Database Integrity (`ON DELETE SET NULL`)**: Foreign key constraints on sales and invoice items ensure that deleting an inventory item preserves historical sales records and financial reports without cascading deletion.
+
+---
+
 ## 🛠️ Technology Stack
 
 | Layer | Technology |

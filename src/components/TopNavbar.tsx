@@ -34,6 +34,7 @@ import {
   User,
   ScanBarcode,
   Zap,
+  Sparkles,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
@@ -302,6 +303,12 @@ export function TopNavbar() {
                 title="Product Catalogue"
                 description="Visual showroom & customer share link"
                 tourId="sidebar-catalogue"
+              />
+              <GroupDropdownItem
+                to="/marketing"
+                icon={Sparkles}
+                title="AI Marketing Agent"
+                description="Generate social campaigns from inventory"
               />
             </DropdownMenuContent>
           </DropdownMenu>
