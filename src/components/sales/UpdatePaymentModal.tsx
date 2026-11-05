@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { CheckCircle2, Clock, AlertCircle, CreditCard, Sparkles } from "lucide-react";
 import { Sale, PaymentStatus } from "./types";
 import { formatCurrency } from "@/utils/formatters";
+import { preserveSaleNotesMetadata } from "@/utils/salesItemResolver";
 
 interface UpdatePaymentModalProps {
   open: boolean;
@@ -118,7 +119,7 @@ export function UpdatePaymentModal({
           amount_paid: newAmountPaid,
           sale_price: newPrice,
           total_amount: newTotalAmount,
-          notes: paymentNotes.trim() || null,
+          notes: preserveSaleNotesMetadata(sale.raw_notes ?? sale.notes, paymentNotes),
         })
         .eq("id", sale.id);
 

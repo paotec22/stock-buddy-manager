@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { formatCurrency } from "@/utils/formatters";
 import { MapPin, TrendingUp, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 
 interface LocationSales {
   location: string;
@@ -31,7 +32,8 @@ export function LocationPerformanceTable({ searchTerm = "" }: LocationPerformanc
         .from('sales')
         .select(`
           total_amount,
-          item_id
+          item_id,
+          notes
         `);
 
       if (salesError) {
@@ -52,8 +54,10 @@ export function LocationPerformanceTable({ searchTerm = "" }: LocationPerformanc
         inventoryData.map((item) => [item.id, item.location])
       );
 
-      const salesByLocation = salesData.reduce((acc: { [key: string]: number }, sale) => {
-        const location = locationMap.get(sale.item_id) || 'Unknown';
+      const salesByLocation = salesData.reduce((acc: { [key: string]: number }, sale: any) => {
+        const mappedLocation = sale.item_id ? locationMap.get(sale.item_id) : undefined;
+        const resolved = resolveSaleItemDisplay(sale, "Item", "Unknown");
+        const location = mappedLocation || resolved.location || 'Unknown';
         acc[location] = (acc[location] || 0) + (sale.total_amount || 0);
         return acc;
       }, {});

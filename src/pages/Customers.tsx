@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -236,7 +237,7 @@ export default function Customers() {
       if (!selected?.id) return [];
       const { data, error } = await supabase
         .from("sales")
-        .select(`id, sale_date, quantity, sale_price, total_amount, amount_paid, payment_status, "inventory list" ( "Item Description" )`)
+        .select(`id, sale_date, quantity, sale_price, total_amount, amount_paid, payment_status, notes, "inventory list" ( "Item Description" )`)
         .eq("customer_id", selected.id)
         .order("sale_date", { ascending: false })
         .limit(50);
@@ -1393,7 +1394,7 @@ export default function Customers() {
                             <tr key={s.id} className="hover:bg-muted/30">
                               <td className="py-2 px-3">{new Date(s.sale_date).toLocaleDateString()}</td>
                               <td className="py-2 px-3 font-medium">
-                                {s["inventory list"]?.["Item Description"] || "Inventory Item"}
+                                {resolveSaleItemDisplay(s, "Inventory Item").itemName}
                               </td>
                               <td className="py-2 px-3 text-right font-mono">{s.quantity}</td>
                               <td className="py-2 px-3 text-right font-mono font-bold">

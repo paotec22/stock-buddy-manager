@@ -37,6 +37,7 @@ import {
 import { formatCurrency } from "@/utils/formatters";
 import { toast } from "sonner";
 import type { Customer, CustomerStats } from "@/pages/Customers";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 
 interface RemoveDebtDialogProps {
   open: boolean;
@@ -109,18 +110,21 @@ export function RemoveDebtDialog({
         return total > paid || s.payment_status !== "paid";
       });
 
-      return withDebt.map((s: any) => ({
-        id: s.id,
-        sale_date: s.sale_date,
-        item_id: s.item_id,
-        quantity: s.quantity,
-        sale_price: s.sale_price,
-        total_amount: Number(s.total_amount) || 0,
-        amount_paid: Number(s.amount_paid) || 0,
-        payment_status: s.payment_status,
-        notes: s.notes,
-        item_description: s["inventory list"]?.["Item Description"] || "Showroom Stock Item",
-      })) as CustomerUnpaidSale[];
+      return withDebt.map((s: any) => {
+        const resolved = resolveSaleItemDisplay(s, "Showroom Stock Item");
+        return {
+          id: s.id,
+          sale_date: s.sale_date,
+          item_id: s.item_id,
+          quantity: s.quantity,
+          sale_price: s.sale_price,
+          total_amount: Number(s.total_amount) || 0,
+          amount_paid: Number(s.amount_paid) || 0,
+          payment_status: s.payment_status,
+          notes: s.notes,
+          item_description: resolved.itemName,
+        };
+      }) as CustomerUnpaidSale[];
     },
     enabled: open && !!customer?.id,
   });

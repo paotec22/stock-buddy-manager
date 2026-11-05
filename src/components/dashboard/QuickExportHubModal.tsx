@@ -23,6 +23,7 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 
 interface QuickExportHubModalProps {
   open: boolean;
@@ -136,18 +137,21 @@ export function QuickExportHubModal({
         "Amount Paid",
         "Notes",
       ];
-      const rows = sales.map((s: any) => [
-        s.id,
-        s.sale_date ? format(new Date(s.sale_date), "yyyy-MM-dd HH:mm") : "",
-        s["inventory list"]?.["Item Description"] || "Item",
-        s["inventory list"]?.location || "Default",
-        s.quantity || 1,
-        s.sale_price || 0,
-        s.total_amount || 0,
-        s.payment_status || "paid",
-        s.amount_paid || s.total_amount || 0,
-        s.notes || "",
-      ]);
+      const rows = sales.map((s: any) => {
+        const resolved = resolveSaleItemDisplay(s, "Item", "Default");
+        return [
+          s.id,
+          s.sale_date ? format(new Date(s.sale_date), "yyyy-MM-dd HH:mm") : "",
+          resolved.itemName,
+          resolved.location,
+          s.quantity || 1,
+          s.sale_price || 0,
+          s.total_amount || 0,
+          s.payment_status || "paid",
+          s.amount_paid || s.total_amount || 0,
+          resolved.notes || "",
+        ];
+      });
 
       const timestamp = format(new Date(), "yyyy-MM-dd_HHmm");
       downloadCsv(`Sales_Register_${timestamp}.csv`, headers, rows);

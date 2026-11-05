@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { getSecureItem, setSecureItem } from "@/utils/secureStorage";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 
 // Types
 export interface CompanyAccount {
@@ -242,15 +243,18 @@ export default function Reconciliation() {
         return [];
       }
 
-      return (data || []).map((s: any) => ({
-        id: s.id,
-        sale_date: s.sale_date,
-        total_amount: s.total_amount,
-        amount_paid: s.amount_paid || s.total_amount,
-        payment_status: s.payment_status,
-        notes: s.notes,
-        item_name: s["inventory list"]?.["Item Description"] || "General Product Sale",
-      }));
+      return (data || []).map((s: any) => {
+        const resolved = resolveSaleItemDisplay(s, "General Product Sale", "Showroom");
+        return {
+          id: s.id,
+          sale_date: s.sale_date,
+          total_amount: s.total_amount,
+          amount_paid: s.amount_paid || s.total_amount,
+          payment_status: s.payment_status,
+          notes: resolved.notes || undefined,
+          item_name: resolved.itemName,
+        };
+      });
     },
   });
 

@@ -12,6 +12,7 @@ import {
   isWithinInterval,
 } from "date-fns";
 import { getSecureItem, setSecureItem } from "./secureStorage";
+import { resolveSaleItemDisplay } from "./salesItemResolver";
 
 export type TimeRangePreset =
   | "this_month"
@@ -219,8 +220,13 @@ export function resolveItemPurchasePrice(
     return { unitCost: Number(sale.actual_purchase_price), hasCost: true };
   }
 
-  // If item ID has a known cost in cache
-  const itemIdKey = sale.item_id ? String(sale.item_id) : "";
+  // If item ID or custom item key has a known cost in cache
+  const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "General");
+  const itemIdKey = sale.item_id
+    ? String(sale.item_id)
+    : resolved.isCustomItem
+    ? `custom:${resolved.itemName.toLowerCase()}`
+    : "";
   if (itemIdKey && itemCostCache[itemIdKey] && itemCostCache[itemIdKey] > 0) {
     return { unitCost: itemCostCache[itemIdKey], hasCost: true };
   }
@@ -246,7 +252,8 @@ export function computeProfitAnalysis(
   // 1. Gather all unique locations
   const locationSet = new Set<string>();
   sales.forEach((s) => {
-    const loc = s["inventory list"]?.location;
+    const resolved = resolveSaleItemDisplay(s, "Unknown Item", "");
+    const loc = s["inventory list"]?.location || resolved.location;
     if (loc) locationSet.add(loc);
   });
   expenses.forEach((e) => {
@@ -259,7 +266,8 @@ export function computeProfitAnalysis(
     if (!isDateInRange(sale.sale_date, dateRange)) return false;
 
     if (selectedLocation && selectedLocation !== "all") {
-      const saleLoc = sale["inventory list"]?.location;
+      const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "");
+      const saleLoc = sale["inventory list"]?.location || resolved.location;
       if (saleLoc !== selectedLocation) return false;
     }
 
@@ -301,9 +309,13 @@ export function computeProfitAnalysis(
   let totalUnitsSold = 0;
 
   filteredSales.forEach((sale) => {
-    const itemName = sale["inventory list"]?.["Item Description"] || "Unknown Item";
-    const loc = sale["inventory list"]?.location || "General";
-    const itemId = sale.item_id || sale["inventory list"]?.id || itemName;
+    const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "General");
+    const itemName = resolved.itemName;
+    const loc = resolved.location || "General";
+    const itemId =
+      sale.item_id ||
+      sale["inventory list"]?.id ||
+      `custom:${itemName.toLowerCase()}`;
     const key = `${itemName}__${loc}`;
 
     const qty = Number(sale.quantity || 0);

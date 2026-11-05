@@ -20,6 +20,7 @@ import { Sale } from "@/components/sales/types";
 import { MobileFAB } from "@/components/MobileFAB";
 import { DateRange } from "react-day-picker";
 import { parseISO, startOfDay, endOfDay, isWithinInterval } from "date-fns";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 
 const SalesHeader = ({ 
   onAddSale, 
@@ -175,18 +176,23 @@ const Sales = () => {
 
       if (error) throw error;
 
-      return (salesData || []).map((sale: any) => ({
-        id: sale.id,
-        quantity: sale.quantity,
-        sale_price: sale.sale_price,
-        total_amount: sale.total_amount,
-        sale_date: sale.sale_date,
-        item_name: sale["inventory list"]?.["Item Description"] || "Unknown Item",
-        location: sale["inventory list"]?.location || "Unknown Location",
-        notes: sale.notes,
-        payment_status: sale.payment_status || 'paid',
-        amount_paid: sale.amount_paid || 0,
-      })) as Sale[];
+      return (salesData || []).map((sale: any) => {
+        const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "Unknown Location");
+        return {
+          id: sale.id,
+          quantity: sale.quantity,
+          sale_price: sale.sale_price,
+          total_amount: sale.total_amount,
+          sale_date: sale.sale_date,
+          item_name: resolved.itemName,
+          location: resolved.location,
+          notes: resolved.notes,
+          raw_notes: resolved.rawNotes,
+          is_custom: resolved.isCustomItem,
+          payment_status: sale.payment_status || 'paid',
+          amount_paid: sale.amount_paid || 0,
+        };
+      }) as Sale[];
     },
     enabled: !!session
   });

@@ -62,7 +62,16 @@ export function SalesTableRow({
           onDateUpdate={(date) => onDateUpdate(sale.id, date)}
         />
       </TableCell>
-      <TableCell className="font-medium text-foreground py-2.5">{sale.item_name}</TableCell>
+      <TableCell className="font-medium text-foreground py-2.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="truncate">{sale.item_name}</span>
+          {sale.is_custom && (
+            <span className="text-xs font-normal text-muted-foreground shrink-0">
+              · Custom
+            </span>
+          )}
+        </div>
+      </TableCell>
       <TableCell className="text-muted-foreground py-2.5">{sale.location}</TableCell>
       <TableCell className="text-right font-mono tabular-nums py-2.5 text-foreground">
         {sale.quantity.toLocaleString()}

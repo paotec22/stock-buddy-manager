@@ -11,7 +11,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CustomerSelector, type CustomerLite } from "@/components/customers/CustomerSelector";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Receipt, Sparkles, X, CheckCircle2, ArrowRight } from "lucide-react";
+import { Plus, Trash2, Receipt, Sparkles, X, CheckCircle2, PenLine } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import type { PaymentStatus } from "./types";
 import { ImportInvoiceDialog, type InvoiceRecord, type InvoiceItemRecord } from "./ImportInvoiceDialog";
@@ -25,14 +25,18 @@ interface AddSaleFormProps {
 
 interface LineItem {
   key: string;
+  isCustom: boolean;
   itemId: string;
+  customName: string;
   quantity: string;
   salePrice: string;
 }
 
-const newLine = (): LineItem => ({
+const newLine = (isCustom = false): LineItem => ({
   key: Math.random().toString(36).slice(2),
+  isCustom,
   itemId: "",
+  customName: "",
   quantity: "1",
   salePrice: "",
 });
@@ -182,11 +186,14 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
           }
         }
 
+        const isCustom = !matchedId && Boolean(invItem.description?.trim());
         if (matchedId) matchedCount++;
 
         return {
           key: Math.random().toString(36).slice(2),
+          isCustom,
           itemId: matchedId,
+          customName: isCustom ? (invItem.description || "").trim() : "",
           quantity: (invItem.quantity || 1).toString(),
           salePrice: (invItem.unit_price != null ? invItem.unit_price : "").toString(),
         };
@@ -196,7 +203,9 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
 
       if (matchedCount < items.length) {
         toast.info(
-          `Imported ${items.length} item(s). ${matchedCount} matched directly to ${selectedLocation} showroom inventory. Please confirm any unselected item dropdowns.`
+          `Imported ${items.length} item(s). ${matchedCount} matched directly to ${selectedLocation} showroom inventory and ${
+            items.length - matchedCount
+          } set as custom product(s).`
         );
       }
     }
@@ -223,33 +232,69 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
       return;
     }
 
-    const filled = lines.filter((l) => l.itemId);
+    const incompleteCustom = lines.find(
+      (l) =>
+        l.isCustom &&
+        !l.customName.trim() &&
+        (parseFloat(l.salePrice) > 0 || parseInt(l.quantity, 10) > 1)
+    );
+    if (incompleteCustom) {
+      toast.error("Please enter a product name for your custom item line");
+      return;
+    }
+
+    const filled = lines.filter((l) =>
+      l.isCustom ? l.customName.trim().length > 0 : Boolean(l.itemId)
+    );
     if (filled.length === 0) {
-      toast.error("Please select at least one item from inventory");
+      toast.error("Please select an inventory item or enter a custom product name");
       return;
     }
 
     setIsSubmitting(true);
     try {
       // Validate everything first so we don't record a partial sale
-      const prepared = [];
+      const prepared: Array<{
+        line: LineItem;
+        selectedItem: any;
+        parsedQuantity: number;
+        price: number;
+      }> = [];
+
       for (const line of filled) {
-        const selectedItem = inventoryItems.find((item) => item.id.toString() === line.itemId);
-        if (!selectedItem) throw new Error("Please select a valid item");
+        if (line.isCustom) {
+          const customName = line.customName.trim();
+          const { parsedQuantity } = await validateSaleSubmission({
+            isCustom: true,
+            customItemName: customName,
+            quantity: line.quantity,
+            userId: session.user.id,
+          });
 
-        const { parsedQuantity } = await validateSaleSubmission({
-          itemId: line.itemId,
-          quantity: line.quantity,
-          selectedItem,
-          userId: session.user.id,
-        });
+          const price = parseFloat(line.salePrice);
+          if (isNaN(price) || price < 0) {
+            throw new Error(`Enter a valid price for ${customName}`);
+          }
 
-        const price = parseFloat(line.salePrice);
-        if (isNaN(price) || price < 0) {
-          throw new Error(`Enter a valid price for ${selectedItem["Item Description"]}`);
+          prepared.push({ line, selectedItem: null, parsedQuantity, price });
+        } else {
+          const selectedItem = inventoryItems.find((item) => item.id.toString() === line.itemId);
+          if (!selectedItem) throw new Error("Please select a valid item");
+
+          const { parsedQuantity } = await validateSaleSubmission({
+            itemId: line.itemId,
+            quantity: line.quantity,
+            selectedItem,
+            userId: session.user.id,
+          });
+
+          const price = parseFloat(line.salePrice);
+          if (isNaN(price) || price < 0) {
+            throw new Error(`Enter a valid price for ${selectedItem["Item Description"]}`);
+          }
+
+          prepared.push({ line, selectedItem, parsedQuantity, price });
         }
-
-        prepared.push({ line, selectedItem, parsedQuantity, price });
       }
 
       const total = prepared.reduce((sum, p) => sum + p.parsedQuantity * p.price, 0);
@@ -265,20 +310,30 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
 
         await recordSale(
           session.user.id,
-          p.line.itemId,
+          p.line.isCustom ? null : p.line.itemId,
           p.parsedQuantity,
           p.price,
           p.selectedItem,
           notes,
           paymentStatus,
           linePaid,
-          customer?.id || null
+          customer?.id || null,
+          undefined,
+          {
+            isCustom: p.line.isCustom,
+            customItemName: p.line.customName,
+            location: selectedLocation,
+          }
         );
       }
 
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
       queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['salesForProfit'] });
+      queryClient.invalidateQueries({ queryKey: ['salesForReconciliation'] });
+      queryClient.invalidateQueries({ queryKey: ['location-sales'] });
 
       toast.success(
         prepared.length > 1
@@ -386,7 +441,9 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
                   value={selectedLocation}
                   onValueChange={(v) => {
                     setSelectedLocation(v);
-                    setLines([newLine()]);
+                    setLines((prev) =>
+                      prev.map((l) => (l.isCustom ? l : { ...l, itemId: "", salePrice: "" }))
+                    );
                   }}
                 >
                   <SelectTrigger className="h-10 rounded-xl bg-card border-border/80">
@@ -403,23 +460,35 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
 
             {/* Line Items Section */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs font-bold text-foreground">Inventory Items</Label>
-                  <span className="text-[11px] px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-mono">
-                    {lines.length} {lines.length === 1 ? "item" : "items"}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-baseline gap-2">
+                  <Label className="text-xs font-bold text-foreground">Sale Items</Label>
+                  <span className="text-xs text-muted-foreground font-mono tabular-nums">
+                    · {lines.length} {lines.length === 1 ? "item" : "items"}
                   </span>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLines((prev) => [...prev, newLine()])}
-                  className="h-8 px-3 rounded-xl border-border/80 text-xs font-semibold"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Add item
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLines((prev) => [...prev, newLine(false)])}
+                    className="h-9 px-3 rounded-xl border-border/80 text-xs font-semibold whitespace-nowrap shrink-0"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
+                    Add Inventory Item
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLines((prev) => [...prev, newLine(true)])}
+                    className="h-9 px-3 rounded-xl border-border/80 text-xs font-semibold whitespace-nowrap shrink-0"
+                  >
+                    <PenLine className="h-3.5 w-3.5 mr-1.5" />
+                    Add Custom Product
+                  </Button>
+                </div>
               </div>
 
               {lines.map((line, index) => {
@@ -428,84 +497,151 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
                 return (
                   <div
                     key={line.key}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end rounded-2xl border border-border/70 bg-card/60 p-3.5 shadow-2xs"
+                    className="rounded-2xl border border-border/70 bg-card/60 p-3.5 shadow-2xs space-y-3"
                   >
-                    <div className="md:col-span-6">
-                      <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">
+                    {/* Item Row Header & Source Mode Toggle */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/50">
+                      <span className="text-xs font-bold text-foreground">
                         Item {index + 1}
-                      </Label>
-                      <Select
-                        value={line.itemId}
-                        onValueChange={(v) => handleItemSelect(line.key, v)}
+                      </span>
+
+                      <div
+                        className="inline-flex items-center p-0.5 rounded-lg bg-muted border border-border/60"
+                        role="group"
+                        aria-label={`Item ${index + 1} product source`}
                       >
-                        <SelectTrigger className="w-full h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm">
-                          <SelectValue placeholder="Select item from inventory" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[240px] overflow-y-auto bg-background border z-50 rounded-xl">
-                          {[...inventoryItems]
-                            .sort((a, b) =>
-                              a["Item Description"].localeCompare(b["Item Description"])
-                            )
-                            .map((item) => (
-                              <SelectItem key={item.id} value={item.id.toString()}>
-                                <div className="flex items-center justify-between gap-2">
-                                  <span>{item["Item Description"]}</span>
-                                  <span className="text-[11px] text-muted-foreground font-mono">
-                                    (Stock: {item.Quantity ?? 0})
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">Quantity</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={line.quantity}
-                        onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
-                        className="h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm font-mono font-bold"
-                      />
-                    </div>
-
-                    <div className="md:col-span-3">
-                      <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">Unit Price (₦)</Label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        value={line.salePrice}
-                        onChange={(e) => updateLine(line.key, { salePrice: e.target.value })}
-                        className="h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm font-mono font-bold"
-                      />
-                    </div>
-
-                    <div className="md:col-span-1 flex md:justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={lines.length === 1}
-                        onClick={() =>
-                          setLines((prev) => prev.filter((l) => l.key !== line.key))
-                        }
-                        aria-label="Remove item"
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {lineTotal > 0 && (
-                      <div className="md:col-span-12 text-[11px] text-muted-foreground pt-1 flex items-center justify-between border-t border-border/40">
-                        <span>Line item subtotal</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatCurrency(lineTotal)}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateLine(line.key, { isCustom: false })}
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                            !line.isCustom
+                              ? "bg-background text-foreground shadow-2xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          From Inventory
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateLine(line.key, { isCustom: true, itemId: "" })
+                          }
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                            line.isCustom
+                              ? "bg-background text-foreground shadow-2xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Custom Product
+                        </button>
                       </div>
-                    )}
+                    </div>
+
+                    {/* Input Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end">
+                      <div className="md:col-span-6">
+                        {!line.isCustom ? (
+                          <>
+                            <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">
+                              Select Inventory Item
+                            </Label>
+                            <Select
+                              value={line.itemId}
+                              onValueChange={(v) => handleItemSelect(line.key, v)}
+                            >
+                              <SelectTrigger className="w-full h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm">
+                                <SelectValue placeholder="Select item from inventory" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[240px] overflow-y-auto bg-background border z-50 rounded-xl">
+                                {[...inventoryItems]
+                                  .sort((a, b) =>
+                                    a["Item Description"].localeCompare(b["Item Description"])
+                                  )
+                                  .map((item) => (
+                                    <SelectItem key={item.id} value={item.id.toString()}>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span>{item["Item Description"]}</span>
+                                        <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                                          (Stock: {item.Quantity ?? 0})
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </>
+                        ) : (
+                          <>
+                            <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">
+                              Product or Service Name
+                            </Label>
+                            <Input
+                              type="text"
+                              placeholder="Type product name not in inventory..."
+                              value={line.customName}
+                              onChange={(e) =>
+                                updateLine(line.key, { customName: e.target.value })
+                              }
+                              autoComplete="off"
+                              className="h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm"
+                            />
+                          </>
+                        )}
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={line.quantity}
+                          onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
+                          className="h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm font-mono font-bold tabular-nums"
+                        />
+                      </div>
+
+                      <div className="md:col-span-3">
+                        <Label className="text-[11px] font-semibold text-muted-foreground mb-1 block">Unit Price (₦)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="any"
+                          placeholder="0"
+                          value={line.salePrice}
+                          onChange={(e) => updateLine(line.key, { salePrice: e.target.value })}
+                          className="h-10 rounded-xl bg-background border-border/80 text-xs sm:text-sm font-mono font-bold tabular-nums"
+                        />
+                      </div>
+
+                      <div className="md:col-span-1 flex md:justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={lines.length === 1}
+                          onClick={() =>
+                            setLines((prev) => prev.filter((l) => l.key !== line.key))
+                          }
+                          aria-label={`Remove item ${index + 1}`}
+                          className="h-10 w-full md:w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-muted-foreground pt-1.5 flex flex-wrap items-center justify-between gap-2 border-t border-border/40">
+                      <span>
+                        {line.isCustom
+                          ? `Custom product · Does not deduct ${selectedLocation} inventory stock`
+                          : `Showroom inventory (${selectedLocation}) · Deducts stock on save`}
+                      </span>
+                      {lineTotal > 0 && (
+                        <span className="font-mono font-bold text-foreground tabular-nums">
+                          Subtotal: {formatCurrency(lineTotal)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -514,7 +650,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Grand Total
                 </span>
-                <span className="text-lg sm:text-xl font-black font-mono text-primary">
+                <span className="text-lg sm:text-xl font-black font-mono text-primary tabular-nums">
                   {formatCurrency(grandTotal)}
                 </span>
               </div>

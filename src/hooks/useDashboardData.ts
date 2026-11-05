@@ -12,6 +12,7 @@ import {
   subMonths 
 } from "date-fns";
 import { getItemCostCache } from "@/utils/profitUtils";
+import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
 
 export type DashboardTimeRange = 'today' | '7d' | '30d' | 'month' | 'all';
 
@@ -213,7 +214,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       // Filter Sales by location
       const sales = (rawSales || []).filter((sale: any) => {
         if (location === 'all') return true;
-        const itemLoc = sale["inventory list"]?.location;
+        const resolved = resolveSaleItemDisplay(sale, "Unspecified item", "");
+        const itemLoc = sale["inventory list"]?.location || resolved.location;
         return itemLoc && itemLoc.toLowerCase() === location.toLowerCase();
       });
 
@@ -266,15 +268,16 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
 
         // Collect top recent sales (overall most recent)
         if (recentSales.length < 8) {
+          const resolved = resolveSaleItemDisplay(sale, "Unspecified item", "");
           recentSales.push({
             id: sale.id,
-            itemName: sale["inventory list"]?.["Item Description"] || "Unspecified item",
+            itemName: resolved.itemName,
             quantity: qty,
             totalAmount: amount,
             paymentStatus: sale.payment_status || "Paid",
             saleDate: saleDateStr,
-            location: sale["inventory list"]?.location,
-            notes: sale.notes
+            location: resolved.location || undefined,
+            notes: resolved.notes
           });
         }
       });

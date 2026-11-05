@@ -27,6 +27,8 @@ export interface Sale {
   sale_date: string;
   location: string;
   notes?: string | null;
+  raw_notes?: string | null;
+  is_custom?: boolean;
   payment_status: PaymentStatus;
   amount_paid: number;
 }

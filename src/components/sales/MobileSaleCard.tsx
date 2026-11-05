@@ -82,7 +82,14 @@ export function MobileSaleCard({
         {/* Header Row */}
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{sale.item_name}</h3>
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              <h3 className="font-semibold text-foreground truncate">{sale.item_name}</h3>
+              {sale.is_custom && (
+                <span className="text-xs font-normal text-muted-foreground shrink-0">
+                  · Custom
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
               <CalendarIcon className="h-3 w-3" />
               {canEditDates && onDateUpdate ? (
