@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,17 +14,13 @@ import {
   Copy,
   Check,
   MessageCircle,
-  Package,
   Layers,
-  Sparkles,
   Share2,
-  ExternalLink,
   Wrench,
   Plus,
   Minus,
   Calculator,
   ShieldCheck,
-  QrCode,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,6 +40,8 @@ export function CatalogueQuickView({
   const [copiedQuote, setCopiedQuote] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedSku, setCopiedSku] = useState(false);
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
 
   // Quick Quotation Calculator State
   const [calcQty, setCalcQty] = useState(1);
@@ -132,20 +130,36 @@ export function CatalogueQuickView({
       <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-border/70 bg-card/95 backdrop-blur-md shadow-2xl">
         <div className="grid grid-cols-1 md:grid-cols-2 w-full max-h-[88vh] md:max-h-[78vh] overflow-y-auto md:overflow-hidden">
           {/* Left: Image Container */}
-          <div className="relative aspect-square md:aspect-auto md:h-full w-full bg-slate-100 dark:bg-slate-900/40 flex items-center justify-center border-b md:border-b-0 md:border-r border-border/40 p-4">
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={item["Item Description"]}
-                className="max-h-full max-w-full object-contain md:absolute md:inset-0 md:h-full md:w-full md:object-cover"
-              />
-            ) : (
+          <div className="relative aspect-square md:aspect-auto md:h-full w-full bg-slate-100 dark:bg-slate-900/40 flex items-center justify-center border-b md:border-b-0 md:border-r border-border/40 p-4 overflow-hidden">
+            {!item.image_url || (imageUrl && errorUrl === imageUrl) ? (
               <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3 py-16">
                 <ImageOff className="h-16 w-16 opacity-20 text-primary" />
                 <span className="text-xs font-semibold text-muted-foreground/60">
                   No image uploaded
                 </span>
               </div>
+            ) : (
+              <>
+                {(!imageUrl || loadedUrl !== imageUrl) && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-muted/75 animate-pulse"
+                  />
+                )}
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt={item["Item Description"]}
+                    decoding="async"
+                    fetchPriority="high"
+                    onLoad={() => setLoadedUrl(imageUrl)}
+                    onError={() => setErrorUrl(imageUrl)}
+                    className={`max-h-full max-w-full object-contain md:absolute md:inset-0 md:h-full md:w-full md:object-cover transition-opacity duration-300 ${
+                      loadedUrl === imageUrl ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                )}
+              </>
             )}
 
             {/* Stock pill overlay */}

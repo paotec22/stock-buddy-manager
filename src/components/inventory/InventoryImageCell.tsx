@@ -3,7 +3,12 @@ import { ImagePlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
-import { getInventoryImageUrl, uploadInventoryImage } from "@/lib/inventoryImages";
+import {
+  getCachedInventoryImageUrl,
+  getInventoryImageUrl,
+  invalidateInventoryImageCache,
+  uploadInventoryImage,
+} from "@/lib/inventoryImages";
 
 interface Props {
   item: InventoryItem & { image_url?: string | null };
@@ -11,11 +16,18 @@ interface Props {
 }
 
 export function InventoryImageCell({ item, onUpdated }: Props) {
-  const [url, setUrl] = useState<string | null>(null);
+  const [url, setUrl] = useState<string | null>(() =>
+    getCachedInventoryImageUrl(item.image_url)
+  );
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const cached = getCachedInventoryImageUrl(item.image_url);
+    if (cached) {
+      setUrl(cached);
+      return;
+    }
     let active = true;
     getInventoryImageUrl(item.image_url).then((u) => {
       if (active) setUrl(u);
@@ -31,6 +43,7 @@ export function InventoryImageCell({ item, onUpdated }: Props) {
     if (!file) return;
     setBusy(true);
     try {
+      const oldPath = item.image_url;
       const path = await uploadInventoryImage(file, item.id);
       const { error } = await supabase
         .from("inventory list")
@@ -38,6 +51,9 @@ export function InventoryImageCell({ item, onUpdated }: Props) {
         .eq("id", item.id)
         .eq("location", item.location);
       if (error) throw error;
+      invalidateInventoryImageCache(oldPath);
+      const newUrl = await getInventoryImageUrl(path);
+      if (newUrl) setUrl(newUrl);
       toast.success("Image saved");
       onUpdated?.();
     } catch (err) {

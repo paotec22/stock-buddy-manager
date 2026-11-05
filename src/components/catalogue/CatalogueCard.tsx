@@ -3,8 +3,78 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InventoryItem } from "@/utils/inventoryUtils";
 import { formatCurrency } from "@/utils/formatters";
 import { getStockStatus, ViewMode } from "./CatalogueTypes";
-import { Eye, ImageOff, Copy, Check, Share2, MessageCircle } from "lucide-react";
+import { Eye, ImageOff, Copy, Check, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+// ─── Progressive Thumbnail Renderer (Shimmer -> Smooth Fade-in, Zero False "No image" Flash) ─
+function ProductThumbnail({
+  hasImagePath,
+  url,
+  alt,
+  width,
+  height,
+  priority = false,
+  iconSize = "md",
+  showLabel = true,
+  hoverScaleClass = "group-hover:scale-105",
+}: {
+  hasImagePath: boolean;
+  url: string | null;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+  iconSize?: "sm" | "md";
+  showLabel?: boolean;
+  hoverScaleClass?: string;
+}) {
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
+
+  const isFailed = Boolean(url && errorUrl === url);
+  const isLoaded = Boolean(url && loadedUrl === url && !isFailed);
+
+  if (!hasImagePath || isFailed) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-1.5 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
+        <ImageOff className={cn("opacity-25 text-primary", iconSize === "sm" ? "h-5 w-5" : "h-8 w-8")} />
+        {showLabel && (
+          <span className="text-[10px] font-medium text-muted-foreground/60">No image</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {!isLoaded && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-muted/75 animate-pulse"
+        />
+      )}
+      {url && (
+        <img
+          src={url}
+          alt={alt}
+          width={width}
+          height={height}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding="async"
+          onLoad={() => setLoadedUrl(url)}
+          onError={() => setErrorUrl(url)}
+          className={cn(
+            "h-full w-full object-cover transition-all duration-300",
+            hoverScaleClass,
+            isLoaded ? "opacity-100" : "opacity-0"
+          )}
+        />
+      )}
+    </>
+  );
+}
 
 // ─── Skeletons ─────────────────────────────────────────────────────────────
 export function SkeletonCard({ view }: { view: ViewMode }) {
@@ -54,6 +124,7 @@ export function GridCard({
   isSelected,
   onToggleSelect,
   onQuickShare,
+  priority = false,
 }: {
   item: InventoryItem;
   url: string | null;
@@ -62,6 +133,7 @@ export function GridCard({
   isSelected?: boolean;
   onToggleSelect?: (e: React.MouseEvent) => void;
   onQuickShare?: (e: React.MouseEvent) => void;
+  priority?: boolean;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
   const [copied, setCopied] = useState(false);
@@ -87,30 +159,24 @@ export function GridCard({
       <div>
         {/* Media Container */}
         <div className="aspect-square bg-slate-100 dark:bg-slate-900/40 relative overflow-hidden flex items-center justify-center">
-          {url ? (
-            <>
-              <img
-                src={url}
-                alt={item["Item Description"]}
-                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-                decoding="async"
-                width={400}
-                height={400}
-              />
-              {!isSelectMode && (
-                <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-2xs">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-background/95 text-foreground shadow-lg transform translate-y-1 group-hover:translate-y-0 transition-transform duration-200">
-                    <Eye className="h-3.5 w-3.5 text-primary" />
-                    Quick View
-                  </span>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-1.5 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5">
-              <ImageOff className="h-8 w-8 opacity-25 text-primary" />
-              <span className="text-[10px] font-medium text-muted-foreground/60">No image</span>
+          <ProductThumbnail
+            hasImagePath={Boolean(item.image_url)}
+            url={url}
+            alt={item["Item Description"]}
+            width={400}
+            height={400}
+            priority={priority}
+            iconSize="md"
+            showLabel
+            hoverScaleClass="group-hover:scale-105 duration-500"
+          />
+
+          {url && !isSelectMode && (
+            <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-2xs">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-background/95 text-foreground shadow-lg transform translate-y-1 group-hover:translate-y-0 transition-transform duration-200">
+                <Eye className="h-3.5 w-3.5 text-primary" />
+                Quick View
+              </span>
             </div>
           )}
 
@@ -210,6 +276,7 @@ export function CompactCard({
   isSelectMode,
   isSelected,
   onToggleSelect,
+  priority = false,
 }: {
   item: InventoryItem;
   url: string | null;
@@ -217,6 +284,7 @@ export function CompactCard({
   isSelectMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (e: React.MouseEvent) => void;
+  priority?: boolean;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
 
@@ -230,19 +298,17 @@ export function CompactCard({
       }`}
     >
       <div className="aspect-[4/3] bg-slate-100 dark:bg-slate-900/40 relative overflow-hidden flex items-center justify-center">
-        {url ? (
-          <img
-            src={url}
-            alt={item["Item Description"]}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            decoding="async"
-            width={240}
-            height={180}
-          />
-        ) : (
-          <ImageOff className="h-6 w-6 opacity-25 text-primary" />
-        )}
+        <ProductThumbnail
+          hasImagePath={Boolean(item.image_url)}
+          url={url}
+          alt={item["Item Description"]}
+          width={240}
+          height={180}
+          priority={priority}
+          iconSize="sm"
+          showLabel={false}
+          hoverScaleClass="group-hover:scale-105 duration-300"
+        />
 
         {isSelectMode ? (
           <div className="absolute top-2 left-2 z-10 h-5 w-5 rounded bg-background/95 border border-border flex items-center justify-center">
@@ -287,6 +353,7 @@ export function ListRow({
   isSelected,
   onToggleSelect,
   onQuickShare,
+  priority = false,
 }: {
   item: InventoryItem;
   url: string | null;
@@ -295,6 +362,7 @@ export function ListRow({
   isSelected?: boolean;
   onToggleSelect?: (e: React.MouseEvent) => void;
   onQuickShare?: (e: React.MouseEvent) => void;
+  priority?: boolean;
 }) {
   const stock = getStockStatus(item.Quantity ?? 0);
   const [copied, setCopied] = useState(false);
@@ -337,19 +405,17 @@ export function ListRow({
 
       {/* Thumbnail */}
       <div className="h-14 w-14 rounded-xl bg-slate-100 dark:bg-slate-900/40 overflow-hidden shrink-0 relative flex items-center justify-center border border-border/40">
-        {url ? (
-          <img
-            src={url}
-            alt={item["Item Description"]}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            decoding="async"
-            width={56}
-            height={56}
-          />
-        ) : (
-          <ImageOff className="h-5 w-5 opacity-25 text-primary" />
-        )}
+        <ProductThumbnail
+          hasImagePath={Boolean(item.image_url)}
+          url={url}
+          alt={item["Item Description"]}
+          width={56}
+          height={56}
+          priority={priority}
+          iconSize="sm"
+          showLabel={false}
+          hoverScaleClass="group-hover:scale-105 duration-300"
+        />
       </div>
 
       {/* Info */}

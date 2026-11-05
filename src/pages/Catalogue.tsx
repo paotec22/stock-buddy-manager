@@ -6,6 +6,10 @@ import { InventoryItem } from "@/utils/inventoryUtils";
 import {
   getInventoryImageUrls,
   getInventoryImageUrl,
+  getCachedInventoryImageUrl,
+  getCachedInventoryImageUrls,
+  invalidateInventoryImageCache,
+  preloadImageUrls,
   optimizeExistingInventoryImage,
 } from "@/lib/inventoryImages";
 import { CompanyLogo } from "@/components/CompanyLogo";
@@ -152,6 +156,14 @@ export default function Catalogue() {
   // Incremental signed image cache
   const [signed, setSigned] = useState<Record<string, string>>({});
   const signingInProgressRef = useRef<Set<string>>(new Set());
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Optimize state
   const [optimizing, setOptimizing] = useState(false);
@@ -260,6 +272,20 @@ export default function Catalogue() {
   const categoryCounts = useMemo(() => getCategoryCounts(items), [items]);
   const categoryGroups = useMemo(() => groupItemsByCategory(filtered), [filtered]);
 
+  // Hydrate cached signed URLs synchronously (0ms on reload or tab revisit)
+  const cachedUrls = useMemo(
+    () => getCachedInventoryImageUrls(items.map((it) => it.image_url)),
+    [items]
+  );
+
+  const mergedSignedUrls = useMemo(
+    () => ({ ...cachedUrls, ...signed }),
+    [cachedUrls, signed]
+  );
+
+  const signedRef = useRef<Record<string, string>>({});
+  signedRef.current = mergedSignedUrls;
+
   // Sample preview images by category for visual directory cards
   const previewImagesByCat = useMemo(() => {
     const map: Record<CategoryId, string[]> = {
@@ -273,15 +299,16 @@ export default function Catalogue() {
       general_products: [],
     };
     for (const item of items) {
-      if (item.image_url && signed[item.image_url]) {
+      const url = item.image_url ? mergedSignedUrls[item.image_url] : null;
+      if (url) {
         const cat = getProductCategory(item);
         if (map[cat.id] && map[cat.id].length < 3) {
-          map[cat.id].push(signed[item.image_url]);
+          map[cat.id].push(url);
         }
       }
     }
     return map;
-  }, [items, signed]);
+  }, [items, mergedSignedUrls]);
 
   // Show category directory initially on mobile or when browsing by category
   // If user has a search query or other filter, immediately show the matching products
@@ -302,51 +329,106 @@ export default function Catalogue() {
 
   const hasMore = page * PAGE_SIZE < filtered.length;
 
-  // ── High-Performance Viewport Image Signing (Lazy on-demand) ──────────────
-  // Sign images for visible items (both grouped and flat mode, plus category hub preview)
+  // ── High-Performance Progressive Image Signing (Priority Above-the-Fold First) ──
   useEffect(() => {
-    const candidateItems =
-      selectedCategory === "all" && !showAllProductsFlat
-        ? items.slice(0, 30)
-        : groupByCategory
-        ? filtered.slice(0, 80)
-        : filtered.slice(0, (page + 1) * PAGE_SIZE);
+    if (isLoading || items.length === 0) return;
 
-    if (candidateItems.length === 0) return;
+    const candidatePaths: string[] = [];
 
-    const neededPaths = candidateItems
-      .map((it) => it.image_url)
-      .filter((p): p is string => Boolean(p) && !signed[p] && !signingInProgressRef.current.has(p));
+    if (showCategoryDirectory) {
+      // Collect up to 3 image paths per category so every directory card renders thumbnails
+      const perCatCount: Record<string, number> = {};
+      for (const it of items) {
+        if (!it.image_url) continue;
+        const catId = getProductCategory(it).id;
+        if ((perCatCount[catId] || 0) < 3) {
+          perCatCount[catId] = (perCatCount[catId] || 0) + 1;
+          candidatePaths.push(it.image_url);
+        }
+      }
+      // Also pre-warm the first 12 products so switching to Browse All is instant
+      for (const it of items) {
+        if (it.image_url) {
+          candidatePaths.push(it.image_url);
+          if (candidatePaths.length >= 36) break;
+        }
+      }
+    } else if (groupByCategory && selectedCategory === "all") {
+      // Sign in visual section order without cap so all category sections render smoothly
+      for (const group of categoryGroups) {
+        for (const it of group.items) {
+          if (it.image_url) {
+            candidatePaths.push(it.image_url);
+          }
+        }
+      }
+    } else {
+      // Flat or single-category mode: visible page + 1 page prefetch ahead
+      const slice = filtered.slice(0, (page + 1) * PAGE_SIZE);
+      for (const it of slice) {
+        if (it.image_url) {
+          candidatePaths.push(it.image_url);
+        }
+      }
+    }
 
+    const uniqueCandidates = Array.from(new Set(candidatePaths));
+    if (uniqueCandidates.length === 0) return;
+
+    // Warm browser cache immediately for already-cached top above-the-fold images
+    const alreadyCachedTopUrls = uniqueCandidates
+      .slice(0, 12)
+      .map((p) => signedRef.current[p])
+      .filter((u): u is string => Boolean(u));
+    if (alreadyCachedTopUrls.length > 0) {
+      preloadImageUrls(alreadyCachedTopUrls, 12);
+    }
+
+    const neededPaths = uniqueCandidates.filter(
+      (p) => !signedRef.current[p] && !signingInProgressRef.current.has(p)
+    );
     if (neededPaths.length === 0) return;
 
-    // Mark as in progress
     neededPaths.forEach((p) => signingInProgressRef.current.add(p));
 
-    let active = true;
-    getInventoryImageUrls(neededPaths).then((urlMap) => {
-      if (!active) return;
-      setSigned((prev) => ({ ...prev, ...urlMap }));
+    getInventoryImageUrls(neededPaths, {
+      priorityCount: 12,
+      onBatchResolved: (batchMap) => {
+        Object.entries(batchMap).forEach(([p, url]) => {
+          signedRef.current[p] = url;
+          signingInProgressRef.current.delete(p);
+        });
+        if (!isMountedRef.current) return;
+        setSigned((prev) => ({ ...prev, ...batchMap }));
+        preloadImageUrls(Object.values(batchMap).slice(0, 12), 12);
+      },
+    }).finally(() => {
       neededPaths.forEach((p) => signingInProgressRef.current.delete(p));
     });
-
-    return () => {
-      active = false;
-    };
-  }, [groupByCategory, filtered, page, signed]);
+  }, [
+    isLoading,
+    items,
+    filtered,
+    categoryGroups,
+    showCategoryDirectory,
+    groupByCategory,
+    selectedCategory,
+    page,
+  ]);
 
   // Ensure selected item's image is loaded for quick view
   useEffect(() => {
     if (!selectedItem?.image_url) return;
     const path = selectedItem.image_url;
-    if (signed[path]) return;
+    if (signedRef.current[path] || getCachedInventoryImageUrl(path)) return;
 
     getInventoryImageUrl(path).then((url) => {
-      if (url) {
+      if (url && isMountedRef.current) {
+        signedRef.current[path] = url;
         setSigned((prev) => ({ ...prev, [path]: url }));
       }
     });
-  }, [selectedItem, signed]);
+  }, [selectedItem]);
 
   // ── Stats Summary Calculation ─────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -380,13 +462,14 @@ export default function Catalogue() {
   const handlePrint = useCallback(async () => {
     const missingPaths = filtered
       .map((it) => it.image_url)
-      .filter((p): p is string => Boolean(p) && !signed[p]);
+      .filter((p): p is string => Boolean(p) && !signedRef.current[p]);
 
     if (missingPaths.length > 0) {
       setPreparingPrint(true);
       const toastId = toast.loading(`Preparing ${missingPaths.length} photos for print...`);
       try {
         const newMap = await getInventoryImageUrls(missingPaths);
+        Object.assign(signedRef.current, newMap);
         setSigned((prev) => ({ ...prev, ...newMap }));
         toast.dismiss(toastId);
       } catch (e) {
@@ -407,7 +490,7 @@ export default function Catalogue() {
         document.title = originalTitle;
       } catch {}
     }, 1000);
-  }, [filtered, signed, location]);
+  }, [filtered, location]);
 
   // ── Batch Image Optimizer ─────────────────────────────────────────────────
   const handleOptimizeImages = useCallback(async () => {
@@ -436,12 +519,20 @@ export default function Catalogue() {
       try {
         const result = await optimizeExistingInventoryImage(item.image_url, item.id);
         if (result) {
+          const oldPath = item.image_url;
           const { error } = await supabase
             .from("inventory list")
             .update({ image_url: result.newPath } as never)
             .eq("id", item.id)
             .eq("location", item.location);
           if (!error) {
+            invalidateInventoryImageCache(oldPath);
+            delete signedRef.current[oldPath];
+            setSigned((prev) => {
+              const next = { ...prev };
+              delete next[oldPath];
+              return next;
+            });
             optimized++;
             saved += result.oldSize - result.newSize;
           }
@@ -463,7 +554,7 @@ export default function Catalogue() {
       {/* ── PRINT-ONLY VIEW ──────────────────────────────────────────────── */}
       <CataloguePrintView
         items={filtered}
-        signedUrls={signed}
+        signedUrls={mergedSignedUrls}
         location={location}
       />
 
@@ -690,13 +781,14 @@ export default function Catalogue() {
       ) : groupByCategory && selectedCategory === "all" ? (
         /* Grouped by Relatable Categories */
         <div className="space-y-7 sm:space-y-8 print:hidden">
-          {categoryGroups.map((group) => (
+          {categoryGroups.map((group, idx) => (
             <CatalogueCategorySection
               key={group.category.id}
               category={group.category}
               items={group.items}
               view={view}
-              signedUrls={signed}
+              signedUrls={mergedSignedUrls}
+              isFirstSection={idx === 0}
               onSelectItem={setSelectedItem}
               onSelectCategoryFilter={(catId) => {
                 setSelectedCategory(catId as CategoryId);
@@ -714,11 +806,12 @@ export default function Catalogue() {
         <div>
           {view === "grid" && (
             <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 print:hidden">
-              {paginated.map((item) => (
+              {paginated.map((item, idx) => (
                 <GridCard
                   key={`${item.location}-${item.id}`}
                   item={item}
-                  url={item.image_url ? signed[item.image_url] ?? null : null}
+                  url={item.image_url ? mergedSignedUrls[item.image_url] ?? null : null}
+                  priority={idx < 12}
                   onClick={() => setSelectedItem(item)}
                   isSelectMode={isSelectMode}
                   isSelected={selectedItemIds.has(item.id)}
@@ -731,11 +824,12 @@ export default function Catalogue() {
 
           {view === "compact" && (
             <div className="grid gap-2.5 sm:gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 print:hidden">
-              {paginated.map((item) => (
+              {paginated.map((item, idx) => (
                 <CompactCard
                   key={`${item.location}-${item.id}`}
                   item={item}
-                  url={item.image_url ? signed[item.image_url] ?? null : null}
+                  url={item.image_url ? mergedSignedUrls[item.image_url] ?? null : null}
+                  priority={idx < 16}
                   onClick={() => setSelectedItem(item)}
                   isSelectMode={isSelectMode}
                   isSelected={selectedItemIds.has(item.id)}
@@ -747,11 +841,12 @@ export default function Catalogue() {
 
           {view === "list" && (
             <div className="space-y-2.5 print:hidden">
-              {paginated.map((item) => (
+              {paginated.map((item, idx) => (
                 <ListRow
                   key={`${item.location}-${item.id}`}
                   item={item}
-                  url={item.image_url ? signed[item.image_url] ?? null : null}
+                  url={item.image_url ? mergedSignedUrls[item.image_url] ?? null : null}
+                  priority={idx < 8}
                   onClick={() => setSelectedItem(item)}
                   isSelectMode={isSelectMode}
                   isSelected={selectedItemIds.has(item.id)}
@@ -837,7 +932,13 @@ export default function Catalogue() {
       {/* ── QUICK VIEW DIALOG ────────────────────────────────────────────── */}
       <CatalogueQuickView
         item={selectedItem}
-        imageUrl={selectedItem?.image_url ? signed[selectedItem.image_url] ?? null : null}
+        imageUrl={
+          selectedItem?.image_url
+            ? mergedSignedUrls[selectedItem.image_url] ??
+              getCachedInventoryImageUrl(selectedItem.image_url) ??
+              null
+            : null
+        }
         onClose={() => setSelectedItem(null)}
         onShareItem={handleQuickShareSingleItem}
       />

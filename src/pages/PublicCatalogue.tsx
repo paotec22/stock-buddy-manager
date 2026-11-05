@@ -38,14 +38,10 @@ import {
   Plus,
   Minus,
   Trash2,
-  Sparkles,
   ShieldCheck,
   DollarSign,
   Euro,
   PoundSterling,
-  Share2,
-  FileText,
-  Building,
   CheckCircle2,
   ExternalLink,
 } from "lucide-react";
@@ -56,6 +52,7 @@ import {
   getProductCategory,
 } from "@/utils/catalogueCategories";
 import { supabase } from "@/lib/supabase";
+import { getInventoryImageUrls, preloadImageUrls } from "@/lib/inventoryImages";
 
 const SUPABASE_URL =
   import.meta.env.VITE_SUPABASE_URL ?? "https://itycbazttpidqlgmmrot.supabase.co";
@@ -204,7 +201,9 @@ export default function PublicCatalogue() {
         if (res.ok) {
           const json = await res.json();
           if (!cancelled) {
-            setItems((json.items as PublicItem[]) ?? []);
+            const nextItems = (json.items as PublicItem[]) ?? [];
+            setItems(nextItems);
+            preloadImageUrls(nextItems.slice(0, 8).map((i) => i.image), 8);
             setLoading(false);
             return;
           }
@@ -245,19 +244,8 @@ export default function PublicCatalogue() {
               typeof p === "string" && p.length > 0 && !/^https?:\/\//.test(p)
           );
 
-        const urlMap: Record<string, string> = {};
-        if (imagePaths.length > 0) {
-          const uniquePaths = Array.from(new Set(imagePaths));
-          const { data: signed } = await supabase.storage
-            .from("inventory-images")
-            .createSignedUrls(uniquePaths, 3600);
-
-          signed?.forEach((entry, idx) => {
-            if (entry.signedUrl) {
-              urlMap[uniquePaths[idx]] = entry.signedUrl;
-            }
-          });
-        }
+        const urlMap =
+          imagePaths.length > 0 ? await getInventoryImageUrls(imagePaths, { priorityCount: 8 }) : {};
 
         const formattedItems: PublicItem[] = rawList.map((i: any) => ({
           id: i.id,
@@ -275,6 +263,7 @@ export default function PublicCatalogue() {
 
         if (!cancelled) {
           setItems(formattedItems);
+          preloadImageUrls(formattedItems.slice(0, 8).map((i) => i.image), 8);
           setLoading(false);
         }
       } catch (fallbackErr: any) {
@@ -831,11 +820,12 @@ export default function PublicCatalogue() {
           </div>
         ) : view === "grid" ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-            {paginated.map((item) => (
+            {paginated.map((item, idx) => (
               <ProductCard
                 key={item.id}
                 item={item}
                 formattedPrice={formatPrice(item.price)}
+                priority={idx < 8}
                 onQuickView={() => setSelectedItem(item)}
                 onAddToBasket={() => addToBasket(item)}
                 inBasketQty={basket.find((b) => b.item.id === item.id)?.quantity || 0}
@@ -845,11 +835,12 @@ export default function PublicCatalogue() {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {paginated.map((item) => (
+            {paginated.map((item, idx) => (
               <ProductListRow
                 key={item.id}
                 item={item}
                 formattedPrice={formatPrice(item.price)}
+                priority={idx < 6}
                 onQuickView={() => setSelectedItem(item)}
                 onAddToBasket={() => addToBasket(item)}
                 inBasketQty={basket.find((b) => b.item.id === item.id)?.quantity || 0}
@@ -1194,7 +1185,7 @@ function ProductCard({
   onQuickView,
   onAddToBasket,
   inBasketQty,
-  hidePrices,
+  priority = false,
 }: {
   item: PublicItem;
   formattedPrice: string;
@@ -1202,7 +1193,14 @@ function ProductCard({
   onAddToBasket: () => void;
   inBasketQty: number;
   hidePrices: boolean;
+  priority?: boolean;
 }) {
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [errorSrc, setErrorSrc] = useState<string | null>(null);
+
+  const hasValidImage = Boolean(item.image && errorSrc !== item.image);
+  const isLoaded = Boolean(item.image && loadedSrc === item.image);
+
   return (
     <div className="group rounded-2xl border border-border/70 bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
       <div>
@@ -1211,16 +1209,27 @@ function ProductCard({
           onClick={onQuickView}
           className="aspect-square bg-muted/40 relative overflow-hidden flex items-center justify-center cursor-pointer"
         >
-          {item.image ? (
+          {hasValidImage && item.image ? (
             <>
+              {!isLoaded && (
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-muted/75 animate-pulse"
+                />
+              )}
               <img
                 src={item.image}
                 alt={item.description}
-                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
+                className={`h-full w-full object-cover group-hover:scale-105 transition-all duration-500 ${
+                  isLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                loading={priority ? "eager" : "lazy"}
+                fetchPriority={priority ? "high" : "auto"}
                 decoding="async"
                 width={360}
                 height={360}
+                onLoad={() => setLoadedSrc(item.image)}
+                onError={() => setErrorSrc(item.image)}
               />
               <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-2xs">
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-white/95 text-slate-900 shadow-md">
@@ -1300,8 +1309,7 @@ function ProductListRow({
   formattedPrice,
   onQuickView,
   onAddToBasket,
-  inBasketQty,
-  hidePrices,
+  priority = false,
 }: {
   item: PublicItem;
   formattedPrice: string;
@@ -1309,20 +1317,43 @@ function ProductListRow({
   onAddToBasket: () => void;
   inBasketQty: number;
   hidePrices: boolean;
+  priority?: boolean;
 }) {
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [errorSrc, setErrorSrc] = useState<string | null>(null);
+
+  const hasValidImage = Boolean(item.image && errorSrc !== item.image);
+  const isLoaded = Boolean(item.image && loadedSrc === item.image);
+
   return (
     <div className="p-3 rounded-xl border border-border/70 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between gap-3 group">
       <div
         onClick={onQuickView}
-        className="h-14 w-14 rounded-lg bg-muted overflow-hidden shrink-0 cursor-pointer"
+        className="h-14 w-14 rounded-lg bg-muted relative overflow-hidden shrink-0 cursor-pointer"
       >
-        {item.image ? (
-          <img
-            src={item.image}
-            alt={item.description}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform"
-            loading="lazy"
-          />
+        {hasValidImage && item.image ? (
+          <>
+            {!isLoaded && (
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-muted/75 animate-pulse"
+              />
+            )}
+            <img
+              src={item.image}
+              alt={item.description}
+              width={56}
+              height={56}
+              className={`h-full w-full object-cover group-hover:scale-105 transition-all ${
+                isLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              decoding="async"
+              onLoad={() => setLoadedSrc(item.image)}
+              onError={() => setErrorSrc(item.image)}
+            />
+          </>
         ) : (
           <div className="h-full w-full flex items-center justify-center text-muted-foreground/40">
             <ImageOff className="h-5 w-5" />

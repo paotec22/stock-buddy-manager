@@ -14,6 +14,7 @@ interface CatalogueCategorySectionProps {
   onSelectItem: (item: InventoryItem) => void;
   onSelectCategoryFilter?: (catId: string) => void;
   defaultExpanded?: boolean;
+  isFirstSection?: boolean;
   isSelectMode?: boolean;
   selectedIds?: Set<number>;
   onToggleSelect?: (id: number) => void;
@@ -28,6 +29,7 @@ export function CatalogueCategorySection({
   onSelectItem,
   onSelectCategoryFilter,
   defaultExpanded = true,
+  isFirstSection = false,
   isSelectMode,
   selectedIds,
   onToggleSelect,
@@ -113,7 +115,7 @@ export function CatalogueCategorySection({
         <div>
           {view === "grid" && (
             <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {items.map((item) => (
+              {items.map((item, idx) => (
                 <GridCard
                   key={`${item.location}-${item.id}`}
                   item={item}
@@ -123,6 +125,7 @@ export function CatalogueCategorySection({
                   isSelected={selectedIds?.has(item.id)}
                   onToggleSelect={() => onToggleSelect?.(item.id)}
                   onQuickShare={() => onQuickShareItem?.(item.id)}
+                  priority={isFirstSection && idx < 12}
                 />
               ))}
             </div>
@@ -130,7 +133,7 @@ export function CatalogueCategorySection({
 
           {view === "compact" && (
             <div className="grid gap-2.5 sm:gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-              {items.map((item) => (
+              {items.map((item, idx) => (
                 <CompactCard
                   key={`${item.location}-${item.id}`}
                   item={item}
@@ -139,6 +142,7 @@ export function CatalogueCategorySection({
                   isSelectMode={isSelectMode}
                   isSelected={selectedIds?.has(item.id)}
                   onToggleSelect={() => onToggleSelect?.(item.id)}
+                  priority={isFirstSection && idx < 16}
                 />
               ))}
             </div>
@@ -146,7 +150,7 @@ export function CatalogueCategorySection({
 
           {view === "list" && (
             <div className="space-y-2.5">
-              {items.map((item) => (
+              {items.map((item, idx) => (
                 <ListRow
                   key={`${item.location}-${item.id}`}
                   item={item}
@@ -156,6 +160,7 @@ export function CatalogueCategorySection({
                   isSelected={selectedIds?.has(item.id)}
                   onToggleSelect={() => onToggleSelect?.(item.id)}
                   onQuickShare={() => onQuickShareItem?.(item.id)}
+                  priority={isFirstSection && idx < 8}
                 />
               ))}
             </div>

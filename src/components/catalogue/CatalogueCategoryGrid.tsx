@@ -159,8 +159,11 @@ export function CatalogueCategoryGrid({
                         <img
                           src={url}
                           alt=""
+                          width={32}
+                          height={32}
                           className="h-full w-full object-cover"
-                          loading="lazy"
+                          loading="eager"
+                          decoding="async"
                         />
                       </div>
                     ))}
