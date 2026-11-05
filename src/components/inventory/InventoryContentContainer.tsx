@@ -42,10 +42,27 @@ export function InventoryContentContainer({
     setStatusFilter(statusFilter === status ? null : status);
   };
 
-  // Filter items based on search term and status
+  // Filter items based on search term (multi-token description, features, or exact ID/SKU) and status
+  const normalizedQuery = searchTerm.trim().toLowerCase();
+  const queryTokens = normalizedQuery ? normalizedQuery.split(/\s+/).filter(Boolean) : [];
+
   const filteredItems = inventoryItems.filter(item => {
-    const matchesSearch = searchTerm.trim() 
-      ? item["Item Description"]?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = queryTokens.length > 0
+      ? (() => {
+          const idMatch =
+            String(item.id) === normalizedQuery ||
+            `#${item.id}` === normalizedQuery;
+          if (idMatch) return true;
+
+          const haystack = [
+            item["Item Description"] || "",
+            ...(Array.isArray(item.features) ? item.features : []),
+          ]
+            .join(" ")
+            .toLowerCase();
+
+          return queryTokens.every(token => haystack.includes(token));
+        })()
       : true;
     
     const matchesStatus = statusFilter 
@@ -73,8 +90,6 @@ export function InventoryContentContainer({
         isOffline={isOffline}
         pendingCount={pendingCount}
       />
-
-      
 
       <InventoryExportModal
         open={showExportModal}
@@ -125,11 +140,29 @@ export function InventoryContentContainer({
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">
-                {searchTerm ? "No items match your search." : "No inventory items yet."}
+          <Card className="border border-border/80 rounded-xl">
+            <CardContent className="p-8 text-center space-y-3">
+              <p className="text-sm font-medium text-foreground">
+                {normalizedQuery
+                  ? `No inventory items match "${searchTerm.trim()}" in ${selectedLocation}.`
+                  : statusFilter
+                  ? `No ${statusFilter.replace("-", " ")} items found in ${selectedLocation}.`
+                  : `No inventory items in ${selectedLocation} yet.`}
               </p>
+              {(normalizedQuery || statusFilter) && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setStatusFilter(null);
+                    }}
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer touch-manipulation"
+                  >
+                    Clear Search &amp; Filters
+                  </button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
