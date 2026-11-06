@@ -5,6 +5,7 @@ import { SalesExportModal } from "@/components/sales/SalesExportModal";
 import { SalesViewToggle } from "@/components/sales/SalesViewToggle";
 import { SalesGraphicalView } from "@/components/sales/SalesGraphicalView";
 import { SalesTableView } from "@/components/sales/SalesTableView";
+import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
 import { SalesLoadingState } from "@/components/sales/SalesLoadingState";
 import { SalesExecutiveCards } from "@/components/sales/SalesExecutiveCards";
 import { SalesFilterToolbar } from "@/components/sales/SalesFilterToolbar";
@@ -313,6 +314,13 @@ const Sales = () => {
             onClearFilters={handleResetFilters}
           />
         )}
+
+        {/* Dedicated Monthly & Branch Summary Section (All Months & All Years) */}
+        <SalesSummaryTable
+          sales={sales}
+          filteredSales={filteredSales}
+          hasActiveFilters={hasActiveFilters}
+        />
 
         {/* Modals */}
         <AddSaleForm

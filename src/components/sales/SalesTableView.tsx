@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { SalesTable } from "./SalesTable";
-import { SalesSummaryTable } from "./SalesSummaryTable";
 import { Sale } from "./types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Receipt, CalendarRange } from "lucide-react";
+import { Receipt } from "lucide-react";
 
 interface SalesTableViewProps {
   sales: Sale[];
@@ -11,47 +8,34 @@ interface SalesTableViewProps {
   onClearFilters?: () => void;
 }
 
-export function SalesTableView({ sales, hasFilters = false, onClearFilters }: SalesTableViewProps) {
-  const [activeTab, setActiveTab] = useState<"transactions" | "monthly">("transactions");
-
+export function SalesTableView({
+  sales,
+  hasFilters = false,
+  onClearFilters,
+}: SalesTableViewProps) {
   return (
-    <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "transactions" | "monthly")} className="w-full">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <TabsList className="grid grid-cols-2 w-full sm:w-auto sm:inline-flex h-9 p-1 bg-muted/60 border border-border">
-            <TabsTrigger
-              value="transactions"
-              className="flex items-center justify-center gap-1.5 text-xs font-medium px-2 sm:px-3 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm min-w-0"
-            >
-              <Receipt className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">
-                <span className="hidden sm:inline">All </span>Transactions ({sales.length})
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="monthly"
-              className="flex items-center justify-center gap-1.5 text-xs font-medium px-2 sm:px-3 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm min-w-0"
-            >
-              <CalendarRange className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">
-                <span className="hidden sm:inline">Monthly & Branch </span>Summary
-              </span>
-            </TabsTrigger>
-          </TabsList>
+    <section aria-labelledby="sales-transactions-heading" className="space-y-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Receipt className="h-4 w-4 text-primary shrink-0" />
+          <h2
+            id="sales-transactions-heading"
+            className="text-base sm:text-lg font-bold tracking-tight text-foreground"
+          >
+            Transactions Ledger
+          </h2>
+          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+            · {sales.length.toLocaleString()}{" "}
+            {sales.length === 1 ? "record" : "records"}
+          </span>
         </div>
+      </div>
 
-        <TabsContent value="transactions" className="mt-0 space-y-4">
-          <SalesTable 
-            sales={sales} 
-            hasFilters={hasFilters} 
-            onClearFilters={onClearFilters} 
-          />
-        </TabsContent>
-
-        <TabsContent value="monthly" className="mt-0">
-          <SalesSummaryTable sales={sales} />
-        </TabsContent>
-      </Tabs>
-    </div>
+      <SalesTable
+        sales={sales}
+        hasFilters={hasFilters}
+        onClearFilters={onClearFilters}
+      />
+    </section>
   );
 }
