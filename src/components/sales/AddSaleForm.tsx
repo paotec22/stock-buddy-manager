@@ -41,7 +41,7 @@ const newLine = (isCustom = false): LineItem => ({
   salePrice: "",
 });
 
-const LOCATIONS = ["Ikeja", "Lekki", "Abuja", "Port Harcourt"];
+const LOCATIONS = ["Ikeja", "Cement", "Uyo"];
 
 export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }: AddSaleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);

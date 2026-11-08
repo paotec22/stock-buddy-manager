@@ -23,7 +23,8 @@ import { formatCurrency } from "@/utils/formatters";
 import { safeParseDate } from "@/utils/dateParsing";
 import { Sale } from "./types";
 
-const DEFAULT_BRANCHES = ["Ikeja", "Lekki", "Abuja", "Port Harcourt"];
+const DEFAULT_BRANCHES = ["Ikeja", "Cement", "Uyo"];
+const EXCLUDED_BRANCHES = new Set(["Lekki", "Abuja", "Port Harcourt"]);
 
 const MONTH_NAMES = [
   "January",
@@ -111,14 +112,17 @@ export function SalesSummaryTable({
 
       const year = getYear(parsedDate);
       const monthIndex = getMonth(parsedDate);
-      const branch = (sale.location || "Unknown Location").trim() || "Unknown Location";
+      let branch = (sale.location || "Ikeja").trim() || "Ikeja";
+      if (EXCLUDED_BRANCHES.has(branch)) {
+        branch = "Ikeja";
+      }
 
       // Only track years in a reasonable range
       if (year >= 1990 && year <= 2100) {
         saleYearsSet.add(year);
       }
       
-      if (!DEFAULT_BRANCHES.includes(branch)) {
+      if (!EXCLUDED_BRANCHES.has(branch) && !DEFAULT_BRANCHES.includes(branch)) {
         extraBranchesSet.add(branch);
       }
 
@@ -131,8 +135,10 @@ export function SalesSummaryTable({
     }
 
     const orderedBranches = [
-      ...DEFAULT_BRANCHES,
-      ...Array.from(extraBranchesSet).sort((a, b) => a.localeCompare(b)),
+      ...DEFAULT_BRANCHES.filter((b) => !EXCLUDED_BRANCHES.has(b)),
+      ...Array.from(extraBranchesSet)
+        .filter((b) => !EXCLUDED_BRANCHES.has(b))
+        .sort((a, b) => a.localeCompare(b)),
     ];
 
     // Guarantee that recent years (currentYear, currentYear - 1, currentYear - 2) are always represented
