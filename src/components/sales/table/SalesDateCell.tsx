@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { safeParseDate } from "@/utils/dateParsing";
 
 interface SalesDateCellProps {
   date: string;
@@ -12,8 +13,11 @@ interface SalesDateCellProps {
 }
 
 export function SalesDateCell({ date, isAdmin, onDateUpdate }: SalesDateCellProps) {
+  const parsed = safeParseDate(date);
+  const formattedDate = parsed ? format(parsed, "dd/MM/yy") : (date || "—");
+
   if (!isAdmin) {
-    return <>{format(new Date(date), "dd/MM/yy")}</>;
+    return <span>{formattedDate}</span>;
   }
 
   return (
@@ -22,19 +26,19 @@ export function SalesDateCell({ date, isAdmin, onDateUpdate }: SalesDateCellProp
         <Button
           variant="outline"
           className={cn(
-            "w-[140px] justify-start text-left font-normal",
-            !date && "text-muted-foreground"
+            "w-[140px] justify-start text-left font-normal text-xs h-8 cursor-pointer",
+            !parsed && "text-muted-foreground"
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {format(new Date(date), "dd/MM/yy")}
+          <CalendarIcon className="mr-2 h-3.5 w-3.5 shrink-0" />
+          <span>{formattedDate}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
           mode="single"
-          selected={new Date(date)}
-          onSelect={(date) => date && onDateUpdate?.(date)}
+          selected={parsed || undefined}
+          onSelect={(d) => d && onDateUpdate?.(d)}
           initialFocus
         />
       </PopoverContent>

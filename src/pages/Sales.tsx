@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { AddSaleForm } from "@/components/sales/AddSaleForm";
 import { BulkSaleUploadModal } from "@/components/sales/BulkSaleUploadModal";
 import { SalesExportModal } from "@/components/sales/SalesExportModal";
-import { SalesViewToggle } from "@/components/sales/SalesViewToggle";
+import { SalesViewToggle, SalesViewMode } from "@/components/sales/SalesViewToggle";
 import { SalesGraphicalView } from "@/components/sales/SalesGraphicalView";
 import { SalesTableView } from "@/components/sales/SalesTableView";
 import { SalesSummaryTable } from "@/components/sales/SalesSummaryTable";
@@ -20,8 +20,9 @@ import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import { Sale } from "@/components/sales/types";
 import { MobileFAB } from "@/components/MobileFAB";
 import { DateRange } from "react-day-picker";
-import { parseISO, startOfDay, endOfDay, isWithinInterval } from "date-fns";
+import { startOfDay, endOfDay, isWithinInterval } from "date-fns";
 import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
+import { safeParseDate } from "@/utils/dateParsing";
 
 const SalesHeader = ({ 
   onAddSale, 
@@ -37,8 +38,8 @@ const SalesHeader = ({
   onAddSale: () => void;
   onBulkUpload: () => void;
   onExport: () => void;
-  currentView: 'table' | 'chart';
-  onViewChange: (view: 'table' | 'chart') => void;
+  currentView: SalesViewMode;
+  onViewChange: (view: SalesViewMode) => void;
   totalSalesCount: number;
   isFilterVisible?: boolean;
   onToggleFilter?: () => void;
@@ -54,7 +55,7 @@ const SalesHeader = ({
           </span>
         </div>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-          Track customer transactions, receivables, and branch performance
+          Track customer transactions, receivables, and branch performance across all years
         </p>
       </div>
 
@@ -123,7 +124,7 @@ const Sales = () => {
   const [showAddSale, setShowAddSale] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showExport, setShowExport] = useState(false);
-  const [currentView, setCurrentView] = useState<'table' | 'chart'>('table');
+  const [currentView, setCurrentView] = useState<SalesViewMode>('transactions');
   
   // Unified Filters
   const [isFilterVisible, setIsFilterVisible] = useState<boolean>(() => {
@@ -156,28 +157,49 @@ const Sales = () => {
   const { data: sales = [], isLoading, refetch } = useQuery({
     queryKey: ['sales'],
     queryFn: async () => {
-      const { data: salesData, error } = await supabase
-        .from('sales')
-        .select(`
-          id,
-          quantity,
-          sale_price,
-          total_amount,
-          sale_date,
-          item_id,
-          notes,
-          payment_status,
-          amount_paid,
-          "inventory list" (
-            "Item Description",
-            location
-          )
-        `)
-        .order('sale_date', { ascending: false });
+      // Supabase / PostgREST limits single queries to 1000 rows.
+      // We paginate via range() chunks to ensure all historical sales (including previous years 2025, 2024, etc.) are retrieved.
+      const PAGE_SIZE = 1000;
+      let from = 0;
+      let allSalesRaw: any[] = [];
+      let hasMore = true;
 
-      if (error) throw error;
+      while (hasMore) {
+        const { data: salesData, error } = await supabase
+          .from('sales')
+          .select(`
+            id,
+            quantity,
+            sale_price,
+            total_amount,
+            sale_date,
+            item_id,
+            notes,
+            payment_status,
+            amount_paid,
+            "inventory list" (
+              "Item Description",
+              location
+            )
+          `)
+          .order('sale_date', { ascending: false })
+          .range(from, from + PAGE_SIZE - 1);
 
-      return (salesData || []).map((sale: any) => {
+        if (error) throw error;
+        
+        if (!salesData || salesData.length === 0) {
+          hasMore = false;
+        } else {
+          allSalesRaw = allSalesRaw.concat(salesData);
+          if (salesData.length < PAGE_SIZE) {
+            hasMore = false;
+          } else {
+            from += PAGE_SIZE;
+          }
+        }
+      }
+
+      return (allSalesRaw || []).map((sale: any) => {
         const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "Unknown Location");
         return {
           id: sale.id,
@@ -226,7 +248,8 @@ const Sales = () => {
 
       // Date range filter
       if (dateRange?.from) {
-        const saleDate = parseISO(sale.sale_date);
+        const saleDate = safeParseDate(sale.sale_date);
+        if (!saleDate) return false;
         const from = startOfDay(dateRange.from);
         const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
         if (!isWithinInterval(saleDate, { start: from, end: to })) {
@@ -300,27 +323,32 @@ const Sales = () => {
           onToggleVisibility={handleToggleFilter}
         />
 
-        {/* View Switcher: Table vs Chart */}
-        {currentView === 'chart' ? (
+        {/* Interactive Main View: Seamless switching between Transactions Ledger, Monthly Summary, and Charts */}
+        {currentView === 'transactions' && (
+          <SalesTableView 
+            sales={filteredSales} 
+            hasFilters={hasActiveFilters}
+            onClearFilters={handleResetFilters}
+            onSwitchView={setCurrentView}
+          />
+        )}
+
+        {currentView === 'monthly' && (
+          <SalesSummaryTable
+            sales={sales}
+            filteredSales={filteredSales}
+            hasActiveFilters={hasActiveFilters}
+            onSwitchView={setCurrentView}
+          />
+        )}
+
+        {currentView === 'chart' && (
           <SalesGraphicalView
             sales={filteredSales}
             filters={chartFilters}
             onFiltersChange={setChartFilters}
           />
-        ) : (
-          <SalesTableView 
-            sales={filteredSales} 
-            hasFilters={hasActiveFilters}
-            onClearFilters={handleResetFilters}
-          />
         )}
-
-        {/* Dedicated Monthly & Branch Summary Section (All Months & All Years) */}
-        <SalesSummaryTable
-          sales={sales}
-          filteredSales={filteredSales}
-          hasActiveFilters={hasActiveFilters}
-        />
 
         {/* Modals */}
         <AddSaleForm

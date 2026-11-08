@@ -6,6 +6,7 @@ import { SalesChartFilters, ChartFilters } from "./SalesChartFilters";
 import { formatCurrency } from "@/utils/formatters";
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { safeParseDate } from "@/utils/dateParsing";
 
 interface Sale {
   id: string;
@@ -30,7 +31,8 @@ export function SalesGraphicalView({ sales, filters, onFiltersChange }: SalesGra
 
   // Filter sales based on time period and location
   const filteredSales = sales.filter(sale => {
-    const saleDate = parseISO(sale.sale_date);
+    const saleDate = safeParseDate(sale.sale_date);
+    if (!saleDate) return false;
     const now = new Date();
     
     // Time period filter

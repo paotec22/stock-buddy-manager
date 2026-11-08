@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { safeParseDate } from "@/utils/dateParsing";
 
 interface SalesTableProps {
   sales: Sale[];
@@ -76,9 +77,12 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
       let comparison = 0;
       
       switch (sortField) {
-        case 'sale_date':
-          comparison = new Date(a.sale_date).getTime() - new Date(b.sale_date).getTime();
+        case 'sale_date': {
+          const timeA = safeParseDate(a.sale_date)?.getTime() || 0;
+          const timeB = safeParseDate(b.sale_date)?.getTime() || 0;
+          comparison = timeA - timeB;
           break;
+        }
         case 'item_name':
           comparison = a.item_name.localeCompare(b.item_name);
           break;
