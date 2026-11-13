@@ -69,3 +69,39 @@ export function safeParseDate(dateInput: string | number | Date | null | undefin
 
   return null;
 }
+
+/**
+ * Converts a user-selected sale date (Date object or date string) into a timezone-safe ISO string.
+ * - If no valid date is provided, returns current timestamp ISO.
+ * - If selected date is today's local calendar date, preserves the current time of day.
+ * - If selected date is a different calendar date, uses local noon (12:00:00) so `.toISOString()`
+ *   never shifts the calendar day backwards/forwards in UTC+1 / other timezones.
+ */
+export function toSafeSaleDateISO(dateInput?: Date | string | number | null): string {
+  const now = new Date();
+  const parsed = safeParseDate(dateInput);
+  if (!parsed) {
+    return now.toISOString();
+  }
+
+  const isToday =
+    parsed.getFullYear() === now.getFullYear() &&
+    parsed.getMonth() === now.getMonth() &&
+    parsed.getDate() === now.getDate();
+
+  if (isToday) {
+    return now.toISOString();
+  }
+
+  const localNoon = new Date(
+    parsed.getFullYear(),
+    parsed.getMonth(),
+    parsed.getDate(),
+    12,
+    0,
+    0,
+    0
+  );
+  return localNoon.toISOString();
+}
+

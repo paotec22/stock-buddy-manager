@@ -158,48 +158,57 @@ const Sales = () => {
     queryKey: ['sales'],
     queryFn: async () => {
       // Supabase / PostgREST limits single queries to 1000 rows.
-      // We paginate via range() chunks to ensure all historical sales (including previous years 2025, 2024, etc.) are retrieved.
+      // Fetch page 0 with exact count, then fetch any remaining pages concurrently.
       const PAGE_SIZE = 1000;
-      let from = 0;
-      let allSalesRaw: any[] = [];
-      let hasMore = true;
+      const selectCols = `
+        id,
+        quantity,
+        sale_price,
+        total_amount,
+        sale_date,
+        item_id,
+        notes,
+        payment_status,
+        amount_paid,
+        "inventory list" (
+          "Item Description",
+          location
+        )
+      `;
 
-      while (hasMore) {
-        const { data: salesData, error } = await supabase
-          .from('sales')
-          .select(`
-            id,
-            quantity,
-            sale_price,
-            total_amount,
-            sale_date,
-            item_id,
-            notes,
-            payment_status,
-            amount_paid,
-            "inventory list" (
-              "Item Description",
-              location
-            )
-          `)
-          .order('sale_date', { ascending: false })
-          .range(from, from + PAGE_SIZE - 1);
+      const { data: firstPage, count, error: firstError } = await supabase
+        .from('sales')
+        .select(selectCols, { count: 'exact' })
+        .order('sale_date', { ascending: false })
+        .range(0, PAGE_SIZE - 1);
 
-        if (error) throw error;
-        
-        if (!salesData || salesData.length === 0) {
-          hasMore = false;
-        } else {
-          allSalesRaw = allSalesRaw.concat(salesData);
-          if (salesData.length < PAGE_SIZE) {
-            hasMore = false;
-          } else {
-            from += PAGE_SIZE;
+      if (firstError) throw firstError;
+
+      let allSalesRaw: any[] = firstPage || [];
+      const totalCount = count ?? allSalesRaw.length;
+
+      if (totalCount > PAGE_SIZE) {
+        const pagePromises = [];
+        for (let from = PAGE_SIZE; from < totalCount; from += PAGE_SIZE) {
+          pagePromises.push(
+            supabase
+              .from('sales')
+              .select(selectCols)
+              .order('sale_date', { ascending: false })
+              .range(from, from + PAGE_SIZE - 1)
+          );
+        }
+
+        const results = await Promise.all(pagePromises);
+        for (const res of results) {
+          if (res.error) throw res.error;
+          if (res.data) {
+            allSalesRaw = allSalesRaw.concat(res.data);
           }
         }
       }
 
-      return (allSalesRaw || []).map((sale: any) => {
+      return allSalesRaw.map((sale: any) => {
         const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "Unknown Location");
         return {
           id: sale.id,

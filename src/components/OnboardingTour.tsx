@@ -3,31 +3,20 @@
 import { Joyride, EVENTS, STATUS } from "react-joyride";
 import { useAuth } from "./AuthProvider";
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
 import { Zap, Package, ShoppingCart, ImageIcon, BarChart3 } from "lucide-react";
 
 export function OnboardingTour() {
   const { session } = useAuth();
   const [runTour, setRunTour] = useState(false);
 
-  const checkTourStatus = useCallback(async () => {
+  const checkTourStatus = useCallback(() => {
     if (!session) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("tour_completed, tour_version")
-        .eq("id", user.id)
-        .maybeSingle();
-
       const localCompleted = localStorage.getItem("si-manager-tour-completed");
-      const shouldRun = !localCompleted && (!profile?.tour_completed || (profile?.tour_version || 0) < 1);
-
-      if (shouldRun) {
-        setTimeout(() => setRunTour(true), 1000);
+      if (!localCompleted) {
+        const timer = setTimeout(() => setRunTour(true), 1000);
+        return () => clearTimeout(timer);
       }
     } catch (e) {
       console.error("Failed to check tour status:", e);
@@ -35,27 +24,16 @@ export function OnboardingTour() {
   }, [session]);
 
   useEffect(() => {
-    checkTourStatus();
+    return checkTourStatus();
   }, [checkTourStatus]);
 
-  const markComplete = useCallback(async () => {
-    localStorage.setItem("si-manager-tour-completed", "true");
-    setRunTour(false);
-
+  const markComplete = useCallback(() => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from("profiles")
-          .upsert({
-            id: user.id,
-            tour_completed: true,
-            tour_version: 1,
-          });
-      }
-    } catch (e) {
-      console.error("Failed to save tour completion:", e);
+      localStorage.setItem("si-manager-tour-completed", "true");
+    } catch {
+      // ignore storage errors
     }
+    setRunTour(false);
   }, []);
 
   const handleEvent = useCallback(
@@ -203,18 +181,13 @@ export function OnboardingTour() {
 export function OnboardingTrigger() {
   const { session } = useAuth();
 
-  const handleRestart = async () => {
-    localStorage.removeItem("si-manager-tour-completed");
+  const handleRestart = () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from("profiles")
-          .upsert({ id: user.id, tour_completed: false, tour_version: 0 });
-      }
-    } catch (e) {
-      console.error("Failed to reset tour:", e);
+      localStorage.removeItem("si-manager-tour-completed");
+    } catch {
+      // ignore
     }
+    window.location.reload();
   };
 
   if (!session) return null;

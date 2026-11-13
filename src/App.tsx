@@ -2,19 +2,28 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { useEffect, lazy, Suspense } from "react";
-import { AnimatePresence } from "framer-motion";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { ConnectionBanner } from "@/components/ConnectionBanner";
 import { AppLayout } from "@/components/AppLayout";
 import { PageLoader } from "@/components/PageLoader";
 import { initializeDB } from "@/lib/indexedDB";
-import { CommandPalette } from "@/components/CommandPalette";
-import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
-import { OnboardingTour } from "@/components/OnboardingTour";
-import { SystemSpeedHealthModal } from "@/components/dashboard/SystemSpeedHealthModal";
+
+// Lazy-loaded non-critical overlays/tools to keep initial bundle lean
+const CommandPalette = lazy(() =>
+  import("@/components/CommandPalette").then((m) => ({ default: m.CommandPalette }))
+);
+const KeyboardShortcutsModal = lazy(() =>
+  import("@/components/KeyboardShortcutsModal").then((m) => ({ default: m.KeyboardShortcutsModal }))
+);
+const OnboardingTour = lazy(() =>
+  import("@/components/OnboardingTour").then((m) => ({ default: m.OnboardingTour }))
+);
+const SystemSpeedHealthModal = lazy(() =>
+  import("@/components/dashboard/SystemSpeedHealthModal").then((m) => ({ default: m.SystemSpeedHealthModal }))
+);
 
 // Lazy-loaded routes for ultra-fast initial bundle and speed optimization
 const Index = lazy(() => import("./pages/Index"));
@@ -36,6 +45,73 @@ const Purchases = lazy(() => import("./pages/Purchases"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const MarketingAgent = lazy(() => import("./pages/MarketingAgent"));
 
+function DeferredGlobalUtilities() {
+  const [commandLoaded, setCommandLoaded] = useState(false);
+  const [shortcutsLoaded, setShortcutsLoaded] = useState(false);
+  const [speedHealthLoaded, setSpeedHealthLoaded] = useState(false);
+  const [shouldLoadTour] = useState(() => {
+    try {
+      return localStorage.getItem("si-manager-tour-completed") !== "true";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandLoaded(true);
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new CustomEvent("open-command-palette"));
+        });
+        return;
+      }
+
+      const activeTag = document.activeElement?.tagName;
+      if (
+        activeTag === "INPUT" ||
+        activeTag === "TEXTAREA" ||
+        (document.activeElement as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === "?" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        setShortcutsLoaded(true);
+      }
+    };
+
+    const handleOpenCmd = () => setCommandLoaded(true);
+    const handleOpenSpeed = () => {
+      if (!speedHealthLoaded) {
+        setSpeedHealthLoaded(true);
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new CustomEvent("open-speed-health-modal"));
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-command-palette", handleOpenCmd);
+    window.addEventListener("open-speed-health-modal", handleOpenSpeed);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-command-palette", handleOpenCmd);
+      window.removeEventListener("open-speed-health-modal", handleOpenSpeed);
+    };
+  }, [speedHealthLoaded]);
+
+  return (
+    <Suspense fallback={null}>
+      {commandLoaded && <CommandPalette />}
+      {shortcutsLoaded && <KeyboardShortcutsModal />}
+      {shouldLoadTour && <OnboardingTour />}
+      {speedHealthLoaded && <SystemSpeedHealthModal />}
+    </Suspense>
+  );
+}
+
 function RootLandingRoute() {
   const { session, loading } = useAuth();
   if (loading) {
@@ -50,24 +126,19 @@ function RootLandingRoute() {
   );
 }
 
-// Animated Routes Component with Suspense Fallback
-function AnimatedRoutes() {
-  const location = useLocation();
-
-  // Background prefetch high-frequency pages during browser idle time
+function AppRoutes() {
+  // Background prefetch high-frequency pages only after browser is idle and authenticated UI settled
   useEffect(() => {
     const prefetchKeyPages = () => {
       import("./pages/Dashboard");
       import("./pages/Inventory");
       import("./pages/Sales");
-      import("./pages/CreateInvoice");
-      import("./pages/Reports");
     };
 
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
       const idleId = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
         prefetchKeyPages,
-        { timeout: 3000 }
+        { timeout: 4000 }
       );
       return () => {
         if ("cancelIdleCallback" in window) {
@@ -75,39 +146,37 @@ function AnimatedRoutes() {
         }
       };
     } else {
-      const timer = setTimeout(prefetchKeyPages, 1800);
+      const timer = setTimeout(prefetchKeyPages, 2500);
       return () => clearTimeout(timer);
     }
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
-      <Suspense fallback={<PageLoader />}>
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<RootLandingRoute />} />
-          <Route path="/login" element={<Index />} />
-          <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-          <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
-          <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />
-          <Route path="/accessories" element={<Navigate to="/inventory/accessories" replace />} />
-          <Route path="/sales" element={<AppLayout><Sales /></AppLayout>} />
-          <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
-          <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
-          <Route path="/expenses" element={<AppLayout><Expenses /></AppLayout>} />
-          <Route path="/create-invoice" element={<AppLayout><CreateInvoice /></AppLayout>} />
-          <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
-          <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
-          <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
-          <Route path="/reconciliation" element={<AppLayout><Reconciliation /></AppLayout>} />
-          <Route path="/purchases" element={<AppLayout><Purchases /></AppLayout>} />
-          <Route path="/privacy" element={<AppLayout><PrivacyPolicy /></AppLayout>} />
-          <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
-          <Route path="/marketing" element={<AppLayout><MarketingAgent /></AppLayout>} />
-          <Route path="/share/catalogue" element={<PublicCatalogue />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </AnimatePresence>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<RootLandingRoute />} />
+        <Route path="/login" element={<Index />} />
+        <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+        <Route path="/inventory" element={<AppLayout><Inventory /></AppLayout>} />
+        <Route path="/inventory/accessories" element={<AppLayout><Accessories /></AppLayout>} />
+        <Route path="/accessories" element={<Navigate to="/inventory/accessories" replace />} />
+        <Route path="/sales" element={<AppLayout><Sales /></AppLayout>} />
+        <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
+        <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+        <Route path="/expenses" element={<AppLayout><Expenses /></AppLayout>} />
+        <Route path="/create-invoice" element={<AppLayout><CreateInvoice /></AppLayout>} />
+        <Route path="/profit-analysis" element={<AppLayout><ProfitAnalysis /></AppLayout>} />
+        <Route path="/request" element={<AppLayout><Request /></AppLayout>} />
+        <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
+        <Route path="/reconciliation" element={<AppLayout><Reconciliation /></AppLayout>} />
+        <Route path="/purchases" element={<AppLayout><Purchases /></AppLayout>} />
+        <Route path="/privacy" element={<AppLayout><PrivacyPolicy /></AppLayout>} />
+        <Route path="/catalogue" element={<AppLayout><Catalogue /></AppLayout>} />
+        <Route path="/marketing" element={<AppLayout><MarketingAgent /></AppLayout>} />
+        <Route path="/share/catalogue" element={<PublicCatalogue />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 
@@ -138,12 +207,9 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <ConnectionBanner />
-            <CommandPalette />
-            <KeyboardShortcutsModal />
-            <OnboardingTour />
-            <SystemSpeedHealthModal />
             <AuthProvider>
-              <AnimatedRoutes />
+              <DeferredGlobalUtilities />
+              <AppRoutes />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

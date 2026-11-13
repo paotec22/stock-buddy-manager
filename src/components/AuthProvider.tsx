@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
@@ -36,8 +36,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Keep customer directory synced in real time across all logged in users
-  useCustomersRealtime();
+  const pathnameRef = useRef(location.pathname);
+  const navigateRef = useRef(navigate);
+  pathnameRef.current = location.pathname;
+  navigateRef.current = navigate;
+
+  // Keep customer directory synced in real time only once authenticated
+  useCustomersRealtime(Boolean(session));
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
@@ -50,10 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [navigate]);
 
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log("AuthProvider: Initializing with current location:", location.pathname);
-    }
     let mounted = true;
+
+    const redirectIfUnauthenticated = (activeSession: Session | null) => {
+      const currentPath = pathnameRef.current;
+      if (isPublicPath(currentPath)) return;
+      if (!activeSession && currentPath !== '/' && currentPath !== '/login') {
+        navigateRef.current('/');
+      }
+    };
 
     const initializeAuth = async () => {
       try {
@@ -67,23 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
           return;
         }
-
-        if (import.meta.env.DEV) {
-          console.log("AuthProvider: Initial session retrieved", { 
-            hasSession: !!initialSession,
-            currentPath: location.pathname 
-          });
-        }
         
         setSession(initialSession);
         setLoading(false);
-
-        // Only handle navigation after we've confirmed the session state
-        if (isPublicPath(location.pathname)) {
-          // Public routes never redirect
-        } else if (!initialSession && location.pathname !== '/' && location.pathname !== '/login') {
-          navigate('/');
-        }
+        redirectIfUnauthenticated(initialSession);
       } catch (error) {
         console.error("Error in auth initialization:", error);
         if (mounted) {
@@ -93,36 +90,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Start initialization
     initializeAuth();
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       if (!mounted) return;
-
-      if (import.meta.env.DEV) {
-        console.log("AuthProvider: Auth state changed", { 
-          event, 
-          hasSession: !!currentSession,
-          currentPath: location.pathname 
-        });
-      }
-
       setSession(currentSession);
-
-      // Handle navigation based on new auth state
-      if (isPublicPath(location.pathname)) {
-        // Public routes never redirect
-      } else if (!currentSession && location.pathname !== '/' && location.pathname !== '/login') {
-        navigate('/');
-      }
+      setLoading(false);
+      redirectIfUnauthenticated(currentSession);
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, []);
 
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({

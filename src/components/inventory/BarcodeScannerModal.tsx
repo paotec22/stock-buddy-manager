@@ -50,8 +50,8 @@ export function BarcodeScannerModal({ open, onOpenChange }: BarcodeScannerModalP
 
       const { data, error } = await supabase
         .from("inventory list")
-        .select(`id, "Item Description", "Location", "Quantity Available", "Actual Price", "Cost Price", "Category"`)
-        .or(`"Item Description".ilike.%${trimmed}%,"Location".ilike.%${trimmed}%,"Category".ilike.%${trimmed}%`)
+        .select('id, "Item Description", location, Quantity, Price')
+        .or(`"Item Description".ilike.%${trimmed}%,location.ilike.%${trimmed}%`)
         .limit(8);
 
       if (error) return [];
@@ -241,14 +241,10 @@ export function BarcodeScannerModal({ open, onOpenChange }: BarcodeScannerModalP
             )}
 
             <div className="space-y-2">
-              {matchedItems.map((item) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const raw = item as any;
-                const qty = Number(raw["Quantity Available"] ?? 0);
+              {matchedItems.map((raw) => {
+                const qty = Number(raw.Quantity ?? 0);
                 const isOutOfStock = qty <= 0;
-                const salePrice = Number(raw["Actual Price"] ?? 0);
-                const costPrice = Number(raw["Cost Price"] ?? 0);
-                const margin = salePrice > 0 ? Math.round(((salePrice - costPrice) / salePrice) * 100) : 0;
+                const salePrice = Number(raw.Price ?? 0);
 
                 return (
                   <Card key={raw.id} className="border-border hover:border-primary/40 transition-colors shadow-2xs">
@@ -270,13 +266,9 @@ export function BarcodeScannerModal({ open, onOpenChange }: BarcodeScannerModalP
                         </div>
 
                         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                          <span>Location: <strong className="text-foreground">{raw["Location"] || "Main Warehouse"}</strong></span>
-                          <span>Category: <strong className="text-foreground">{raw["Category"] || "General"}</strong></span>
+                          <span>Location: <strong className="text-foreground">{raw.location || "Main Warehouse"}</strong></span>
                           {salePrice > 0 && (
                             <span>Price: <strong className="text-primary font-mono">{formatCurrency(salePrice)}</strong></span>
-                          )}
-                          {margin > 0 && (
-                            <span className="text-emerald-600 font-semibold">{margin}% margin</span>
                           )}
                         </div>
                       </div>

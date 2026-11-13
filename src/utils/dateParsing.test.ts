@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { safeParseDate } from "./dateParsing";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { safeParseDate, toSafeSaleDateISO } from "./dateParsing";
 
 describe("safeParseDate utility", () => {
   it("should correctly parse strict ISO strings", () => {
@@ -54,5 +54,45 @@ describe("safeParseDate utility", () => {
     expect(safeParseDate(undefined)).toBeNull();
     expect(safeParseDate("")).toBeNull();
     expect(safeParseDate("not-a-valid-date-string")).toBeNull();
+  });
+});
+
+describe("toSafeSaleDateISO utility", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("should preserve exact calendar day at local noon for non-today custom dates", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 13, 10, 0, 0));
+
+    // Midnight local time from Calendar DayPicker for Nov 5, 2026
+    const pickedDate = new Date(2026, 10, 5, 0, 0, 0);
+    const iso = toSafeSaleDateISO(pickedDate);
+    const reparsed = new Date(iso);
+
+    expect(reparsed.getFullYear()).toBe(2026);
+    expect(reparsed.getMonth()).toBe(10);
+    expect(reparsed.getDate()).toBe(5);
+    expect(iso.startsWith("2026-11-05")).toBe(true);
+  });
+
+  it("should preserve current timestamp when today is selected or omitted", () => {
+    vi.useFakeTimers();
+    const fixedNow = new Date(2026, 10, 13, 15, 42, 10);
+    vi.setSystemTime(fixedNow);
+
+    expect(toSafeSaleDateISO()).toBe(fixedNow.toISOString());
+    expect(toSafeSaleDateISO(new Date(2026, 10, 13, 0, 0, 0))).toBe(fixedNow.toISOString());
+  });
+
+  it("should parse string dates and fallback cleanly on invalid input", () => {
+    vi.useFakeTimers();
+    const fixedNow = new Date(2026, 10, 13, 9, 0, 0);
+    vi.setSystemTime(fixedNow);
+
+    const pastIso = toSafeSaleDateISO("2025-12-20");
+    expect(pastIso.startsWith("2025-12-20")).toBe(true);
+    expect(toSafeSaleDateISO("invalid-date")).toBe(fixedNow.toISOString());
   });
 });

@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, endOfDay, isSameDay, subDays } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { validateSaleSubmission, recordSale } from "./useSaleFormValidation";
 import { useAuth } from "@/components/AuthProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CustomerSelector, type CustomerLite } from "@/components/customers/CustomerSelector";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Receipt, Sparkles, X, CheckCircle2, PenLine } from "lucide-react";
+import { Plus, Trash2, Receipt, Sparkles, X, CheckCircle2, PenLine, Calendar as CalendarIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
+import { safeParseDate } from "@/utils/dateParsing";
 import type { PaymentStatus } from "./types";
 import { ImportInvoiceDialog, type InvoiceRecord, type InvoiceItemRecord } from "./ImportInvoiceDialog";
 
@@ -51,6 +55,8 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("paid");
   const [amountPaid, setAmountPaid] = useState("");
   const [notes, setNotes] = useState("");
+  const [saleDate, setSaleDate] = useState<Date>(() => new Date());
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importedInvoice, setImportedInvoice] = useState<InvoiceRecord | null>(null);
 
@@ -93,6 +99,8 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
     setPaymentStatus("paid");
     setAmountPaid("");
     setNotes("");
+    setSaleDate(new Date());
+    setDatePopoverOpen(false);
     setImportedInvoice(null);
   };
 
@@ -210,9 +218,14 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
       }
     }
 
-    // 3. Pre-populate Notes with Invoice Reference
+    // 3. Pre-populate Notes with Invoice Reference & Date if valid
     const invPrefix = `Imported from Invoice #${invoice.invoice_number}`;
     setNotes(invoice.notes ? `${invPrefix} • ${invoice.notes}` : invPrefix);
+
+    const parsedInvDate = safeParseDate(invoice.invoice_date);
+    if (parsedInvDate && parsedInvDate <= endOfDay(new Date())) {
+      setSaleDate(parsedInvDate);
+    }
 
     // 4. Default payment status
     setPaymentStatus("paid");
@@ -323,6 +336,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
             isCustom: p.line.isCustom,
             customItemName: p.line.customName,
             location: selectedLocation,
+            saleDate,
           }
         );
       }
@@ -428,7 +442,7 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
           )}
 
           <form onSubmit={onSubmit} className="space-y-5 pt-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <Label className="mb-1.5 block text-xs font-bold text-foreground">
                   Customer (Optional)
@@ -455,6 +469,74 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-1">
+                <Label htmlFor="sale-date-trigger" className="mb-1.5 block text-xs font-bold text-foreground">
+                  Sale Date
+                </Label>
+                <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="sale-date-trigger"
+                      type="button"
+                      variant="outline"
+                      aria-label="Sale Date"
+                      className="w-full h-10 px-3 justify-between rounded-xl bg-card border-border/80 font-normal text-xs sm:text-sm"
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="truncate font-medium">
+                          {format(saleDate, "EEE, MMM d, yyyy")}
+                        </span>
+                      </span>
+                      {isSameDay(saleDate, new Date()) && (
+                        <span className="ml-2 shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          Today
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[60] rounded-2xl" align="start">
+                    <div className="flex items-center gap-1.5 p-2 border-b border-border/60 bg-muted/30">
+                      <Button
+                        type="button"
+                        variant={isSameDay(saleDate, new Date()) ? "secondary" : "ghost"}
+                        size="sm"
+                        className="h-7 px-2.5 text-xs rounded-lg"
+                        onClick={() => {
+                          setSaleDate(new Date());
+                          setDatePopoverOpen(false);
+                        }}
+                      >
+                        Today
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={isSameDay(saleDate, subDays(new Date(), 1)) ? "secondary" : "ghost"}
+                        size="sm"
+                        className="h-7 px-2.5 text-xs rounded-lg"
+                        onClick={() => {
+                          setSaleDate(subDays(new Date(), 1));
+                          setDatePopoverOpen(false);
+                        }}
+                      >
+                        Yesterday
+                      </Button>
+                    </div>
+                    <Calendar
+                      mode="single"
+                      selected={saleDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setSaleDate(date);
+                          setDatePopoverOpen(false);
+                        }
+                      }}
+                      disabled={(date) => date > endOfDay(new Date())}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 

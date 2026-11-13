@@ -97,7 +97,8 @@ const Dashboard = () => {
         .maybeSingle();
       return profile?.role;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id,
+    staleTime: 1000 * 60 * 30,
   });
 
   const isInventoryManager = userRole === 'inventory_manager';

@@ -6,10 +6,12 @@ import { useQueryClient } from "@tanstack/react-query";
  * Real-time subscription hook to keep customer directory and customer details
  * synchronized across all active users and devices of the application.
  */
-export const useCustomersRealtime = () => {
+export const useCustomersRealtime = (enabled: boolean = true) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    if (!enabled) return;
+
     const channel = supabase
       .channel("customers-realtime-sync")
       .on(
@@ -19,7 +21,7 @@ export const useCustomersRealtime = () => {
           schema: "public",
           table: "customers",
         },
-        (payload) => {
+        () => {
           // Immediately invalidate customer queries so any new, edited, or removed
           // customer record is instantly fetched and displayed across all connected clients
           queryClient.invalidateQueries({ queryKey: ["customers"] });
@@ -30,5 +32,5 @@ export const useCustomersRealtime = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, enabled]);
 };

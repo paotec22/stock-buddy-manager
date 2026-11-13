@@ -55,34 +55,34 @@ export function NotificationCenter() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("inventory list")
-        .select(`id, "Item Description", "Quantity Available", "Location", "Category"`)
-        .lte("Quantity Available", 5)
-        .order("Quantity Available", { ascending: true })
+        .select('id, "Item Description", Quantity, location')
+        .lte("Quantity", 5)
+        .order("Quantity", { ascending: true })
         .limit(10);
 
       if (error) return [];
       return data || [];
     },
     enabled: !!session,
-    staleTime: 1000 * 60 * 3, // 3 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
-  // 2. Query pending / overdue invoices
-  const { data: pendingInvoices = [] } = useQuery({
+  // 2. Query invoices with upcoming or past due dates
+  const { data: dueInvoices = [] } = useQuery({
     queryKey: ["notifications-invoices"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("invoices")
-        .select("id, invoice_number, customer_name, total_amount, due_date, status, currency")
-        .neq("status", "paid")
-        .order("created_at", { ascending: false })
+        .select("id, invoice_number, customer_name, total_amount, due_date, invoice_date")
+        .not("due_date", "is", null)
+        .order("due_date", { ascending: false })
         .limit(8);
 
       if (error) return [];
       return data || [];
     },
     enabled: !!session,
-    staleTime: 1000 * 60 * 3,
+    staleTime: 1000 * 60 * 5,
   });
 
   // 3. Query pending installation/service requests
@@ -91,8 +91,8 @@ export function NotificationCenter() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("installation_requests")
-        .select("id, product_name, customer_name, status, requested_date, location")
-        .eq("status", "pending")
+        .select("id, product_name, status, created_at, location, notes")
+        .eq("status", "Not installed")
         .order("created_at", { ascending: false })
         .limit(8);
 
@@ -100,7 +100,7 @@ export function NotificationCenter() {
       return data || [];
     },
     enabled: !!session,
-    staleTime: 1000 * 60 * 3,
+    staleTime: 1000 * 60 * 5,
   });
 
   // Assemble notifications
@@ -108,17 +108,15 @@ export function NotificationCenter() {
     const list: NotificationItem[] = [];
 
     // Stock alerts
-    lowStockItems.forEach((item) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = item as any;
-      const qty = Number(raw["Quantity Available"] ?? 0);
+    lowStockItems.forEach((raw) => {
+      const qty = Number(raw.Quantity ?? 0);
       const isOut = qty <= 0;
 
       list.push({
         id: `stock-${raw.id}`,
         type: "stock",
         title: isOut ? "Out of Stock" : "Low Stock Alert",
-        description: `"${raw["Item Description"]}" has only ${qty} units remaining (${raw["Location"] || "Main"}).`,
+        description: `"${raw["Item Description"]}" has only ${qty} units remaining (${raw.location || "Main"}).`,
         timestamp: "Live store status",
         severity: isOut ? "critical" : "warning",
         actionUrl: "/inventory",
@@ -126,18 +124,16 @@ export function NotificationCenter() {
       });
     });
 
-    // Invoices
-    pendingInvoices.forEach((inv) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = inv as any;
+    // Invoices with due dates
+    dueInvoices.forEach((raw) => {
       const isOverdue = raw.due_date && new Date(raw.due_date) < new Date();
 
       list.push({
         id: `inv-${raw.id}`,
         type: "invoice",
-        title: isOverdue ? "Overdue Invoice" : "Pending Invoice Payment",
-        description: `Invoice #${raw.invoice_number} for ${raw.customer_name || "Customer"} (${formatCurrency(Number(raw.total_amount || 0), raw.currency || "NGN")}) is unpaid.`,
-        timestamp: raw.due_date ? `Due ${new Date(raw.due_date).toLocaleDateString()}` : "Pending payment",
+        title: isOverdue ? "Invoice Due / Overdue" : "Upcoming Invoice Due Date",
+        description: `Invoice #${raw.invoice_number} for ${raw.customer_name || "Customer"} (${formatCurrency(Number(raw.total_amount || 0))}).`,
+        timestamp: raw.due_date ? `Due ${new Date(raw.due_date).toLocaleDateString()}` : "Scheduled",
         severity: isOverdue ? "critical" : "warning",
         actionUrl: "/reports",
         actionLabel: "View Invoices",
@@ -145,15 +141,13 @@ export function NotificationCenter() {
     });
 
     // Requests
-    pendingRequests.forEach((req) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = req as any;
+    pendingRequests.forEach((raw) => {
       list.push({
         id: `req-${raw.id}`,
         type: "request",
-        title: "Pending Stock Request",
-        description: `${raw.customer_name || "Client"} requested installation of "${raw.product_name}".`,
-        timestamp: raw.requested_date || "Awaiting fulfillment",
+        title: "Pending Installation Request",
+        description: `"${raw.product_name}" (${raw.location || "Main"})${raw.notes ? ` — ${raw.notes}` : ""}`,
+        timestamp: raw.created_at ? new Date(raw.created_at).toLocaleDateString() : "Awaiting fulfillment",
         severity: "info",
         actionUrl: "/request",
         actionLabel: "Open Requests",
@@ -161,7 +155,7 @@ export function NotificationCenter() {
     });
 
     return list;
-  }, [lowStockItems, pendingInvoices, pendingRequests]);
+  }, [lowStockItems, dueInvoices, pendingRequests]);
 
   // Filtered list
   const filteredNotifications = useMemo(() => {
@@ -267,7 +261,7 @@ export function NotificationCenter() {
                 Stock ({lowStockItems.length})
               </TabsTrigger>
               <TabsTrigger value="invoice" className="h-6 text-[11px] font-medium py-0">
-                Bills ({pendingInvoices.length})
+                Bills ({dueInvoices.length})
               </TabsTrigger>
               <TabsTrigger value="request" className="h-6 text-[11px] font-medium py-0">
                 Req ({pendingRequests.length})

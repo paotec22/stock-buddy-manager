@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import { getItemCostCache } from "@/utils/profitUtils";
 import { formatCustomSaleNotes } from "@/utils/salesItemResolver";
+import { toSafeSaleDateISO } from "@/utils/dateParsing";
 
 interface ValidationParams {
   itemId?: string;
@@ -59,6 +60,7 @@ export interface RecordSaleOptions {
   isCustom?: boolean;
   customItemName?: string;
   location?: string;
+  saleDate?: Date | string | null;
 }
 
 export const recordSale = async (
@@ -119,7 +121,7 @@ export const recordSale = async (
     sale_price: salePrice,
     total_amount: totalAmount,
     user_id: userId,
-    sale_date: new Date().toISOString(),
+    sale_date: toSafeSaleDateISO(options?.saleDate),
     notes: formattedNotes,
     payment_status: paymentStatus,
     amount_paid: finalAmountPaid,

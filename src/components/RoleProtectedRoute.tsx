@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { isAdminUser, isSuperAdminUser } from "@/utils/roles";
+import { PageLoader } from "./PageLoader";
 
 interface RoleProtectedRouteProps {
   children: React.ReactNode;
@@ -16,8 +17,10 @@ export function RoleProtectedRoute({
   allowedRoles, 
   redirectTo = "/" 
 }: RoleProtectedRouteProps) {
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  const isEmailSuperAdmin = isSuperAdminUser(session?.user?.email);
 
   const { data: userRole, isLoading } = useQuery({
     queryKey: ['user-role', session?.user?.id],
@@ -32,10 +35,11 @@ export function RoleProtectedRoute({
       
       return profile?.role;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id && !isEmailSuperAdmin,
+    staleTime: 1000 * 60 * 30,
   });
 
-  const isSuperAdmin = isSuperAdminUser(session?.user?.email, userRole);
+  const isSuperAdmin = isEmailSuperAdmin || isSuperAdminUser(session?.user?.email, userRole);
   const isAdmin = isAdminUser(session?.user?.email, userRole);
 
   const isAuthorized = Boolean(
@@ -44,14 +48,16 @@ export function RoleProtectedRoute({
     (userRole && allowedRoles.includes(userRole))
   );
 
+  const checking = authLoading || (!isSuperAdmin && isLoading);
+
   useEffect(() => {
-    if (!isLoading && !isAuthorized) {
+    if (!checking && !isAuthorized) {
       navigate(redirectTo);
     }
-  }, [isAuthorized, isLoading, navigate, redirectTo]);
+  }, [isAuthorized, checking, navigate, redirectTo]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (checking) {
+    return <PageLoader />;
   }
 
   if (!isAuthorized) {

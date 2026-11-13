@@ -13,6 +13,7 @@ import {
 } from "date-fns";
 import { getItemCostCache } from "@/utils/profitUtils";
 import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
+import { safeParseDate } from "@/utils/dateParsing";
 
 export type DashboardTimeRange = 'today' | '7d' | '30d' | 'month' | 'all';
 
@@ -143,6 +144,42 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
 
       const startTime = performance.now();
       const costCache = getItemCostCache();
+      const thirtyDaysAgo = subDays(now, 30);
+
+      // Determine minimum date needed on the server when not viewing 'all' time:
+      // Covers active range, previous comparison period, AND 30-day stock velocity window.
+      const earliestNeededDate =
+        prevStartDate.getTime() < thirtyDaysAgo.getTime() ? prevStartDate : thirtyDaysAgo;
+
+      let salesQuery = supabase
+        .from('sales')
+        .select(`
+          id,
+          total_amount,
+          sale_price,
+          quantity,
+          actual_purchase_price,
+          sale_date,
+          payment_status,
+          amount_paid,
+          notes,
+          item_id,
+          "inventory list" (
+            "Item Description",
+            location
+          )
+        `)
+        .order('sale_date', { ascending: false });
+
+      let expensesQuery = supabase
+        .from('expenses')
+        .select('id, amount, category, description, expense_date, location')
+        .order('expense_date', { ascending: false });
+
+      if (timeRange !== 'all') {
+        salesQuery = salesQuery.gte('sale_date', earliestNeededDate.toISOString());
+        expensesQuery = expensesQuery.gte('expense_date', format(prevStartDate, 'yyyy-MM-dd'));
+      }
 
       // Parallel execution of all database queries for ultra-low latency & maximum speed
       const [
@@ -152,40 +189,16 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         { data: rawInvoices, error: invoicesError },
         { data: pendingInstallations, error: installationsError }
       ] = await Promise.all([
-        supabase
-          .from('sales')
-          .select(`
-            id,
-            total_amount,
-            sale_price,
-            quantity,
-            actual_purchase_price,
-            sale_date,
-            payment_status,
-            amount_paid,
-            notes,
-            item_id,
-            "inventory list" (
-              "Item Description",
-              location
-            )
-          `)
-          .order('sale_date', { ascending: false }),
-
-        supabase
-          .from('expenses')
-          .select('id, amount, category, description, expense_date, location')
-          .order('expense_date', { ascending: false }),
-
+        salesQuery,
+        expensesQuery,
         supabase
           .from('inventory list')
           .select('id, "Item Description", location, Price, Quantity, Total'),
-
         supabase
           .from('invoices')
           .select('id, invoice_number, customer_name, total_amount, invoice_date, due_date, created_at')
-          .order('created_at', { ascending: false }),
-
+          .order('created_at', { ascending: false })
+          .limit(500),
         supabase
           .from('installation_requests')
           .select('id, status, location')
@@ -238,7 +251,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       sales.forEach((sale: any) => {
         const saleDateStr = sale.sale_date;
         if (!saleDateStr) return;
-        const saleDate = new Date(saleDateStr);
+        const saleDate = safeParseDate(saleDateStr);
+        if (!saleDate) return;
         const amount = Number(sale.total_amount || 0);
         const qty = Number(sale.quantity || 1);
         const itemId = sale.item_id ? String(sale.item_id) : "";
@@ -297,8 +311,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       let totalExpenses = 0;
       expenses.forEach(exp => {
         if (!exp.expense_date) return;
-        const expDate = new Date(exp.expense_date);
-        if (isWithinInterval(expDate, { start: startDate, end: endDate })) {
+        const expDate = safeParseDate(exp.expense_date);
+        if (expDate && isWithinInterval(expDate, { start: startDate, end: endDate })) {
           totalExpenses += Number(exp.amount || 0);
         }
       });
@@ -307,12 +321,11 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       const profitMarginPct = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
 
       // Compute 30-day sales velocity per item for runway forecasting
-      const thirtyDaysAgo = subDays(now, 30);
       const item30dUnitsSold = new Map<number, number>();
       (rawSales || []).forEach((sale: any) => {
         if (!sale.sale_date || !sale.item_id) return;
-        const sDate = new Date(sale.sale_date);
-        if (sDate >= thirtyDaysAgo) {
+        const sDate = safeParseDate(sale.sale_date);
+        if (sDate && sDate >= thirtyDaysAgo) {
           const prev = item30dUnitsSold.get(sale.item_id) || 0;
           item30dUnitsSold.set(sale.item_id, prev + Number(sale.quantity || 0));
         }
@@ -420,8 +433,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
         }
         sales.forEach((s: any) => {
           if (!s.sale_date) return;
-          const d = new Date(s.sale_date);
-          if (isWithinInterval(d, { start: startDate, end: endDate })) {
+          const d = safeParseDate(s.sale_date);
+          if (d && isWithinInterval(d, { start: startDate, end: endDate })) {
             const h = Math.floor(d.getHours() / 3) * 3;
             const label = `${h.toString().padStart(2, '0')}:00`;
             const entry = chartPointsMap.get(label) || { revenue: 0, expenses: 0, profit: 0 };
@@ -439,8 +452,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
 
         sales.forEach((s: any) => {
           if (!s.sale_date) return;
-          const d = new Date(s.sale_date);
-          if (isWithinInterval(d, { start: startDate, end: endDate })) {
+          const d = safeParseDate(s.sale_date);
+          if (d && isWithinInterval(d, { start: startDate, end: endDate })) {
             const dateStr = format(d, 'MMM dd');
             if (chartPointsMap.has(dateStr)) {
               const entry = chartPointsMap.get(dateStr)!;
@@ -452,8 +465,8 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
 
         expenses.forEach((e: any) => {
           if (!e.expense_date) return;
-          const d = new Date(e.expense_date);
-          if (isWithinInterval(d, { start: startDate, end: endDate })) {
+          const d = safeParseDate(e.expense_date);
+          if (d && isWithinInterval(d, { start: startDate, end: endDate })) {
             const dateStr = format(d, 'MMM dd');
             if (chartPointsMap.has(dateStr)) {
               const entry = chartPointsMap.get(dateStr)!;
@@ -511,6 +524,7 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       };
     },
     enabled: !!session,
-    refetchInterval: 30000 // auto-refresh every 30 seconds for live feel
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: false,
   });
 };

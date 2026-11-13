@@ -36,7 +36,7 @@ import {
   Zap,
   Sparkles,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { supabase } from "@/lib/supabase";
@@ -47,7 +47,10 @@ import { CompanyLogo } from "./CompanyLogo";
 import { isSuperAdminUser, isAdminUser, getRoleLabel } from "@/utils/roles";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { NotificationCenter } from "./notifications/NotificationCenter";
-import { BarcodeScannerModal } from "./inventory/BarcodeScannerModal";
+
+const BarcodeScannerModal = lazy(() =>
+  import("./inventory/BarcodeScannerModal").then((m) => ({ default: m.BarcodeScannerModal }))
+);
 
 interface GroupDropdownItemProps {
   to: string;
@@ -166,6 +169,8 @@ export function TopNavbar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const isEmailSuperAdmin = isSuperAdminUser(session?.user?.email);
+
   const { data: userRole } = useQuery({
     queryKey: ["user-role", session?.user?.id],
     queryFn: async () => {
@@ -177,7 +182,8 @@ export function TopNavbar() {
         .maybeSingle();
       return profile?.role;
     },
-    enabled: !!session?.user?.id,
+    enabled: !!session?.user?.id && !isEmailSuperAdmin,
+    staleTime: 1000 * 60 * 30,
   });
 
   if (!session) return null;
@@ -783,7 +789,11 @@ export function TopNavbar() {
           </div>
         </div>
       </div>
-      <BarcodeScannerModal open={barcodeScannerOpen} onOpenChange={setBarcodeScannerOpen} />
+      {barcodeScannerOpen && (
+        <Suspense fallback={null}>
+          <BarcodeScannerModal open={barcodeScannerOpen} onOpenChange={setBarcodeScannerOpen} />
+        </Suspense>
+      )}
     </header>
   );
 }
