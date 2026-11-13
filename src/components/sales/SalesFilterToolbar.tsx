@@ -151,21 +151,23 @@ export function SalesFilterToolbar({
 
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={onResetFilters}
-              className="text-[11px] text-destructive hover:underline font-medium cursor-pointer flex items-center gap-1 px-1.5 py-1"
+              className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 font-medium gap-1 px-2.5 whitespace-nowrap shrink-0"
             >
               <RotateCcw className="h-3 w-3" />
-              Reset Filters
-            </button>
+              <span>Reset</span>
+            </Button>
           )}
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={toggleVisibility}
-            className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10 gap-1.5 px-2.5 cursor-pointer font-medium"
+            className="h-8 text-xs text-primary hover:text-primary hover:bg-primary/10 gap-1.5 px-2.5 cursor-pointer font-medium whitespace-nowrap shrink-0"
           >
             <Filter className="h-3.5 w-3.5" />
             <span>Show Filters</span>
@@ -176,24 +178,24 @@ export function SalesFilterToolbar({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-2.5 sm:p-4 shadow-sm space-y-2 sm:space-y-3 animate-in fade-in duration-200">
-      <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/50">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-xs space-y-2.5 sm:space-y-3 animate-in fade-in duration-200">
+      <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-border/50">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
           <Filter className="h-3.5 w-3.5 text-primary" />
           <span>Filter Transactions</span>
           {hasActiveFilters && (
-            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-medium">
+            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
               Active
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onResetFilters}
-              className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive gap-1 cursor-pointer"
+              className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive gap-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               <RotateCcw className="h-3 w-3" />
               <span>Reset</span>
@@ -203,7 +205,7 @@ export function SalesFilterToolbar({
             variant="ghost"
             size="sm"
             onClick={toggleVisibility}
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
+            className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1 cursor-pointer whitespace-nowrap shrink-0"
             title="Hide filter bar"
           >
             <ChevronUp className="h-3.5 w-3.5" />
@@ -220,13 +222,15 @@ export function SalesFilterToolbar({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search items, notes..."
-            className="pl-9 pr-8 h-9 text-xs sm:text-sm bg-background border-border w-full"
+            className="pl-9 pr-9 h-9 text-sm bg-background border-border w-full"
           />
           {searchTerm && (
             <button
+              type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               title="Clear search"
+              aria-label="Clear search"
             >
               <X className="h-3.5 w-3.5" />
             </button>

@@ -12,16 +12,16 @@ interface SalesViewToggleProps {
 
 export function SalesViewToggle({ currentView, onViewChange, className }: SalesViewToggleProps) {
   return (
-    <div className={cn("inline-flex rounded-lg border border-border/80 bg-muted/80 p-0.5 sm:p-1 gap-0.5 sm:gap-1 shadow-2xs", className)}>
+    <div className={cn("inline-flex rounded-lg border border-border/80 bg-muted/70 p-0.5 gap-0.5 shadow-2xs shrink-0", className)}>
       <Button
         type="button"
         variant={currentView === 'transactions' ? 'default' : 'ghost'}
         size="sm"
         onClick={() => onViewChange('transactions')}
         className={cn(
-          "h-7 sm:h-8 px-2 sm:px-3 text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer",
-          currentView === 'transactions' 
-            ? "bg-background text-foreground shadow-xs font-semibold hover:bg-background" 
+          "h-8 px-2.5 sm:px-3 text-xs font-medium flex items-center gap-1.5 transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0",
+          currentView === 'transactions'
+            ? "bg-background text-foreground shadow-xs font-semibold hover:bg-background"
             : "text-muted-foreground hover:text-foreground hover:bg-background/50"
         )}
         title="View Transactions Ledger"
@@ -37,9 +37,9 @@ export function SalesViewToggle({ currentView, onViewChange, className }: SalesV
         size="sm"
         onClick={() => onViewChange('monthly')}
         className={cn(
-          "h-7 sm:h-8 px-2 sm:px-3 text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer",
-          currentView === 'monthly' 
-            ? "bg-background text-foreground shadow-xs font-semibold hover:bg-background" 
+          "h-8 px-2.5 sm:px-3 text-xs font-medium flex items-center gap-1.5 transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0",
+          currentView === 'monthly'
+            ? "bg-background text-foreground shadow-xs font-semibold hover:bg-background"
             : "text-muted-foreground hover:text-foreground hover:bg-background/50"
         )}
         title="View Monthly & Branch Summary"
@@ -55,9 +55,9 @@ export function SalesViewToggle({ currentView, onViewChange, className }: SalesV
         size="sm"
         onClick={() => onViewChange('chart')}
         className={cn(
-          "h-7 sm:h-8 px-2 sm:px-3 text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer",
-          currentView === 'chart' 
-            ? "bg-background text-foreground shadow-xs font-semibold hover:bg-background" 
+          "h-8 px-2.5 sm:px-3 text-xs font-medium flex items-center gap-1.5 transition-colors duration-150 cursor-pointer whitespace-nowrap shrink-0",
+          currentView === 'chart'
+            ? "bg-background text-foreground shadow-xs font-semibold hover:bg-background"
             : "text-muted-foreground hover:text-foreground hover:bg-background/50"
         )}
         title="View Graphical Analytics & Charts"

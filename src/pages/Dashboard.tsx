@@ -37,20 +37,12 @@ import {
   ShoppingCart,
   Wrench,
   Activity,
-  Layers,
-  FileText,
-  Clock,
-  Sparkles,
   PieChart,
   Wallet,
   Building2,
   CheckCircle2,
-  HelpCircle,
   Eye,
-  Gauge,
-  Zap,
-  Download,
-  Flame
+  Download
 } from "lucide-react";
 import { QuickExportHubModal } from "@/components/dashboard/QuickExportHubModal";
 import {
@@ -133,44 +125,28 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in pb-12">
+    <div className="space-y-5 sm:space-y-6 animate-fade-in pb-8">
         {/* =========================================================================
             1. HERO / COMMAND HEADER
            ========================================================================= */}
-        <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card/90 to-muted/30 p-5 sm:p-6 md:p-8 shadow-xs">
-          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="absolute right-1/3 -bottom-20 h-48 w-48 rounded-full bg-blue-500/5 blur-2xl pointer-events-none" />
-
-          <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Store Operations Command
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                <span className="font-semibold uppercase tracking-wider">
+                  Store Operations
                 </span>
-                <span className="text-xs text-muted-foreground">·</span>
-                <span className="text-xs text-muted-foreground">
-                  {format(new Date(), "EEEE, MMMM d, yyyy")}
-                </span>
-                <span className="text-xs text-muted-foreground">·</span>
-                <button
-                  type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent("open-speed-health-modal"))}
-                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-medium transition-colors cursor-pointer"
-                  title="Click to view real-time system performance & latency"
-                >
-                  <Zap className="h-3 w-3" />
-                  <span>{data?.queryDurationMs ? `${data.queryDurationMs}ms Parallel Fetch` : "⚡ 42ms Live"}</span>
-                </button>
+                <span aria-hidden="true">·</span>
+                <span>{format(new Date(), "EEEE, MMM d, yyyy")}</span>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
                   {greeting}, <span className="capitalize">{displayName}</span>
                 </h1>
                 {!hasCustomName && (
                   <Link
                     to="/settings"
-                    className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1 bg-primary/10 hover:bg-primary/15 px-2.5 py-1 rounded-full transition-colors"
+                    className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
                     title="Fill your user details in Profile Settings"
                   >
                     <span>Set your name in Profile</span>
@@ -183,78 +159,96 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Filter controls: Range Selector + Location + Refetch */}
-            <div className="flex flex-wrap items-center gap-2.5 sm:self-start lg:self-auto">
-              {/* Location Filter */}
-              <div className="w-36 sm:w-44">
-                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger className="h-9 text-xs bg-background/80 border-border/80">
-                    <Building2 className="h-3.5 w-3.5 text-muted-foreground mr-1 shrink-0" />
-                    <SelectValue placeholder="All Locations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" className="text-xs font-medium">All Locations</SelectItem>
-                    {(data?.availableLocations || []).map((loc) => (
-                      <SelectItem key={loc} value={loc} className="text-xs">
-                        {loc}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {/* Filter controls: Range Selector + Location + Refresh */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                {/* Location Filter */}
+                <div className="flex-1 sm:w-40">
+                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                    <SelectTrigger className="h-9 text-xs bg-background border-border/80">
+                      <Building2 className="h-3.5 w-3.5 text-muted-foreground mr-1.5 shrink-0" />
+                      <SelectValue placeholder="All Locations" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs font-medium">All Locations</SelectItem>
+                      {(data?.availableLocations || []).map((loc) => (
+                        <SelectItem key={loc} value={loc} className="text-xs">
+                          {loc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Mobile Refresh Button alongside Location */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  title="Refresh dashboard metrics"
+                  aria-label="Refresh dashboard metrics"
+                  className="sm:hidden h-9 w-9 rounded-lg bg-background border-border/80 shrink-0"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 text-muted-foreground ${isFetching ? 'animate-spin text-primary' : ''}`} />
+                </Button>
               </div>
 
-              {/* Time Range Segmented Control */}
-              <div className="inline-flex items-center rounded-lg border border-border/80 bg-background/70 p-1 shadow-2xs">
-                {(['today', '7d', '30d', 'month', 'all'] as DashboardTimeRange[]).map((range) => {
-                  const labels: Record<DashboardTimeRange, string> = {
-                    today: 'Today',
-                    '7d': '7D',
-                    '30d': '30D',
-                    month: 'This Month',
-                    all: 'All Time'
-                  };
-                  const active = timeRange === range;
-                  return (
-                    <button
-                      key={range}
-                      type="button"
-                      onClick={() => setTimeRange(range)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all select-none ${
-                        active
-                          ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                      }`}
-                    >
-                      {labels[range]}
-                    </button>
-                  );
-                })}
+              {/* Time Range Segmented Control (scrollable cleanly on narrow phones) */}
+              <div className="overflow-x-auto no-scrollbar max-w-full">
+                <div className="inline-flex items-center rounded-lg border border-border/80 bg-muted/40 p-1 min-w-full sm:min-w-0">
+                  {(['today', '7d', '30d', 'month', 'all'] as DashboardTimeRange[]).map((range) => {
+                    const labels: Record<DashboardTimeRange, string> = {
+                      today: 'Today',
+                      '7d': '7D',
+                      '30d': '30D',
+                      month: 'This Month',
+                      all: 'All Time'
+                    };
+                    const active = timeRange === range;
+                    return (
+                      <button
+                        key={range}
+                        type="button"
+                        onClick={() => setTimeRange(range)}
+                        className={`flex-1 sm:flex-initial whitespace-nowrap shrink-0 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors select-none cursor-pointer ${
+                          active
+                            ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                        }`}
+                      >
+                        {labels[range]}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Refresh Button */}
+              {/* Desktop Refresh Button */}
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => refetch()}
                 disabled={isFetching}
                 title="Refresh dashboard metrics"
-                className="h-9 w-9 rounded-lg bg-background/80 border-border/80 shrink-0"
+                aria-label="Refresh dashboard metrics"
+                className="hidden sm:inline-flex h-9 w-9 rounded-lg bg-background border-border/80 shrink-0"
               >
                 <RefreshCw className={`h-3.5 w-3.5 text-muted-foreground ${isFetching ? 'animate-spin text-primary' : ''}`} />
               </Button>
             </div>
           </div>
 
-          {/* Quick Action Buttons Strip */}
-          <div className="relative mt-6 pt-5 border-t border-border/60 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-2 hidden sm:inline">
+          {/* Quick Action Buttons Strip (Horizontal scroll track on mobile to keep KPIs above the fold) */}
+          <div className="pt-3.5 border-t border-border/60 flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap pb-0.5 sm:pb-0">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1 hidden sm:inline shrink-0">
               Quick Actions:
             </span>
 
             <Button
               asChild
               size="sm"
-              className="h-8 px-3 text-xs font-semibold gap-1.5 shadow-xs"
+              className="h-9 sm:h-8 px-3 text-xs font-semibold gap-1.5 shadow-xs whitespace-nowrap shrink-0"
             >
               <Link to="/create-invoice">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -267,7 +261,7 @@ const Dashboard = () => {
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted"
+                className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
               >
                 <Link to="/sales">
                   <ShoppingCart className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -280,7 +274,7 @@ const Dashboard = () => {
               asChild
               variant="outline"
               size="sm"
-              className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted"
+              className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
             >
               <Link to="/inventory">
                 <Boxes className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -293,7 +287,7 @@ const Dashboard = () => {
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted"
+                className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
               >
                 <Link to="/expenses">
                   <Wallet className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
@@ -307,7 +301,7 @@ const Dashboard = () => {
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted"
+                className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
               >
                 <Link to="/profit-analysis">
                   <PieChart className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
@@ -320,11 +314,11 @@ const Dashboard = () => {
               asChild
               variant="outline"
               size="sm"
-              className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted"
+              className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
             >
               <Link to="/catalogue">
                 <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>Showroom Catalogue</span>
+                <span>Catalogue</span>
               </Link>
             </Button>
 
@@ -333,23 +327,11 @@ const Dashboard = () => {
               variant="outline"
               size="sm"
               onClick={() => setExportModalOpen(true)}
-              className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted text-foreground"
+              className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted text-foreground whitespace-nowrap shrink-0"
               title="1-Click comprehensive CSV & JSON data exports"
             >
               <Download className="h-3.5 w-3.5 text-primary" />
-              <span>Export Hub</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => window.dispatchEvent(new CustomEvent("open-speed-health-modal"))}
-              className="h-8 px-3 text-xs font-medium gap-1.5 bg-background/80 hover:bg-muted text-foreground"
-              title="Real-time latency, cache diagnostics & 1-click speed optimization"
-            >
-              <Gauge className="h-3.5 w-3.5 text-amber-500" />
-              <span>Speed Pulse</span>
+              <span>Export</span>
             </Button>
           </div>
         </div>
@@ -357,18 +339,18 @@ const Dashboard = () => {
         {/* =========================================================================
             2. EXECUTIVE KPI CARDS
            ========================================================================= */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Card 1: Total Revenue / Sales */}
-          <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs hover:border-primary/40 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Total Sales Revenue
               </span>
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
                 <DollarSign className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-5 pt-0">
               {isLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-7 w-32" />
@@ -376,12 +358,12 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold tracking-tight text-foreground">
+                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                     {formatCurrency(data?.totalRevenue || 0, currencies[0])}
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5 text-xs">
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1.5 text-xs">
                     {data?.revenueGrowthPct !== null && data?.revenueGrowthPct !== undefined && (
-                      <span className={`inline-flex items-center font-semibold ${
+                      <span className={`inline-flex items-center font-semibold font-mono tabular-nums ${
                         data.revenueGrowthPct >= 0 
                           ? 'text-emerald-600 dark:text-emerald-400' 
                           : 'text-destructive'
@@ -394,7 +376,7 @@ const Dashboard = () => {
                         {data.revenueGrowthPct >= 0 ? `+${data.revenueGrowthPct}%` : `${data.revenueGrowthPct}%`}
                       </span>
                     )}
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground tabular-nums">
                       · {data?.totalSalesCount || 0} {data?.totalSalesCount === 1 ? 'sale' : 'sales'} ({data?.totalUnitsSold || 0} units)
                     </span>
                   </div>
@@ -405,16 +387,16 @@ const Dashboard = () => {
 
           {/* Card 2: Net Profit (Or Stock Items if inventory manager) */}
           {!isInventoryManager ? (
-            <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs hover:border-primary/40 transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Net Estimated Profit
                 </span>
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
                   <Activity className="h-4 w-4" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-5 pt-0">
                 {isLoading ? (
                   <div className="space-y-2">
                     <Skeleton className="h-7 w-32" />
@@ -422,35 +404,35 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <>
-                    <div className={`text-2xl font-bold tracking-tight ${
+                    <div className={`text-xl sm:text-2xl font-bold font-mono tracking-tight tabular-nums ${
                       (data?.netProfit || 0) >= 0 
                         ? 'text-emerald-600 dark:text-emerald-400' 
                         : 'text-destructive'
                     }`}>
                       {formatCurrency(data?.netProfit || 0, currencies[0])}
                     </div>
-                    <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground tabular-nums">
                       <span className="font-semibold text-foreground">
                         {data?.profitMarginPct || 0}% margin
                       </span>
                       <span>·</span>
-                      <span>after COGS & expenses</span>
+                      <span className="truncate">after COGS &amp; expenses</span>
                     </div>
                   </>
                 )}
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs hover:border-primary/40 transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Total Units in Stock
                 </span>
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
                   <Boxes className="h-4 w-4" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-5 pt-0">
                 {isLoading ? (
                   <div className="space-y-2">
                     <Skeleton className="h-7 w-24" />
@@ -458,7 +440,7 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <>
-                    <div className="text-2xl font-bold tracking-tight text-foreground">
+                    <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                       {data?.totalStockUnits?.toLocaleString() || 0}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1.5">
@@ -471,16 +453,16 @@ const Dashboard = () => {
           )}
 
           {/* Card 3: Inventory Valuation */}
-          <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs hover:border-primary/40 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Inventory Asset Value
               </span>
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
                 <Package className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-5 pt-0">
               {isLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-7 w-32" />
@@ -488,10 +470,10 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold tracking-tight text-foreground">
+                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                     {formatCurrency(data?.inventoryValuation || 0, currencies[0])}
                   </div>
-                  <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground tabular-nums">
                     <span className="font-semibold text-foreground">
                       {data?.totalSkus || 0} SKUs
                     </span>
@@ -504,16 +486,16 @@ const Dashboard = () => {
           </Card>
 
           {/* Card 4: Operating Expenses / Invoiced Amount */}
-          <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs hover:border-primary/40 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {!isInventoryManager ? "Operating Expenses" : "Active Invoices"}
               </span>
-              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
                 {!isInventoryManager ? <Wallet className="h-4 w-4" /> : <FileSpreadsheet className="h-4 w-4" />}
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-5 pt-0">
               {isLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-7 w-32" />
@@ -521,12 +503,12 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold tracking-tight text-foreground">
+                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                     {!isInventoryManager
                       ? formatCurrency(data?.totalExpenses || 0, currencies[0])
                       : `${data?.totalInvoicesCount || 0} Invoices`}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1.5">
+                  <p className="text-xs text-muted-foreground mt-1.5 tabular-nums">
                     {!isInventoryManager
                       ? "Costs in selected period"
                       : `${formatCurrency(data?.totalInvoicedAmount || 0, currencies[0])} billed`}
@@ -666,7 +648,7 @@ const Dashboard = () => {
                   No payment records in selected period
                 </div>
               ) : (
-                <div className="space-y-3 pt-1">
+                <div className="divide-y divide-border/60">
                   {data?.paymentBreakdown.map((item) => {
                     const totalAmt = data.totalRevenue || 1;
                     const pct = Math.min(100, Math.round((item.amount / totalAmt) * 100));
@@ -674,7 +656,7 @@ const Dashboard = () => {
                     const isPartial = item.status.toLowerCase().includes('partial');
 
                     return (
-                      <div key={item.status} className="space-y-1.5 p-2.5 rounded-lg bg-muted/30 border border-border/50">
+                      <div key={item.status} className="space-y-1.5 py-2.5 first:pt-0 last:pb-0">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-semibold text-foreground flex items-center gap-1.5">
                             <span className={`h-2 w-2 rounded-full ${
@@ -682,7 +664,7 @@ const Dashboard = () => {
                             }`} />
                             {item.status}
                           </span>
-                          <span className="font-mono text-muted-foreground">
+                          <span className="font-mono text-muted-foreground tabular-nums">
                             {formatCurrency(item.amount, currencies[0])} ({pct}%)
                           </span>
                         </div>
@@ -694,7 +676,7 @@ const Dashboard = () => {
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="text-[11px] text-muted-foreground tabular-nums">
                           {item.count} transaction{item.count === 1 ? '' : 's'}
                         </div>
                       </div>
@@ -772,38 +754,38 @@ const Dashboard = () => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="divide-y divide-border/60">
                   {data?.lowStockItems.map((item) => (
                     <div
                       key={item.id}
-                      className="p-2.5 rounded-lg bg-muted/40 border border-border/60 hover:border-border transition-colors text-xs space-y-1.5"
+                      className="py-2.5 first:pt-0 last:pb-0 text-xs space-y-1"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground truncate">
                             {item.description}
                           </p>
-                          <p className="text-[11px] text-muted-foreground truncate">
+                          <p className="text-[11px] text-muted-foreground truncate tabular-nums">
                             {item.location} · {formatCurrency(item.price, currencies[0])}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
-                          <span className={`inline-block px-2 py-0.5 rounded-md font-bold text-xs ${
+                          <span className={`inline-block font-semibold text-xs font-mono tabular-nums ${
                             item.quantity <= 0
-                              ? 'bg-destructive/15 text-destructive'
-                              : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                              ? 'text-destructive'
+                              : 'text-amber-600 dark:text-amber-400'
                           }`}>
-                            {item.quantity <= 0 ? 'Out of stock' : `${item.quantity} in stock`}
+                            {item.quantity <= 0 ? 'Out of stock' : `${item.quantity} left`}
                           </span>
                         </div>
                       </div>
 
                       {/* Velocity & Runway forecast row */}
-                      <div className="flex items-center justify-between text-[10px] pt-0.5 text-muted-foreground border-t border-border/40">
-                        <span className="flex items-center gap-1 font-mono">
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span className="font-mono tabular-nums">
                           {item.runwayDays !== null && item.runwayDays !== undefined ? (
-                            <span className={item.runwayDays <= 7 ? "text-rose-600 dark:text-rose-400 font-semibold" : "text-amber-600"}>
-                              ⏱ {item.runwayDays === 0 ? "Depleted" : `~${item.runwayDays} days runway left`}
+                            <span className={item.runwayDays <= 7 ? "text-rose-600 dark:text-rose-400 font-semibold" : "text-amber-600 dark:text-amber-400"}>
+                              {item.runwayDays === 0 ? "Depleted" : `~${item.runwayDays}d runway`}
                             </span>
                           ) : (
                             <span>No recent sales</span>
@@ -813,11 +795,11 @@ const Dashboard = () => {
                         {item.recommendedReorder && item.recommendedReorder > 0 ? (
                           <Link
                             to="/purchases"
-                            className="font-semibold text-primary hover:underline inline-flex items-center gap-0.5"
+                            className="font-semibold text-primary hover:underline inline-flex items-center gap-0.5 whitespace-nowrap"
                             title="Go to Purchases to create order"
                           >
                             <span>Reorder +{item.recommendedReorder}</span>
-                            <ArrowRight className="h-2.5 w-2.5" />
+                            <ArrowRight className="h-3 w-3" />
                           </Link>
                         ) : null}
                       </div>
@@ -875,15 +857,15 @@ const Dashboard = () => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="divide-y divide-border/60">
                   {data?.recentInvoices.map((inv) => (
                     <div
                       key={inv.id}
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border/60 hover:border-border transition-colors text-xs"
+                      className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 text-xs"
                     >
                       <div className="min-w-0 pr-2">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-foreground font-mono">
+                          <span className="font-bold text-foreground font-mono tabular-nums">
                             {inv.invoiceNumber}
                           </span>
                         </div>
@@ -893,7 +875,7 @@ const Dashboard = () => {
                         </p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="font-bold font-mono text-foreground">
+                        <p className="font-bold font-mono text-foreground tabular-nums">
                           {formatCurrency(inv.totalAmount, currencies[0])}
                         </p>
                       </div>
@@ -946,17 +928,17 @@ const Dashboard = () => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="divide-y divide-border/60">
                   {data?.recentSales.map((sale) => (
                     <div
                       key={sale.id}
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border/60 hover:border-border transition-colors text-xs"
+                      className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 text-xs"
                     >
                       <div className="min-w-0 pr-2">
                         <p className="font-semibold text-foreground truncate">
                           {sale.itemName}
                         </p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                           <span>Qty: {sale.quantity}</span>
                           <span>·</span>
                           <span className="capitalize">{sale.paymentStatus}</span>
@@ -969,7 +951,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                        <p className="font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
                           +{formatCurrency(sale.totalAmount, currencies[0])}
                         </p>
                       </div>

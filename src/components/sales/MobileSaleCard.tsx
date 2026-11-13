@@ -141,51 +141,53 @@ export function MobileSaleCard({
                     type="number"
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value)}
-                    className="h-6 w-20 text-xs px-1"
+                    className="h-8 w-24 text-xs px-2 font-mono tabular-nums"
                     min="0"
                     step="0.01"
                   />
-                  <Button size="icon" variant="ghost" className="h-5 w-5" onClick={handlePriceSave}>
-                    <Check className="h-3 w-3 text-green-600" />
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handlePriceSave} aria-label="Save price">
+                    <Check className="h-4 w-4 text-emerald-600" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-5 w-5" onClick={handlePriceCancel}>
-                    <X className="h-3 w-3 text-destructive" />
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handlePriceCancel} aria-label="Cancel price edit">
+                    <X className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               ) : (
-                <button 
+                <button
+                  type="button"
                   onClick={() => setIsEditingPrice(true)}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 hover:text-foreground transition-colors font-mono tabular-nums"
                 >
                   @ {formatCurrency(sale.sale_price)}
                   <Pencil className="h-3 w-3 ml-1" />
                 </button>
               )
             ) : (
-              <span>@ {formatCurrency(sale.sale_price)}</span>
+              <span className="font-mono tabular-nums">@ {formatCurrency(sale.sale_price)}</span>
             )}
           </div>
         </div>
 
         {/* Payment info for part-paid */}
         {sale.payment_status === 'part_paid' && (
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 text-xs text-muted-foreground font-mono tabular-nums">
             Paid: {formatCurrency(sale.amount_paid)} · Balance: {formatCurrency(sale.total_amount - sale.amount_paid)}
           </div>
         )}
 
         {/* Expandable Notes Section */}
         {sale.notes && (
-          <div className="mt-3 pt-3 border-t border-border">
+          <div className="mt-3 pt-2.5 border-t border-border/70">
             <button
+              type="button"
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full py-1"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               <span>Notes</span>
             </button>
             {expanded && (
-              <p className="mt-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
+              <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground bg-muted/40 p-2.5 rounded-lg">
                 {sale.notes}
               </p>
             )}
@@ -193,16 +195,16 @@ export function MobileSaleCard({
         )}
 
         {/* Actions */}
-        <div className="mt-3 pt-3 border-t border-border flex flex-wrap justify-between items-center gap-2">
+        <div className="mt-3 pt-3 border-t border-border/70 flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onUpdatePayment?.(sale)}
-              className="min-h-[38px] rounded-xl text-xs font-semibold active:scale-[0.98]"
+              className="h-9 rounded-lg text-xs font-semibold active:scale-[0.98]"
             >
-              <CreditCard className="h-4 w-4 mr-1.5 text-primary" />
-              <span>Change Status</span>
+              <CreditCard className="h-3.5 w-3.5 mr-1.5 text-primary" />
+              <span>Status</span>
             </Button>
 
             {sale.payment_status !== 'paid' && onMarkAsPaid && (
@@ -210,10 +212,10 @@ export function MobileSaleCard({
                 variant="default"
                 size="sm"
                 onClick={() => onMarkAsPaid(sale)}
-                className="min-h-[38px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white active:scale-[0.98]"
+                className="h-9 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white active:scale-[0.98]"
               >
-                <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                <span>Record Paid</span>
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                <span>Mark Paid</span>
               </Button>
             )}
           </div>
@@ -224,9 +226,9 @@ export function MobileSaleCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="min-h-[38px] rounded-xl text-xs text-destructive hover:text-destructive hover:bg-destructive/10 active:scale-[0.98]"
+                    className="h-9 rounded-lg text-xs text-destructive hover:text-destructive hover:bg-destructive/10 active:scale-[0.98]"
                   >
-                    <Trash2 className="h-4 w-4 mr-1.5" />
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
                     Delete
                   </Button>
                 </AlertDialogTrigger>

@@ -245,7 +245,7 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger className="h-7 w-[64px] text-xs bg-background">
+                  <SelectTrigger className="h-9 w-[68px] text-xs bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -258,51 +258,51 @@ export function SalesTable({ sales, hasFilters = false, onClearFilters }: SalesT
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-1 pt-1">
+              <div className="flex items-center justify-center gap-1.5 pt-1 pb-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-9 w-9 p-0"
                   disabled={validCurrentPage <= 1}
                   onClick={() => setCurrentPage(1)}
                   title="First page"
                 >
-                  <ChevronsLeft className="h-3.5 w-3.5" />
+                  <ChevronsLeft className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-2.5 text-xs gap-1"
+                  className="h-9 px-3 text-xs gap-1"
                   disabled={validCurrentPage <= 1}
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-4 w-4" />
                   <span>Prev</span>
                 </Button>
 
-                <span className="text-xs font-mono font-medium px-2 tabular-nums">
+                <span className="text-xs font-mono font-medium px-2.5 tabular-nums">
                   {validCurrentPage} / {totalPages}
                 </span>
 
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-2.5 text-xs gap-1"
+                  className="h-9 px-3 text-xs gap-1"
                   disabled={validCurrentPage >= totalPages}
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 >
                   <span>Next</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-9 w-9 p-0"
                   disabled={validCurrentPage >= totalPages}
                   onClick={() => setCurrentPage(totalPages)}
                   title="Last page"
                 >
-                  <ChevronsRight className="h-3.5 w-3.5" />
+                  <ChevronsRight className="h-4 w-4" />
                 </Button>
               </div>
             )}

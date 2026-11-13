@@ -7,7 +7,18 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
-import { Package, Shield, Zap, BarChart3, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Package,
+  Shield,
+  Zap,
+  BarChart3,
+  ArrowRight,
+  Loader2,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 const features = [
   { icon: Package, title: "Smart Inventory", desc: "Real-time stock tracking with multi-location support" },
@@ -18,6 +29,7 @@ const features = [
 
 const Index = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -66,15 +78,30 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-center">
-      <main className="relative z-10 w-full flex items-center justify-center p-4 md:p-8">
-        <div className="w-full max-w-5xl">
+      <main className="relative z-10 w-full flex items-center justify-center p-4 sm:p-6 md:p-8">
+        <div className="w-full max-w-5xl space-y-6 lg:space-y-0">
+          {/* Compact Mobile & Tablet Brand Intro */}
+          <div className="lg:hidden text-center space-y-2 max-w-md mx-auto">
+            <div className="inline-flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                <Package className="h-4.5 w-4.5" />
+              </div>
+              <span className="text-lg font-bold tracking-tight text-foreground">
+                SI Manager
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Inventory tracking, branch sales operations, and invoicing workspace.
+            </p>
+          </div>
+
           {/* Desktop: Split layout | Mobile: Stacked */}
           <div className="lg:grid lg:grid-cols-12 gap-8 items-center">
             {/* Brand Hero Panel - desktop only */}
-            <div className="hidden lg:block lg:col-span-7 relative p-10 md:p-12 bg-slate-900 dark:bg-slate-950 rounded-2xl text-slate-100 overflow-hidden border border-slate-800 shadow-xl">
+            <div className="hidden lg:block lg:col-span-7 relative p-10 md:p-12 bg-slate-900 dark:bg-slate-950 rounded-2xl text-slate-100 overflow-hidden border border-slate-800 shadow-sm">
               <div className="relative z-10 max-w-lg">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-sm">
+                  <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs">
                     <Package className="h-5 w-5" />
                   </div>
                   <span className="text-xl font-bold tracking-tight text-white">SI Manager</span>
@@ -91,7 +118,7 @@ const Index = () => {
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   {features.map((f, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50">
-                      <div className="flex-shrink-0 h-8 w-8 rounded-md bg-primary/20 text-primary-light flex items-center justify-center">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-md bg-primary/20 flex items-center justify-center">
                         <f.icon className="h-4 w-4 text-blue-400" />
                       </div>
                       <div>
@@ -112,12 +139,9 @@ const Index = () => {
             </div>
 
             {/* Login Form Panel */}
-            <div className="lg:col-span-5">
-              <Card className="border border-border bg-card shadow-sm rounded-xl">
-                <CardHeader className="space-y-1.5 text-center pb-4">
-                  <div className="inline-flex items-center justify-center gap-2 h-10 w-10 rounded-lg bg-primary/10 text-primary mx-auto mb-1">
-                    <Package className="h-5 w-5" />
-                  </div>
+            <div className="lg:col-span-5 max-w-md mx-auto w-full">
+              <Card className="border border-border bg-card shadow-xs rounded-xl">
+                <CardHeader className="space-y-1 text-center pb-4">
                   <CardTitle className="text-xl font-bold tracking-tight">Sign In</CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     Access your company stock and sales records
@@ -130,6 +154,7 @@ const Index = () => {
                         Email Address
                       </Label>
                       <div className="relative">
+                        <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                         <Input
                           id="login-email"
                           type="email"
@@ -139,38 +164,40 @@ const Index = () => {
                           required
                           disabled={isLoading}
                           autoComplete="email"
-                          className="pl-9 h-10 text-sm"
+                          className="pl-9 h-11 sm:h-10 text-base sm:text-sm"
                         />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                        </span>
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="login-password" className="text-xs font-medium text-foreground">
-                          Password
-                        </Label>
-                      </div>
+                      <Label htmlFor="login-password" className="text-xs font-medium text-foreground">
+                        Password
+                      </Label>
                       <div className="relative">
+                        <Lock className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                         <Input
                           id="login-password"
-                          type="password"
-                          placeholder="••••••••"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
                           value={loginData.password}
                           onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                           required
                           disabled={isLoading}
                           autoComplete="current-password"
-                          className="pl-9 h-10 text-sm"
+                          className="pl-9 pr-10 h-11 sm:h-10 text-base sm:text-sm"
                         />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          disabled={isLoading}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full h-10 text-sm font-medium mt-2" disabled={isLoading}>
+                    <Button type="submit" className="w-full h-11 sm:h-10 text-sm font-semibold mt-2" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />

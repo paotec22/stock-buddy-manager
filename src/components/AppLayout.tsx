@@ -49,15 +49,15 @@ export function AppLayout({ children, className, fullWidth }: AppLayoutProps) {
       <main
         className={cn(
           "flex-1 print:flex-none print:w-full",
-          !isCreateInvoice && "pb-18 md:pb-0",
+          !isCreateInvoice && "pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-0",
           className
         )}
       >
         <div
           className={
             fullWidth
-              ? ""
-              : "px-3 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-3 sm:py-4 md:py-6 print:p-0 print:m-0 print:w-full print:max-w-none"
+              ? "w-full"
+              : "w-full max-w-7xl mx-auto px-3.5 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 print:p-0 print:m-0 print:w-full print:max-w-none"
           }
         >
           {children}

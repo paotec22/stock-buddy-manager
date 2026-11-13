@@ -46,12 +46,12 @@ const SalesHeader = ({
   hasActiveFilters?: boolean;
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-border/60">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 pb-3 border-b border-border/60">
       <div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-baseline gap-2 flex-wrap">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Sales Operations</h1>
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary font-mono tabular-nums">
-            {totalSalesCount} {totalSalesCount === 1 ? 'record' : 'records'}
+          <span className="text-xs font-medium text-muted-foreground font-mono tabular-nums">
+            · {totalSalesCount} {totalSalesCount === 1 ? 'record' : 'records'}
           </span>
         </div>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
@@ -59,62 +59,64 @@ const SalesHeader = ({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <SalesViewToggle currentView={currentView} onViewChange={onViewChange} />
+      <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap items-stretch sm:items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <SalesViewToggle currentView={currentView} onViewChange={onViewChange} />
+          {onToggleFilter && (
+            <Button
+              type="button"
+              variant={isFilterVisible ? "secondary" : "outline"}
+              size="sm"
+              onClick={onToggleFilter}
+              className={`h-9 text-xs px-3 rounded-lg gap-1.5 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                isFilterVisible
+                  ? "bg-secondary text-secondary-foreground border-border"
+                  : "bg-background border-border hover:bg-muted"
+              }`}
+              title={isFilterVisible ? "Hide filter bar" : "Show filter bar"}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              <span>{isFilterVisible ? "Hide Filters" : "Filters"}</span>
+              {hasActiveFilters && (
+                <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+              )}
+            </Button>
+          )}
+        </div>
 
-        <div className="h-4 w-px bg-border hidden sm:block mx-1" />
+        <div className="h-4 w-px bg-border hidden lg:block mx-0.5" />
 
-        {onToggleFilter && (
+        <div className="flex items-center gap-2">
           <Button
-            type="button"
-            variant={isFilterVisible ? "secondary" : "outline"}
+            onClick={onAddSale}
             size="sm"
-            onClick={onToggleFilter}
-            className={`h-9 text-xs sm:text-sm px-2.5 sm:px-3 rounded-lg gap-1.5 transition-all cursor-pointer ${
-              isFilterVisible
-                ? "bg-secondary text-secondary-foreground border-border"
-                : "bg-background border-border hover:bg-muted"
-            }`}
-            title={isFilterVisible ? "Hide filter bar" : "Show filter bar"}
+            className="flex-1 sm:flex-initial bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 font-semibold h-9 text-xs px-3.5 whitespace-nowrap shrink-0"
           >
-            <Filter className="h-3.5 w-3.5" />
-            <span>{isFilterVisible ? "Hide Filters" : "Show Filters"}</span>
-            {hasActiveFilters && (
-              <span className="h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
-            )}
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            <span>Record Sale</span>
           </Button>
-        )}
 
-        <Button 
-          onClick={onAddSale} 
-          size="sm" 
-          className="bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 font-medium h-9 text-xs sm:text-sm px-3 sm:px-3.5"
-        >
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          <span>Record Sale</span>
-        </Button>
+          <Button
+            onClick={onBulkUpload}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs px-3 bg-background border-border hover:bg-muted whitespace-nowrap shrink-0"
+          >
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+            <span>Upload</span>
+          </Button>
 
-        <Button 
-          onClick={onBulkUpload} 
-          variant="outline" 
-          size="sm" 
-          className="h-9 text-xs sm:text-sm px-2.5 sm:px-3 bg-background border-border hover:bg-muted"
-        >
-          <Upload className="mr-1.5 h-3.5 w-3.5" />
-          <span className="hidden xs:inline sm:inline">Bulk </span>
-          <span>Upload</span>
-        </Button>
-
-        <Button 
-          onClick={onExport} 
-          variant="outline" 
-          size="sm" 
-          className="h-9 text-xs sm:text-sm px-2.5 sm:px-3 bg-background border-border hover:bg-muted"
-          title="Export Sales Data"
-        >
-          <FileSpreadsheet className="h-3.5 w-3.5 sm:mr-1.5" />
-          <span className="hidden sm:inline">Export</span>
-        </Button>
+          <Button
+            onClick={onExport}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs px-3 bg-background border-border hover:bg-muted whitespace-nowrap shrink-0"
+            title="Export Sales Data"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Export</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -105,7 +105,7 @@ export function InventoryHeader({
             variant={isFilterRowVisible ? "secondary" : "outline"}
             size="sm"
             onClick={toggleFilterRow}
-            className={`min-h-[40px] sm:min-h-0 text-xs font-medium rounded-lg gap-1.5 transition-all cursor-pointer touch-manipulation ${
+            className={`h-10 sm:h-9 text-xs font-medium rounded-lg gap-1.5 transition-all cursor-pointer whitespace-nowrap shrink-0 touch-manipulation ${
               isFilterRowVisible 
                 ? "bg-secondary text-secondary-foreground border-border/80" 
                 : "bg-background border-border/80 hover:bg-muted"
@@ -113,7 +113,7 @@ export function InventoryHeader({
             title={isFilterRowVisible ? "Hide status filters" : "Show status filters"}
           >
             <Filter className="h-3.5 w-3.5 shrink-0" />
-            <span>{isFilterRowVisible ? "Hide Filters" : "Status Filters"}</span>
+            <span>{isFilterRowVisible ? "Hide Filters" : "Filters"}</span>
             {hasActiveStatusFilter && (
               <span className="h-2 w-2 rounded-full bg-primary ring-2 ring-background shrink-0" />
             )}
@@ -127,7 +127,7 @@ export function InventoryHeader({
           <Button 
             onClick={onAddItem} 
             size="sm" 
-            className="min-h-[40px] sm:min-h-0 bg-primary text-primary-foreground shadow-xs hover:bg-primary/95 font-semibold text-xs rounded-lg touch-manipulation"
+            className="h-10 sm:h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/95 font-semibold text-xs rounded-lg whitespace-nowrap shrink-0 touch-manipulation"
           >
             <Plus className="mr-1.5 h-3.5 w-3.5 shrink-0" />
             <span>Add Item</span>
@@ -137,10 +137,10 @@ export function InventoryHeader({
             variant="outline" 
             size="sm" 
             onClick={onBulkUpload} 
-            className="min-h-[40px] sm:min-h-0 bg-background border-border/80 hover:bg-muted font-medium text-xs rounded-lg touch-manipulation"
+            className="h-10 sm:h-9 bg-background border-border/80 hover:bg-muted font-medium text-xs rounded-lg whitespace-nowrap shrink-0 touch-manipulation"
           >
             <Upload className="mr-1.5 h-3.5 w-3.5 shrink-0" />
-            <span>Upload</span>
+            <span>Bulk Upload</span>
           </Button>
 
           {onExport && (
@@ -148,7 +148,7 @@ export function InventoryHeader({
               variant="outline" 
               size="sm" 
               onClick={onExport} 
-              className="min-h-[40px] sm:min-h-0 bg-background border-border/80 hover:bg-muted font-medium text-xs px-2.5 sm:px-3 rounded-lg touch-manipulation"
+              className="h-10 sm:h-9 bg-background border-border/80 hover:bg-muted font-medium text-xs px-2.5 sm:px-3 rounded-lg whitespace-nowrap shrink-0 touch-manipulation"
               title="Export Inventory"
             >
               <Download className="h-3.5 w-3.5 mr-1.5 shrink-0" />

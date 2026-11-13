@@ -35,6 +35,9 @@ import {
   ScanBarcode,
   Zap,
   Sparkles,
+  ShoppingBag,
+  Scale,
+  Wallet,
 } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
@@ -197,17 +200,20 @@ export function TopNavbar() {
   const isStockActive =
     location.pathname === "/inventory" ||
     location.pathname.startsWith("/inventory/") ||
-    location.pathname === "/catalogue";
+    location.pathname === "/catalogue" ||
+    location.pathname === "/marketing";
 
   const isCommerceActive =
     location.pathname === "/create-invoice" ||
     location.pathname === "/sales" ||
     location.pathname === "/customers" ||
+    location.pathname === "/purchases" ||
     location.pathname === "/request";
 
   const isFinancialsActive =
     location.pathname === "/profit-analysis" ||
     location.pathname === "/expenses" ||
+    location.pathname === "/reconciliation" ||
     location.pathname === "/reports";
 
   const handleSignOut = async () => {
@@ -260,7 +266,7 @@ export function TopNavbar() {
             end
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all duration-150 outline-none select-none",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors duration-150 outline-none select-none whitespace-nowrap shrink-0",
                 (isActive || isDashboardActive)
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -277,7 +283,7 @@ export function TopNavbar() {
               <button
                 type="button"
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all duration-150 outline-none select-none",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors duration-150 outline-none select-none whitespace-nowrap shrink-0",
                   isStockActive
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -326,7 +332,7 @@ export function TopNavbar() {
                 <button
                   type="button"
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all duration-150 outline-none select-none",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors duration-150 outline-none select-none whitespace-nowrap shrink-0",
                     isCommerceActive
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -358,6 +364,12 @@ export function TopNavbar() {
                   description="Client phone directory & order history"
                 />
                 <GroupDropdownItem
+                  to="/purchases"
+                  icon={ShoppingBag}
+                  title="Purchases"
+                  description="Supplier restock & procurement orders"
+                />
+                <GroupDropdownItem
                   to="/request"
                   icon={ClipboardList}
                   title="Stock Requests"
@@ -374,7 +386,7 @@ export function TopNavbar() {
                 <button
                   type="button"
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all duration-150 outline-none select-none",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors duration-150 outline-none select-none whitespace-nowrap shrink-0",
                     isFinancialsActive
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -394,9 +406,15 @@ export function TopNavbar() {
                 />
                 <GroupDropdownItem
                   to="/expenses"
-                  icon={DollarSign}
+                  icon={Wallet}
                   title="Expenses & Installations"
                   description="Operating expenses & installation fees"
+                />
+                <GroupDropdownItem
+                  to="/reconciliation"
+                  icon={Scale}
+                  title="Reconciliation"
+                  description="Cash ledger & payment verification"
                 />
                 <GroupDropdownItem
                   to="/reports"
@@ -410,13 +428,13 @@ export function TopNavbar() {
           )}
         </nav>
 
-        {/* Right Section: Command Bar + User Dropdown + Theme Switch */}
-        <div className="flex items-center gap-2">
+        {/* Right Section: Command Bar + Utilities + User Dropdown */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {/* Quick Search / Command Palette Trigger */}
           <button
             type="button"
             onClick={openSearch}
-            className="hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-lg border border-border/80 bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs transition-colors shadow-2xs group cursor-pointer"
+            className="hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-lg border border-border/80 bg-muted/40 hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs transition-colors shadow-2xs group cursor-pointer whitespace-nowrap shrink-0"
             title="Search or press Cmd+K"
           >
             <Search className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
@@ -431,7 +449,7 @@ export function TopNavbar() {
             variant="ghost"
             size="icon"
             onClick={openSearch}
-            className="sm:hidden h-8 w-8 text-muted-foreground"
+            className="sm:hidden h-9 w-9 text-muted-foreground rounded-lg"
             aria-label="Search"
           >
             <Search className="h-4 w-4" />
@@ -444,19 +462,19 @@ export function TopNavbar() {
             onClick={() => setBarcodeScannerOpen(true)}
             aria-label="Scan Barcode or SKU"
             title="Scan Barcode / SKU (Press B)"
-            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60"
+            className="h-9 w-9 md:h-8 md:w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60"
           >
             <ScanBarcode className="h-4 w-4" />
           </Button>
 
-          {/* Quick Speed & Health Diagnostics */}
+          {/* Quick Speed & Health Diagnostics (Desktop; also accessible inside Mobile Drawer) */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => window.dispatchEvent(new CustomEvent("open-speed-health-modal"))}
             aria-label="System Speed & Health"
             title="System Speed & Operational Pulse"
-            className="h-8 w-8 rounded-lg text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10"
+            className="hidden sm:inline-flex h-8 w-8 rounded-lg text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10"
           >
             <Zap className="h-4 w-4" />
           </Button>
@@ -464,13 +482,13 @@ export function TopNavbar() {
           {/* Operational Alerts & Notifications Bell */}
           <NotificationCenter />
 
-          {/* Direct 1-Click Theme Toggle */}
+          {/* Direct 1-Click Theme Toggle (Desktop; also in Mobile Drawer Footer) */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+            className="hidden sm:inline-flex h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
           >
             {theme === "dark" ? (
               <Sun className="h-4 w-4 text-amber-400" />
@@ -641,6 +659,13 @@ export function TopNavbar() {
                     >
                       Product Catalogue
                     </MobileNavItem>
+                    <MobileNavItem
+                      to="/marketing"
+                      icon={Sparkles}
+                      onClick={closeMobile}
+                    >
+                      AI Marketing Agent
+                    </MobileNavItem>
                   </div>
 
                   {/* Commerce Group */}
@@ -672,6 +697,13 @@ export function TopNavbar() {
                         Customers
                       </MobileNavItem>
                       <MobileNavItem
+                        to="/purchases"
+                        icon={ShoppingBag}
+                        onClick={closeMobile}
+                      >
+                        Purchases
+                      </MobileNavItem>
+                      <MobileNavItem
                         to="/request"
                         icon={ClipboardList}
                         onClick={closeMobile}
@@ -696,10 +728,17 @@ export function TopNavbar() {
                       </MobileNavItem>
                       <MobileNavItem
                         to="/expenses"
-                        icon={DollarSign}
+                        icon={Wallet}
                         onClick={closeMobile}
                       >
                         Expenses & Installations
+                      </MobileNavItem>
+                      <MobileNavItem
+                        to="/reconciliation"
+                        icon={Scale}
+                        onClick={closeMobile}
+                      >
+                        Reconciliation
                       </MobileNavItem>
                       <MobileNavItem
                         to="/reports"

@@ -244,6 +244,8 @@
 
   html {
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
     @apply scroll-smooth;
   }
 
@@ -251,48 +253,53 @@
     @apply bg-background text-foreground antialiased;
     font-size: 15px;
     line-height: 1.5;
+    overflow-x: clip;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   .dark body {
     background-color: hsl(var(--background));
   }
 
-/* Responsive Typography with Poppins for headings */
+  /* Responsive Typography with Plus Jakarta Sans for clean UI hierarchy */
   h1 {
-    @apply text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight;
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    @apply text-2xl md:text-3xl font-bold tracking-tight;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     line-height: 1.2;
   }
 
   h2 {
-    @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight;
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    @apply text-xl md:text-2xl font-semibold tracking-tight;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     line-height: 1.3;
   }
 
   h3 {
-    @apply text-lg md:text-xl lg:text-2xl font-semibold tracking-tight;
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
-    line-height: 1.4;
+    @apply text-lg md:text-xl font-semibold tracking-tight;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    line-height: 1.35;
   }
 
-  /* Interactive Elements */
-  button, 
+  /* Interactive Elements: avoid forcing blanket min-w/min-h that breaks compact toolbars, table icons, tabs, and calendar cells */
+  button,
   [role="button"] {
-    @apply min-h-[44px] min-w-[44px] md:min-h-[40px] md:min-w-[40px];
-    @apply touch-manipulation transition-all duration-200;
+    @apply touch-manipulation transition-colors duration-150;
   }
 
-  /* Form Elements */
-  input, 
-  select, 
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Form Elements: prevent iOS zoom on mobile without inflating inline compact table inputs */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
   textarea {
-    @apply w-full text-base md:text-sm;
-    @apply min-h-[42px] md:min-h-[38px] transition-all duration-200;
+    @apply text-base md:text-sm transition-colors duration-150;
   }
 
   /* Tables */
@@ -310,16 +317,11 @@
   }
 
   /* Touch Targets */
-  a, 
-  button, 
-  input[type="checkbox"], 
+  a,
+  button,
+  input[type="checkbox"],
   input[type="radio"] {
     @apply cursor-pointer;
-  }
-
-  /* Prevent text size adjustment on orientation change */
-  html {
-    -webkit-text-size-adjust: 100%;
   }
 }
 

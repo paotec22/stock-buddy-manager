@@ -513,37 +513,37 @@ export default function Customers() {
   return (
     <div className="space-y-5 fade-in pb-12">
       {/* ── Executive Screen Header ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-card p-5 sm:p-7 shadow-xs backdrop-blur-md flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 p-2.5">
-            <Users className="h-7 w-7 text-primary" />
+      <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+            <Users className="h-6 w-6 text-primary" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
                 Customer Directory
               </h1>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 tabular-nums whitespace-nowrap">
                 {totalStats.totalCustomers} {totalStats.totalCustomers === 1 ? "Client" : "Clients"}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 font-medium">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Manage client records, view sales &amp; invoice history, and track receivables.
             </p>
           </div>
         </div>
 
         {/* Action Buttons Toolbar */}
-        <div className="grid grid-cols-3 sm:flex sm:items-center gap-2 relative z-10 w-full md:w-auto">
+        <div className="grid grid-cols-3 sm:flex sm:items-center gap-2 w-full md:w-auto shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={handleSyncFromInvoices}
             disabled={syncing}
             title="Scan past invoices and register any unlisted customers"
-            className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3 text-xs flex items-center justify-center active:scale-[0.98]"
+            className="h-10 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 font-semibold transition-all px-2.5 sm:px-3 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98]"
           >
-            <RefreshCw className={`h-4 w-4 mr-1 sm:mr-1.5 shrink-0 text-primary ${syncing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 shrink-0 text-primary ${syncing ? "animate-spin" : ""}`} />
             <span className="truncate">Sync Invoices</span>
           </Button>
 
@@ -552,9 +552,9 @@ export default function Customers() {
             size="sm"
             onClick={exportCSV}
             title="Export all client records as CSV"
-            className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3.5 text-xs flex items-center justify-center active:scale-[0.98]"
+            className="h-10 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 font-semibold transition-all px-2.5 sm:px-3.5 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98]"
           >
-            <Download className="h-4 w-4 text-primary mr-1 sm:mr-1.5 shrink-0" />
+            <Download className="h-3.5 w-3.5 text-primary mr-1.5 shrink-0" />
             <span className="truncate">Export CSV</span>
           </Button>
 
@@ -563,9 +563,9 @@ export default function Customers() {
             size="sm"
             onClick={openAdd}
             title="Create a new customer profile"
-            className="h-11 sm:h-10 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all px-2.5 sm:px-4 text-xs flex items-center justify-center active:scale-[0.98]"
+            className="h-10 sm:h-9 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all px-3 sm:px-4 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98]"
           >
-            <Plus className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+            <Plus className="h-3.5 w-3.5 mr-1.5 shrink-0" />
             <span className="truncate">Add Client</span>
           </Button>
         </div>
@@ -574,78 +574,78 @@ export default function Customers() {
       {/* ── KPI Summary Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Directory Clients */}
-        <Card className="rounded-2xl border-border/70 bg-card/85 backdrop-blur-xs shadow-xs p-4 flex flex-col justify-between hover:border-primary/40 transition-all">
+        <Card className="rounded-xl border-border/80 bg-card shadow-xs p-4 flex flex-col justify-between hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between pb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Total Clients
             </span>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <Users className="h-4 w-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-foreground tabular-nums">
+            <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums">
               {totalStats.totalCustomers}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Registered in showroom</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Registered in showroom</p>
           </div>
         </Card>
 
         {/* Active Transacting Clients */}
-        <Card className="rounded-2xl border-border/70 bg-card/85 backdrop-blur-xs shadow-xs p-4 flex flex-col justify-between hover:border-emerald-500/40 transition-all">
+        <Card className="rounded-xl border-border/80 bg-card shadow-xs p-4 flex flex-col justify-between hover:border-emerald-500/40 transition-colors">
           <div className="flex items-center justify-between pb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Active Buyers
             </span>
-            <div className="h-8 w-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <UserCheck className="h-4 w-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-foreground tabular-nums">
+            <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground tabular-nums">
               {totalStats.withOrdersCount}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">With sales or invoices</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">With sales or invoices</p>
           </div>
         </Card>
 
         {/* Total Billed Revenue */}
-        <Card className="rounded-2xl border-border/70 bg-card/85 backdrop-blur-xs shadow-xs p-4 flex flex-col justify-between hover:border-blue-500/40 transition-all">
+        <Card className="rounded-xl border-border/80 bg-card shadow-xs p-4 flex flex-col justify-between hover:border-blue-500/40 transition-colors">
           <div className="flex items-center justify-between pb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Total Revenue
             </span>
-            <div className="h-8 w-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-foreground tabular-nums truncate">
+            <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums truncate">
               ₦{totalStats.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Recorded transaction value</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Recorded transaction value</p>
           </div>
         </Card>
 
         {/* Outstanding Receivables */}
-        <Card className="rounded-2xl border-border/70 bg-card/85 backdrop-blur-xs shadow-xs p-4 flex flex-col justify-between hover:border-amber-500/40 transition-all">
+        <Card className="rounded-xl border-border/80 bg-card shadow-xs p-4 flex flex-col justify-between hover:border-amber-500/40 transition-colors">
           <div className="flex items-center justify-between pb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Outstanding Debt
             </span>
-            <div className="h-8 w-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <DollarSign className="h-4 w-4" />
             </div>
           </div>
           <div>
             <div
-              className={`text-xl sm:text-2xl font-black font-mono tracking-tight tabular-nums truncate ${
+              className={`text-xl sm:text-2xl font-bold font-mono tracking-tight tabular-nums truncate ${
                 totalStats.totalOutstanding > 0 ? "text-amber-600 dark:text-amber-400" : "text-foreground"
               }`}
             >
               ₦{totalStats.totalOutstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">Pending client receivables</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Pending client receivables</p>
           </div>
         </Card>
       </div>
@@ -961,10 +961,10 @@ export default function Customers() {
                           e.stopPropagation();
                           openRemoveDebt(c, stats);
                         }}
-                        className="h-6 px-2 rounded-lg text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 active:scale-95 transition-all shrink-0"
+                        className="h-8 px-2.5 rounded-lg text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 active:scale-95 transition-all shrink-0 tabular-nums"
                         title="Clear or settle customer debt"
                       >
-                        <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-600 dark:text-emerald-400" />
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         <span>₦{stats.outstanding.toLocaleString()} owed • Clear</span>
                       </Button>
                     )}

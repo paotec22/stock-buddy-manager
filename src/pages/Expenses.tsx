@@ -270,11 +270,11 @@ export default function Expenses() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12">
+    <div className="space-y-6 pb-12">
       {/* Header Ribbon */}
-      <div className="rounded-xl border border-border bg-card p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Expenses & Installations
             </h1>
@@ -290,16 +290,16 @@ export default function Expenses() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border border-border/80 bg-card shadow-2xs">
+        <Card className="border border-border/80 bg-card shadow-xs">
           <CardContent className="p-4 sm:p-5 flex items-center justify-between">
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
-                This Month's Overhead
+                This Month&apos;s Overhead
               </span>
-              <span className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1 block">
+              <span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground mt-1 block">
                 {formatCurrency(thisMonthTotalExpense)}
               </span>
-              <span className="text-[11px] text-muted-foreground mt-0.5 block">
+              <span className="text-[11px] text-muted-foreground mt-0.5 block tabular-nums">
                 {thisMonthExpenses.length} overhead entries recorded
               </span>
             </div>
@@ -309,16 +309,16 @@ export default function Expenses() {
           </CardContent>
         </Card>
 
-        <Card className="border border-border/80 bg-card shadow-2xs">
+        <Card className="border border-border/80 bg-card shadow-xs">
           <CardContent className="p-4 sm:p-5 flex items-center justify-between">
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
-                This Month's Installations
+                This Month&apos;s Installations
               </span>
-              <span className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1 block">
+              <span className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground mt-1 block">
                 {formatCurrency(thisMonthTotalInstallation)}
               </span>
-              <span className="text-[11px] text-muted-foreground mt-0.5 block">
+              <span className="text-[11px] text-muted-foreground mt-0.5 block tabular-nums">
                 {thisMonthInstallations.length} job charges recorded
               </span>
             </div>
@@ -778,7 +778,7 @@ export default function Expenses() {
                                 {expense.location}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-right font-mono font-bold text-xs sm:text-sm text-foreground">
+                            <TableCell className="text-right font-mono tabular-nums font-bold text-xs sm:text-sm text-foreground">
                               {formatCurrency(Number(expense.amount || 0))}
                             </TableCell>
                             <TableCell className="text-center">
@@ -788,7 +788,7 @@ export default function Expenses() {
                                 size="icon"
                                 disabled={deletingId === expense.id}
                                 onClick={() => handleDeleteExpense(expense.id)}
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                 title="Delete record"
                               >
                                 {deletingId === expense.id ? (
@@ -879,7 +879,7 @@ export default function Expenses() {
                           <TableCell className="text-xs font-medium text-foreground">
                             {inst.description}
                           </TableCell>
-                          <TableCell className="text-right font-mono font-bold text-xs sm:text-sm text-foreground">
+                          <TableCell className="text-right font-mono tabular-nums font-bold text-xs sm:text-sm text-foreground">
                             {formatCurrency(Number(inst.amount || 0))}
                           </TableCell>
                           <TableCell className="text-center">
@@ -889,7 +889,7 @@ export default function Expenses() {
                               size="icon"
                               disabled={deletingId === inst.id}
                               onClick={() => handleDeleteInstallation(inst.id)}
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                               title="Delete installation record"
                             >
                               {deletingId === inst.id ? (

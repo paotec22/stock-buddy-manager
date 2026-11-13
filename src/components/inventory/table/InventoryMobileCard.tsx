@@ -120,7 +120,7 @@ export function InventoryMobileCard({
                   type="text"
                   value={tempDesc}
                   onChange={(e) => setTempDesc(e.target.value)}
-                  className="w-full text-xs font-medium px-2 py-1 border border-input rounded bg-background"
+                  className="w-full h-9 text-sm font-medium px-2.5 py-1 border border-input rounded-lg bg-background"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSaveDesc();
@@ -130,21 +130,23 @@ export function InventoryMobileCard({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 text-primary shrink-0"
+                  className="h-8 w-8 text-primary hover:bg-primary/10 shrink-0 rounded-lg"
                   onClick={handleSaveDesc}
+                  aria-label="Save description"
                 >
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="h-4 w-4" />
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 text-muted-foreground shrink-0"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted shrink-0 rounded-lg"
                   onClick={() => {
                     setTempDesc(item["Item Description"]);
                     setEditingDescInline(false);
                   }}
+                  aria-label="Cancel description edit"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
@@ -223,7 +225,7 @@ export function InventoryMobileCard({
                   step="0.01"
                   value={tempPrice}
                   onChange={(e) => setTempPrice(e.target.value)}
-                  className="w-24 text-xs font-mono font-bold px-1.5 py-0.5 border border-input rounded bg-background"
+                  className="w-28 h-9 text-sm font-mono tabular-nums font-bold px-2 py-1 border border-input rounded-lg bg-background"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSavePrice();
@@ -233,32 +235,34 @@ export function InventoryMobileCard({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 text-primary shrink-0"
+                  className="h-8 w-8 text-primary hover:bg-primary/10 shrink-0 rounded-lg"
                   onClick={handleSavePrice}
+                  aria-label="Save price"
                 >
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="h-4 w-4" />
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 text-muted-foreground shrink-0"
+                  className="h-8 w-8 text-muted-foreground hover:bg-muted shrink-0 rounded-lg"
                   onClick={() => {
                     setTempPrice(item.Price?.toString() || "0");
                     setEditingPriceInline(false);
                   }}
+                  aria-label="Cancel price edit"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setEditingPriceInline(true)}
-                className="text-left font-mono font-bold text-sm text-foreground hover:text-primary transition-colors flex items-baseline gap-1"
+                className="text-left font-mono tabular-nums font-bold text-sm text-foreground hover:text-primary transition-colors flex items-baseline gap-1 py-1"
                 title="Tap to edit price"
               >
                 <span>{item.Price ? formatCurrency(item.Price) : "₦0.00"}</span>
-                <Edit2 className="h-2.5 w-2.5 opacity-40 inline" />
+                <Edit2 className="h-3 w-3 opacity-45 inline" />
               </button>
             )}
           </div>
@@ -273,7 +277,7 @@ export function InventoryMobileCard({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-l-lg rounded-r-none hover:bg-muted active:scale-95 touch-manipulation disabled:opacity-30"
+                className="h-10 w-10 rounded-l-lg rounded-r-none hover:bg-muted active:scale-95 touch-manipulation disabled:opacity-30"
                 onClick={() => handleStepQuantity(-1)}
                 disabled={isUpdatingQty || (item.Quantity || 0) <= 0}
                 aria-label="Decrease quantity by 1"
@@ -284,11 +288,11 @@ export function InventoryMobileCard({
               <button
                 type="button"
                 onClick={() => onOpenEditDialog(item)}
-                className="min-w-[44px] px-2 py-1 text-center font-mono font-bold text-xs text-foreground hover:text-primary transition-colors touch-manipulation"
+                className="min-w-[44px] h-10 px-2 text-center font-mono tabular-nums font-bold text-xs text-foreground hover:text-primary transition-colors touch-manipulation flex items-center justify-center"
                 title="Tap to enter exact quantity"
               >
                 {isUpdatingQty ? (
-                  <Loader2 className="h-3 w-3 animate-spin mx-auto text-primary" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto text-primary" />
                 ) : (
                   <span>{item.Quantity || 0}</span>
                 )}
@@ -298,7 +302,7 @@ export function InventoryMobileCard({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-r-lg rounded-l-none hover:bg-muted active:scale-95 touch-manipulation"
+                className="h-10 w-10 rounded-r-lg rounded-l-none hover:bg-muted active:scale-95 touch-manipulation"
                 onClick={() => handleStepQuantity(1)}
                 disabled={isUpdatingQty}
                 aria-label="Increase quantity by 1"

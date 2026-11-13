@@ -553,7 +553,7 @@ export default function Catalogue() {
   }, [items, refetch]);
 
   return (
-    <div className="space-y-5 fade-in pb-12 print:space-y-0 print:pb-0 catalogue-bg -mx-4 md:-mx-8 lg:-mx-16 xl:-mx-24 px-4 md:px-8 lg:px-16 xl:px-24 pt-4 md:pt-6">
+    <div className="space-y-5 fade-in pb-12 print:space-y-0 print:pb-0 catalogue-bg">
       {/* ── PRINT-ONLY VIEW ──────────────────────────────────────────────── */}
       <CataloguePrintView
         items={filtered}
@@ -562,28 +562,28 @@ export default function Catalogue() {
       />
 
       {/* ── EXECUTIVE SCREEN HEADER ───────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-card p-5 sm:p-7 shadow-xs backdrop-blur-md print:hidden flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 p-2">
-            <CompanyLogo alt="Puido Smart Solutions" className="h-9 w-auto object-contain" />
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs print:hidden flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3.5 sm:gap-4 relative z-10 min-w-0">
+          <div className="h-11 w-11 sm:h-13 sm:w-13 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 p-2">
+            <CompanyLogo alt="Puido Smart Solutions" className="h-8 w-auto object-contain" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-foreground">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
                 Product Catalogue
               </h1>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 whitespace-nowrap">
                 {location} Showroom
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 font-medium">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
               Browse inventory, create sales quotes, or export print-ready PDF catalogues.
             </p>
           </div>
         </div>
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 relative z-10 w-full md:flex md:w-auto md:items-center">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 relative z-10 w-full md:w-auto md:items-center shrink-0">
           <Button
             variant={isSelectMode ? "default" : "outline"}
             size="sm"
@@ -592,14 +592,14 @@ export default function Catalogue() {
               if (isSelectMode) setSelectedItemIds(new Set());
             }}
             title="Toggle batch selection mode to quote or share multiple products"
-            className={`h-11 sm:h-10 rounded-xl font-semibold transition-all px-2.5 sm:px-3 text-xs flex items-center justify-center active:scale-[0.98] ${
+            className={`h-10 sm:h-9 rounded-xl font-semibold transition-all px-3 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98] ${
               isSelectMode
                 ? "bg-primary text-primary-foreground shadow-xs"
-                : "hover:bg-primary/5 hover:text-primary border-border/70"
+                : "hover:bg-primary/5 hover:text-primary border-border/80"
             }`}
           >
-            <CheckSquare className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
-            <span className="truncate">
+            <CheckSquare className="h-4 w-4 mr-1.5 shrink-0" />
+            <span className="truncate tabular-nums">
               {isSelectMode ? `Selected (${selectedItemIds.size})` : "Select Mode"}
             </span>
           </Button>
@@ -610,19 +610,19 @@ export default function Catalogue() {
             onClick={handleOptimizeImages}
             disabled={optimizing}
             title="Optimize image sizes for faster browsing"
-            className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3 text-xs flex items-center justify-center active:scale-[0.98]"
+            className="h-10 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 font-semibold transition-all px-3 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98]"
           >
             {optimizing ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-primary mr-1 sm:mr-1.5 shrink-0" />
-                <span className="text-primary text-[11px] sm:text-xs truncate">
+                <Loader2 className="h-4 w-4 animate-spin text-primary mr-1.5 shrink-0" />
+                <span className="text-primary text-xs tabular-nums">
                   {optimizeProgress.done}/{optimizeProgress.total}
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 text-primary mr-1 sm:mr-1.5 shrink-0" />
-                <span className="truncate">Optimize</span>
+                <Sparkles className="h-4 w-4 text-primary mr-1.5 shrink-0" />
+                <span>Optimize</span>
               </>
             )}
           </Button>
@@ -632,10 +632,10 @@ export default function Catalogue() {
             size="sm"
             onClick={() => setShareOpen(true)}
             title="Share interactive catalogue link with clients"
-            className="h-11 sm:h-10 rounded-xl hover:bg-primary/5 hover:text-primary border-border/70 font-semibold transition-all px-2.5 sm:px-3.5 text-xs flex items-center justify-center active:scale-[0.98]"
+            className="h-10 sm:h-9 rounded-xl hover:bg-primary/5 hover:text-primary border-border/80 font-semibold transition-all px-3 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98]"
           >
-            <Share2 className="h-4 w-4 text-primary mr-1 sm:mr-1.5 shrink-0" />
-            <span className="truncate"><span className="hidden xs:inline">Share </span>Showroom</span>
+            <Share2 className="h-4 w-4 text-primary mr-1.5 shrink-0" />
+            <span>Share Showroom</span>
           </Button>
 
           <Button
@@ -644,17 +644,17 @@ export default function Catalogue() {
             onClick={handlePrint}
             disabled={preparingPrint}
             title="Print or export to PDF"
-            className="h-11 sm:h-10 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all px-2.5 sm:px-4 text-xs flex items-center justify-center active:scale-[0.98]"
+            className="h-10 sm:h-9 rounded-xl font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all px-3.5 text-xs flex items-center justify-center whitespace-nowrap shrink-0 active:scale-[0.98]"
           >
             {preparingPrint ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-1 sm:mr-1.5 shrink-0" />
-                <span className="text-[11px] sm:text-xs truncate">Preparing...</span>
+                <Loader2 className="h-4 w-4 animate-spin mr-1.5 shrink-0" />
+                <span>Preparing...</span>
               </>
             ) : (
               <>
-                <Printer className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
-                <span className="truncate"><span className="hidden xs:inline">Print </span>Catalogue</span>
+                <Printer className="h-4 w-4 mr-1.5 shrink-0" />
+                <span>Print PDF</span>
               </>
             )}
           </Button>
@@ -883,18 +883,18 @@ export default function Catalogue() {
       {selectedItemIds.size > 0 && (
         <aside
           aria-label="Selected products action dock"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[94vw] max-w-xl animate-fade-in print:hidden"
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[94vw] max-w-xl animate-fade-in print:hidden"
         >
-          <div className="bg-card/95 backdrop-blur-md border border-border/80 shadow-2xl rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3">
+          <div className="bg-card/95 backdrop-blur-md border border-border/80 shadow-xl rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="h-8 w-8 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0 font-mono">
+              <span className="h-8 w-8 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0 font-mono tabular-nums">
                 {selectedItemIds.size}
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-foreground truncate">
                   {selectedItemIds.size} Product{selectedItemIds.size === 1 ? "" : "s"} Selected
                 </p>
-                <p className="text-[10px] text-muted-foreground truncate">
+                <p className="text-[11px] text-muted-foreground truncate">
                   Ready to share proposal or send WhatsApp quote
                 </p>
               </div>
@@ -905,7 +905,7 @@ export default function Catalogue() {
                 variant="outline"
                 size="sm"
                 onClick={clearSelection}
-                className="h-8.5 text-xs rounded-xl"
+                className="h-9 text-xs rounded-xl whitespace-nowrap shrink-0"
               >
                 Clear
               </Button>
@@ -913,7 +913,7 @@ export default function Catalogue() {
               <Button
                 size="sm"
                 onClick={() => setShareOpen(true)}
-                className="h-8.5 text-xs font-semibold rounded-xl bg-primary text-primary-foreground gap-1.5 shadow-xs"
+                className="h-9 text-xs font-semibold rounded-xl bg-primary text-primary-foreground gap-1.5 shadow-xs whitespace-nowrap shrink-0"
               >
                 <Share2 className="h-3.5 w-3.5" />
                 <span>Share Link</span>
@@ -922,7 +922,7 @@ export default function Catalogue() {
               <Button
                 size="sm"
                 onClick={handleSendSelectedWhatsApp}
-                className="h-8.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-xs"
+                className="h-9 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-xs whitespace-nowrap shrink-0"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">WhatsApp</span>
