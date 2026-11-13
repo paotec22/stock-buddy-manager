@@ -141,19 +141,27 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
     trimmedCustomerAddress
   );
 
+  const escapeHtml = (value: string): string =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   const itemsRows = items.map((item) => `
     <tr>
       <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: left; line-height: 1.5;">
-        ${item.description}
+        ${escapeHtml(String(item.description ?? ""))}
       </td>
       <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: center;">
-        ${item.quantity}
+        ${escapeHtml(String(item.quantity ?? 0))}
       </td>
       <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: right; font-family: monospace;">
-        ${formatCurrency(item.unit_price, currency)}
+        ${escapeHtml(formatCurrency(item.unit_price, currency))}
       </td>
       <td style="padding: 13px 14px; font-size: 13px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: 600; font-family: monospace;">
-        ${formatCurrency(item.amount, currency)}
+        ${escapeHtml(formatCurrency(item.amount, currency))}
       </td>
     </tr>
   `).join("");
@@ -162,7 +170,7 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${docFileName}</title>
+  <title>${escapeHtml(docFileName)}</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -378,9 +386,9 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
           </div>
         </div>
         <div class="meta-box">
-          <p class="meta-number">${docTitle} #${invoiceNumber}</p>
-          <p class="meta-date">Date: <strong>${formattedDate}</strong></p>
-          ${formattedDueDate ? `<p class="meta-date">Due: <strong>${formattedDueDate}</strong></p>` : ""}
+          <p class="meta-number">${docTitle} #${escapeHtml(String(invoiceNumber ?? ""))}</p>
+          <p class="meta-date">Date: <strong>${escapeHtml(formattedDate)}</strong></p>
+          ${formattedDueDate ? `<p class="meta-date">Due: <strong>${escapeHtml(formattedDueDate)}</strong></p>` : ""}
         </div>
       </div>
 
@@ -389,10 +397,10 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
         ${hasCustomerInfo ? `
         <div>
           <div class="info-label">${isPaidInFull ? "Receipt Issued To" : "Invoice To"}</div>
-          ${trimmedCustomerName ? `<p class="info-value-name">${trimmedCustomerName}</p>` : ""}
-          ${trimmedCustomerPhone ? `<p class="info-text">Phone: ${trimmedCustomerPhone}</p>` : ""}
-          ${trimmedCustomerEmail ? `<p class="info-text">Email: ${trimmedCustomerEmail}</p>` : ""}
-          ${trimmedCustomerAddress ? `<p class="info-text">Address: ${trimmedCustomerAddress}</p>` : ""}
+          ${trimmedCustomerName ? `<p class="info-value-name">${escapeHtml(trimmedCustomerName)}</p>` : ""}
+          ${trimmedCustomerPhone ? `<p class="info-text">Phone: ${escapeHtml(trimmedCustomerPhone)}</p>` : ""}
+          ${trimmedCustomerEmail ? `<p class="info-text">Email: ${escapeHtml(trimmedCustomerEmail)}</p>` : ""}
+          ${trimmedCustomerAddress ? `<p class="info-text">Address: ${escapeHtml(trimmedCustomerAddress)}</p>` : ""}
         </div>
         ` : ""}
         <div style="text-align: right;">
@@ -400,8 +408,8 @@ export const generateInvoicePrintHtml = (data: InvoicePrintData): string => {
           <p style="font-size: 14px; font-weight: 800; color: ${isPaidInFull ? "#059669" : "#d97706"}; margin: 0 0 4px 0;">
             ${isPaidInFull ? "PAID IN FULL" : (amountPaid > 0 ? "PARTIALLY PAID" : "PAYMENT PENDING")}
           </p>
-          <p class="info-text">Currency: <strong>${currency?.code || "NGN"} (${currency?.symbol || "₦"})</strong></p>
-          ${notes ? `<p class="info-text" style="margin-top: 4px; font-style: italic;">Notes: ${notes}</p>` : ""}
+          <p class="info-text">Currency: <strong>${escapeHtml(currency?.code || "NGN")} (${escapeHtml(currency?.symbol || "₦")})</strong></p>
+          ${notes ? `<p class="info-text" style="margin-top: 4px; font-style: italic;">Notes: ${escapeHtml(String(notes))}</p>` : ""}
         </div>
       </div>
 

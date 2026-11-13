@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import * as XLSX from 'xlsx';
+import writeXlsxFile from 'write-excel-file/browser';
 import { toast } from "sonner";
 
 interface Expense {
@@ -28,7 +28,7 @@ export function ExpensesExportModal({ open, onOpenChange, expenses }: ExpensesEx
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return;
@@ -50,42 +50,47 @@ export function ExpensesExportModal({ open, onOpenChange, expenses }: ExpensesEx
       return;
     }
 
-    // Prepare data for export
-    const exportData = filteredExpenses.map(expense => ({
-      'Expense ID': expense.id,
-      'Description': expense.description,
-      'Category': expense.category,
-      'Location': expense.location,
-      'Amount': expense.amount,
-      'Expense Date': format(new Date(expense.expense_date), 'PPP')
-    }));
+    try {
+      const headers = [
+        'Expense ID',
+        'Description',
+        'Category',
+        'Location',
+        'Amount',
+        'Expense Date',
+      ].map((value) => ({ value, fontWeight: 'bold' as const }));
 
-    // Create worksheet
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    
-    // Set column widths
-    const columnWidths = [
-      { wch: 15 }, // Expense ID
-      { wch: 30 }, // Description
-      { wch: 15 }, // Category
-      { wch: 15 }, // Location
-      { wch: 15 }, // Amount
-      { wch: 15 }  // Expense Date
-    ];
-    worksheet['!cols'] = columnWidths;
+      const rows = filteredExpenses.map(expense => ([
+        { type: String, value: String(expense.id ?? '') },
+        { type: String, value: String(expense.description ?? '') },
+        { type: String, value: String(expense.category ?? '') },
+        { type: String, value: String(expense.location ?? '') },
+        { type: Number, value: Number(expense.amount ?? 0) },
+        { type: String, value: format(new Date(expense.expense_date), 'PPP') },
+      ]));
 
-    // Create workbook
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Expenses Data');
+      const columns = [
+        { width: 15 },
+        { width: 30 },
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+        { width: 18 },
+      ];
 
-    // Generate filename with date range
-    const filename = `expenses_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
+      const filename = `expenses_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
 
-    // Save file
-    XLSX.writeFile(workbook, filename);
+      await writeXlsxFile([headers, ...rows], {
+        columns,
+        sheet: 'Expenses Data',
+      }).toFile(filename);
 
-    toast.success(`Exported ${filteredExpenses.length} expense records successfully`);
-    onOpenChange(false);
+      toast.success(`Exported ${filteredExpenses.length} expense records successfully`);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to export expenses XLSX:", error);
+      toast.error("Failed to generate Excel export");
+    }
   };
 
   return (

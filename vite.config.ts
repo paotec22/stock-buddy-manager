@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
     dedupe: ["react", "react-dom"],
   },
@@ -44,7 +44,8 @@ export default defineConfig({
             if (
               id.includes("jspdf") ||
               id.includes("html2canvas") ||
-              id.includes("xlsx") ||
+              id.includes("write-excel-file") ||
+              id.includes("fflate") ||
               id.includes("papaparse")
             ) {
               return "vendor-export";

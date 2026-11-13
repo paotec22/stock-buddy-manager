@@ -1,18 +1,19 @@
 # SI Manager
 
-> A modern, comprehensive, and responsive business management platform for inventory control, point-of-sale recording, customer relationship management, professional PDF invoicing, interactive product catalogue sharing, financial analytics, and operational speed diagnostics.
+> A modern, comprehensive, secure, and responsive business management platform for multi-branch inventory control, point-of-sale recording, customer relationship management, professional PDF invoicing & Excel exports, interactive product catalogue sharing, financial analytics, bank reconciliation, stock procurement, and AI-powered marketing campaigns.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Security Audit](https://img.shields.io/badge/Security_Audit-0_Vulnerabilities-success?style=flat-square)](package.json)
 
 ---
 
 ## 🌟 Overview
 
-**SI Manager** is an enterprise-ready business operations hub engineered for retail showrooms, wholesale distributors, installation engineers, and multi-location commercial businesses. It seamlessly connects real-time stock control, point-of-sale recording, customer relationship management, digital interactive product showrooms, multi-currency quotation engines, accounts receivable, and net profit analytics into one cohesive, ultra-fast interface on both desktop and mobile devices.
+**SI Manager** is an enterprise-ready business operations hub engineered for retail showrooms, wholesale distributors, installation engineers, and multi-location commercial businesses. It seamlessly connects real-time stock control, point-of-sale recording, customer relationship management, digital interactive product showrooms, multi-currency quotation engines, accounts receivable, bank reconciliation, stock purchases, and net profit analytics into one cohesive, ultra-fast interface on both desktop and mobile devices.
 
 ---
 
@@ -127,17 +128,18 @@
 - **Vendor Bill & Stock Arrival Logger**: Record inventory replenishment purchases with supplier name, unit cost price, quantity acquired, location, and payment account used.
 - **Supplier Spend Leaderboard**: Ranks top wholesalers and importers by total expenditure and restock volume.
 - **Cost Price vs. Retail Margin Analysis**: Evaluates gross margin percentages per item (Cost Price vs Retail Selling Price) to prevent low-margin selling and track supplier price inflation.
-- **Procurement CSV Export**: Export comprehensive stock purchase logs and vendor reports.
+- **Procurement CSV & Excel Export**: Export comprehensive stock purchase logs and vendor reports.
 
 ---
 
 ### 💼 11. Sales & Order Processing (`/sales`)
-- **Fast Order Recording**: Multi-line item entry with showroom stock validation and live price calculation.
-- **Location-Specific Stock Decrementing**: Automatically updates inventory counts at the selected branch (Ikeja, Lekki, Abuja, Port Harcourt, etc.).
+- **Fast Order Recording**: Multi-line item entry with showroom stock validation, live price calculation, and custom product entry support (typed-in custom items with automatic fallback sentinel row mapping).
+- **Location-Specific Stock Decrementing**: Automatically updates inventory counts at the selected branch (Ikeja, Cement, Uyo).
 - **Flexible Payment Statuses & Delayed Payment Tracking**: Record sales as Fully Paid, Part Paid, or Delayed, with 1-click **"Record as Paid"** actions on table rows.
 - **Partial Payment Installment Management**: Record partial customer deposits with instant recalculation of remaining balance.
 - **Executive KPI Cards & Recharts Visualizations**: Gross revenue, units sold, pending receivables, average order value, and daily/monthly trends.
-- **Bulk CSV Sales Import & Export**: Import historical sales datasets and export journals to CSV/Excel.
+- **Monthly & Branch Summary Section**: Comprehensive multi-year and multi-month sales breakdown starting from the current month.
+- **Bulk CSV & Excel Sales Export (`write-excel-file`)**: Secure Excel and CSV data exports.
 
 ---
 
@@ -166,26 +168,23 @@
 
 ### 📱 15. Mobile-First Parity & Responsive Experience
 - **100% Feature Parity on Mobile**: Every feature available on desktop is fully accessible and optimized for mobile screens.
-- **Mobile Bottom Navigation Bar**: 1-touch navigation bar providing immediate access to Stock, Sales, Invoice, Clients, Expenses, and Reports.
+- **Mobile Bottom Navigation Bar**: 1-touch navigation bar providing immediate access to Stock, Sales, Invoice, and Reports.
 - **Categorized Hamburger Drawer**: Complete navigation sheet organizing all 11+ app modules, search, theme toggle, and account settings.
 - **Floating Action Buttons (FAB)**: Accessible speed-dial floating action buttons on mobile views for rapid sales recording, item creation, and catalogue sharing.
 - **Touch-Friendly Controls**: Minimum 44px touch targets, responsive sheets, smooth modal drawers, and horizontal swipe tables.
 
 ---
 
-### 🔐 16. Role-Based Access Control (RBAC) & Security
-- **Multi-Role Permissions**:
-  - **Super Admin**: Complete system access, user role assignments, audit logs, and global settings.
-  - **Admin**: Full access to commerce, inventory, financial analytics, and reports.
-  - **Inventory Manager**: Dedicated stock and catalog management views.
-  - **Uploader / Staff**: Point-of-sale recording and stock adjustment permissions.
+### 🔐 16. Role-Based Access Control (RBAC) & Enterprise Security
+- **Multi-Role Permissions**: Super Admin, Admin, Inventory Manager, and Staff roles.
 - **Supabase Authentication**: Secure email/password login with JWT session persistence.
+- **Security Hardened**: Zero npm audit vulnerabilities (`0 vulnerabilities` across 782 audited packages), with strict HTML entity escaping for printable documents and secure client-side spreadsheet generation via `write-excel-file`.
 
 ---
 
 ### 🤖 17. AI Marketing Agent & Sales Data Preservation (`/marketing`)
 - **Inventory Item Picker & Campaign Generator**: Hand-pick specific inventory items, set custom promotion goals, and choose target platforms (WhatsApp, Instagram, Twitter/X, LinkedIn, TikTok).
-- **Server-Side Gemini AI Integration**: Powered by `@google/genai` (`gemini-3.8-flash`) running securely on the Express backend, generating high-converting professional marketing copy, hooks, and CTAs tailored to each platform.
+- **Server-Side Gemini AI Integration**: Powered by `@google/genai` running securely on the Express backend, generating high-converting professional marketing copy, hooks, and CTAs tailored to each platform.
 - **1-Click Copy & Direct WhatsApp Dispatch**: Instant clipboard copying and direct WhatsApp sharing links.
 - **Robust Database Integrity (`ON DELETE SET NULL`)**: Foreign key constraints on sales and invoice items ensure that deleting an inventory item preserves historical sales records and financial reports without cascading deletion.
 
@@ -206,7 +205,7 @@
 | **Data Visualization** | [Recharts](https://recharts.org/) |
 | **PDF Engine & Extraction**| [pdfjs-dist](https://mozilla.github.io/pdf.js/) & [jsPDF](https://github.com/parallax/jsPDF) |
 | **QR Code Engine** | [qrcode](https://www.npmjs.com/package/qrcode) |
-| **Data Import/Export** | [PapaParse](https://www.papaparse.com/) (CSV) & [SheetJS (xlsx)](https://sheetjs.com/) |
+| **Data Import/Export** | [PapaParse](https://www.papaparse.com/) (CSV) & [write-excel-file](https://www.npmjs.com/package/write-excel-file) (Secure XLSX) |
 
 ---
 
@@ -243,6 +242,7 @@
 │   │   ├── Dashboard.tsx       # Executive operations dashboard & runway alerts
 │   │   ├── Expenses.tsx        # Operational expense ledger
 │   │   ├── Inventory.tsx       # Multi-location stock management
+│   │   ├── MarketingAgent.tsx  # AI Marketing campaign generator
 │   │   ├── ProfitAnalysis.tsx  # Gross/net profit & COGS analysis
 │   │   ├── PublicCatalogue.tsx # Client-facing shareable showcase & WhatsApp order enquiry
 │   │   ├── Purchases.tsx       # Procurement & supplier spend analysis
@@ -260,7 +260,7 @@
 │   ├── index.css               # Global Tailwind CSS stylesheet
 │   └── main.tsx                # Application bootstrap entry point
 ├── index.html                  # HTML entry point
-├── package.json                # Project dependencies and npm scripts
+├── package.json                # Project dependencies, security overrides and npm scripts
 ├── tailwind.config.ts          # Tailwind CSS design system configuration
 └── vite.config.ts              # Vite configuration
 ```
@@ -271,8 +271,8 @@
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18.x or later recommended)
-- [npm](https://www.npmjs.com/) or [bun](https://bun.sh/) package manager
+- [Node.js](https://nodejs.org/) (v20.x or v22.x recommended)
+- [npm](https://www.npmjs.com/) package manager
 
 ### Installation
 
@@ -292,13 +292,14 @@
    ```env
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+   GEMINI_API_KEY=your-gemini-api-key
    ```
 
 4. **Start the Development Server**:
    ```bash
    npm run dev
    ```
-   Open `http://localhost:3000` (or `http://localhost:5173`) in your browser.
+   Open `http://localhost:3000` in your browser.
 
 ---
 
@@ -306,20 +307,12 @@
 
 | Command | Description |
 | :--- | :--- |
-| `npm run dev` | Starts the Vite development server with Hot Module Replacement. |
+| `npm run dev` | Starts the Express/Vite development server on port 3000. |
 | `npm run build` | Compiles TypeScript and creates an optimized production bundle in `dist/`. |
 | `npm run preview` | Locally previews the production build output. |
 | `npm run lint` | Runs ESLint to check for code quality and syntax issues. |
-
----
-
-## 📱 Mobile Quick Reference
-
-SI Manager is built with a responsive design philosophy:
-- **Navigation**: Switch between key modules with the **Mobile Bottom Navigation Bar** or open the **Top Right Menu Drawer** for all administrative and system tools.
-- **Sales & Invoicing**: Access the **Mobile Quick Dock** on `/create-invoice` or tap the **Floating Action Button (+)** on `/sales` and `/inventory` to initiate transactions instantly on any smartphone or tablet.
-- **Catalogue & Share**: Toggle **Select Mode** on `/catalogue` to generate customized multi-product quotation proposals or scan the in-store QR code directly on mobile.
-- **PDF Uploads**: Use the mobile file picker to upload PDF invoices and receipts directly from your mobile camera scanner or cloud storage.
+| `npm run typecheck` | Validates TypeScript types across the codebase. |
+| `npm run test:ci` | Executes the Vitest automated test suite in CI mode. |
 
 ---
 

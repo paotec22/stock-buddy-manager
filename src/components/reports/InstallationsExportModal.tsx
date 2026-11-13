@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import * as XLSX from "xlsx";
+import writeXlsxFile from "write-excel-file/browser";
 import { toast } from "sonner";
 
 interface Installation {
@@ -32,7 +32,7 @@ export function InstallationsExportModal({
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return;
@@ -58,45 +58,45 @@ export function InstallationsExportModal({
       return;
     }
 
-    // Prepare data for Excel
-    const excelData = filteredInstallations.map(installation => ({
-      'Date': format(new Date(installation.installation_date), 'yyyy-MM-dd'),
-      'Description': installation.description,
-      'Amount (₦)': installation.amount,
-    }));
+    try {
+      const total = filteredInstallations.reduce((sum, installation) => sum + Number(installation.amount || 0), 0);
 
-    // Calculate total
-    const total = filteredInstallations.reduce((sum, installation) => sum + installation.amount, 0);
-    
-    // Add total row
-    excelData.push({
-      'Date': '',
-      'Description': 'TOTAL',
-      'Amount (₦)': total,
-    });
+      const headers = ['Date', 'Description', 'Amount (₦)'].map((value) => ({
+        value,
+        fontWeight: 'bold' as const,
+      }));
 
-    // Create workbook and worksheet
-    const ws = XLSX.utils.json_to_sheet(excelData);
-    const wb = XLSX.utils.book_new();
-    
-    // Set column widths
-    const colWidths = [
-      { wch: 12 }, // Date
-      { wch: 40 }, // Description
-      { wch: 15 }, // Amount
-    ];
-    ws['!cols'] = colWidths;
+      const rows = filteredInstallations.map(installation => ([
+        { type: String, value: format(new Date(installation.installation_date), 'yyyy-MM-dd') },
+        { type: String, value: String(installation.description ?? '') },
+        { type: Number, value: Number(installation.amount ?? 0) },
+      ]));
 
-    XLSX.utils.book_append_sheet(wb, ws, "Installations");
+      const totalRow = [
+        { type: String, value: '' },
+        { type: String, value: 'TOTAL', fontWeight: 'bold' as const },
+        { type: Number, value: total, fontWeight: 'bold' as const },
+      ];
 
-    // Generate filename with date range
-    const filename = `installations_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
-    
-    // Download the file
-    XLSX.writeFile(wb, filename);
-    
-    toast.success(`Exported ${filteredInstallations.length} installation records`);
-    onOpenChange(false);
+      const columns = [
+        { width: 12 },
+        { width: 40 },
+        { width: 15 },
+      ];
+
+      const filename = `installations_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
+
+      await writeXlsxFile([headers, ...rows, totalRow], {
+        columns,
+        sheet: "Installations",
+      }).toFile(filename);
+
+      toast.success(`Exported ${filteredInstallations.length} installation records`);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to export installations XLSX:", error);
+      toast.error("Failed to generate Excel export");
+    }
   };
 
   return (

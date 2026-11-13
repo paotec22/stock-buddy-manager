@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import * as XLSX from 'xlsx';
+import writeXlsxFile from 'write-excel-file/browser';
 import { toast } from "sonner";
 
 interface Sale {
@@ -29,7 +29,7 @@ export function SalesExportModal({ open, onOpenChange, sales }: SalesExportModal
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!startDate || !endDate) {
       toast.error("Please select both start and end dates");
       return;
@@ -51,44 +51,50 @@ export function SalesExportModal({ open, onOpenChange, sales }: SalesExportModal
       return;
     }
 
-    // Prepare data for export
-    const exportData = filteredSales.map(sale => ({
-      'Sale ID': sale.id,
-      'Item Name': sale.item_name,
-      'Location': sale.location,
-      'Quantity': sale.quantity,
-      'Sale Price': sale.sale_price,
-      'Total Amount': sale.total_amount,
-      'Sale Date': format(new Date(sale.sale_date), 'PPP')
-    }));
+    try {
+      const headers = [
+        'Sale ID',
+        'Item Name',
+        'Location',
+        'Quantity',
+        'Sale Price',
+        'Total Amount',
+        'Sale Date',
+      ].map((value) => ({ value, fontWeight: 'bold' as const }));
 
-    // Create worksheet
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    
-    // Set column widths
-    const columnWidths = [
-      { wch: 15 }, // Sale ID
-      { wch: 25 }, // Item Name
-      { wch: 15 }, // Location
-      { wch: 10 }, // Quantity
-      { wch: 15 }, // Sale Price
-      { wch: 15 }, // Total Amount
-      { wch: 15 }  // Sale Date
-    ];
-    worksheet['!cols'] = columnWidths;
+      const rows = filteredSales.map(sale => ([
+        { type: String, value: String(sale.id ?? '') },
+        { type: String, value: String(sale.item_name ?? '') },
+        { type: String, value: String(sale.location ?? '') },
+        { type: Number, value: Number(sale.quantity ?? 0) },
+        { type: Number, value: Number(sale.sale_price ?? 0) },
+        { type: Number, value: Number(sale.total_amount ?? 0) },
+        { type: String, value: format(new Date(sale.sale_date), 'PPP') },
+      ]));
 
-    // Create workbook
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Data');
+      const columns = [
+        { width: 15 },
+        { width: 25 },
+        { width: 15 },
+        { width: 10 },
+        { width: 15 },
+        { width: 15 },
+        { width: 18 },
+      ];
 
-    // Generate filename with date range
-    const filename = `sales_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
+      const filename = `sales_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
 
-    // Save file
-    XLSX.writeFile(workbook, filename);
+      await writeXlsxFile([headers, ...rows], {
+        columns,
+        sheet: 'Sales Data',
+      }).toFile(filename);
 
-    toast.success(`Exported ${filteredSales.length} sales records successfully`);
-    onOpenChange(false);
+      toast.success(`Exported ${filteredSales.length} sales records successfully`);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to export sales XLSX:", error);
+      toast.error("Failed to generate Excel export");
+    }
   };
 
   return (
