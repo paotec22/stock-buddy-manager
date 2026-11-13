@@ -5,6 +5,8 @@ import { format, subDays } from "date-fns";
 import { AddSaleForm } from "./AddSaleForm";
 
 const mockInsert = vi.fn();
+const mockInventoryInsert = vi.fn();
+const mockSentinelLookup = vi.fn();
 
 vi.mock("@/components/AuthProvider", () => ({
   useAuth: () => ({
@@ -25,24 +27,59 @@ vi.mock("@/lib/supabase", () => ({
       if (table === "sales") {
         return { insert: mockInsert };
       }
+      if (table === "inventory list") {
+        return {
+          select: (cols: string) => {
+            if (cols === "id, Quantity") {
+              return {
+                eq: () => ({
+                  eq: () => ({
+                    limit: () => ({
+                      maybeSingle: mockSentinelLookup,
+                    }),
+                  }),
+                  limit: () => ({
+                    maybeSingle: mockSentinelLookup,
+                  }),
+                }),
+              };
+            }
+            return {
+              eq: async () => ({
+                data: [
+                  { id: 1, "Item Description": "Solar Panel 450W", Quantity: 10, Price: 120000, location: "Ikeja" },
+                ],
+                error: null,
+              }),
+            };
+          },
+          insert: (payload: any) => ({
+            select: () => ({
+              single: () => mockInventoryInsert(payload),
+            }),
+          }),
+          update: () => ({
+            eq: async () => ({ error: null }),
+          }),
+        };
+      }
       return {
         select: () => ({
-          eq: async () => ({
-            data: [
-              { id: 1, "Item Description": "Solar Panel 450W", Quantity: 10, Price: 120000, location: "Ikeja" },
-            ],
-            error: null,
-          }),
+          eq: async () => ({ data: [], error: null }),
         }),
       };
     }),
   },
 }));
 
-describe("AddSaleForm sale date selection", () => {
+describe("AddSaleForm sale date & custom product handling", () => {
   beforeEach(() => {
     mockInsert.mockReset();
+    mockInventoryInsert.mockReset();
+    mockSentinelLookup.mockReset();
     mockInsert.mockResolvedValue({ error: null });
+    mockSentinelLookup.mockResolvedValue({ data: null, error: null });
+    mockInventoryInsert.mockResolvedValue({ data: { id: 777 }, error: null });
   });
 
   const renderForm = () => {
@@ -65,14 +102,12 @@ describe("AddSaleForm sale date selection", () => {
 
     expect(dateTrigger).toHaveTextContent(format(today, "MMM d, yyyy"));
 
-    // Open calendar popover and pick Yesterday preset
     fireEvent.click(dateTrigger);
     const yesterdayBtn = await screen.findByRole("button", { name: "Yesterday" });
     fireEvent.click(yesterdayBtn);
 
     expect(dateTrigger).toHaveTextContent(format(yesterday, "MMM d, yyyy"));
 
-    // Switch line item to Custom Product so test does not depend on Select portal
     fireEvent.click(screen.getByRole("button", { name: "Custom Product" }));
     fireEvent.change(screen.getByPlaceholderText(/type product name not in inventory/i), {
       target: { value: "Solar Cable 6mm" },
@@ -89,5 +124,44 @@ describe("AddSaleForm sale date selection", () => {
 
     const insertedRows = mockInsert.mock.calls[0][0];
     expect(insertedRows[0].sale_date.startsWith(format(yesterday, "yyyy-MM-dd"))).toBe(true);
+  });
+
+  it("recovers automatically via zero-price sentinel item if DB enforces NOT NULL on item_id", async () => {
+    mockInsert
+      .mockResolvedValueOnce({
+        error: {
+          code: "23502",
+          message: 'null value in column "item_id" of relation "sales" violates not-null constraint',
+        },
+      })
+      .mockResolvedValueOnce({ error: null });
+
+    renderForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "Custom Product" }));
+    fireEvent.change(screen.getByPlaceholderText(/type product name not in inventory/i), {
+      target: { value: "Custom Surge Arrestor" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("0"), {
+      target: { value: "45000" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /complete & record sale/i }));
+
+    await waitFor(() => {
+      expect(mockInsert).toHaveBeenCalledTimes(2);
+    });
+
+    expect(mockInventoryInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        "Item Description": "__Custom Product Entry__",
+        Price: 0,
+        Total: 0,
+      })
+    );
+    expect(mockInsert.mock.calls[1][0][0]).toMatchObject({
+      item_id: 777,
+      notes: "[Product: Custom Surge Arrestor | Location: Ikeja]",
+    });
   });
 });

@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Receipt, Sparkles, X, CheckCircle2, PenLine, Calendar as CalendarIcon } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { safeParseDate } from "@/utils/dateParsing";
+import { isSystemSentinelInventoryItem } from "@/utils/salesItemResolver";
 import type { PaymentStatus } from "./types";
 import { ImportInvoiceDialog, type InvoiceRecord, type InvoiceItemRecord } from "./ImportInvoiceDialog";
 
@@ -72,7 +73,9 @@ export function AddSaleForm({ open, onOpenChange, onSuccess, initialInvoiceId }:
         .eq('location', selectedLocation);
 
       if (error) throw error;
-      return data || [];
+      return (data || []).filter(
+        (item) => !isSystemSentinelInventoryItem(item["Item Description"])
+      );
     },
     enabled: !!session,
   });

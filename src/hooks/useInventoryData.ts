@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { InventoryItem } from "@/utils/inventoryUtils";
+import { isSystemSentinelInventoryItem } from "@/utils/salesItemResolver";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useIndexedDB } from "./useIndexedDB";
 import { useEffect } from "react";
@@ -54,7 +55,9 @@ export function useInventoryData(selectedLocation: string) {
         }
 
         console.log('Fetched inventory data:', data?.length, 'items');
-        return data || [];
+        return (data || []).filter(
+          (item) => !isSystemSentinelInventoryItem(item["Item Description"])
+        );
       } catch (error) {
         console.error('Error in queryFn:', error);
         

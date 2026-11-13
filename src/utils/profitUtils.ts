@@ -222,10 +222,10 @@ export function resolveItemPurchasePrice(
 
   // If item ID or custom item key has a known cost in cache
   const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "General");
-  const itemIdKey = sale.item_id
-    ? String(sale.item_id)
-    : resolved.isCustomItem
+  const itemIdKey = resolved.isCustomItem
     ? `custom:${resolved.itemName.toLowerCase()}`
+    : sale.item_id
+    ? String(sale.item_id)
     : "";
   if (itemIdKey && itemCostCache[itemIdKey] && itemCostCache[itemIdKey] > 0) {
     return { unitCost: itemCostCache[itemIdKey], hasCost: true };
@@ -312,10 +312,11 @@ export function computeProfitAnalysis(
     const resolved = resolveSaleItemDisplay(sale, "Unknown Item", "General");
     const itemName = resolved.itemName;
     const loc = resolved.location || "General";
-    const itemId =
-      sale.item_id ||
-      sale["inventory list"]?.id ||
-      `custom:${itemName.toLowerCase()}`;
+    const itemId = resolved.isCustomItem
+      ? `custom:${itemName.toLowerCase()}`
+      : sale.item_id ||
+        sale["inventory list"]?.id ||
+        `custom:${itemName.toLowerCase()}`;
     const key = `${itemName}__${loc}`;
 
     const qty = Number(sale.quantity || 0);

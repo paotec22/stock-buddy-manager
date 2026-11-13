@@ -22,6 +22,15 @@ const CUSTOM_SALE_PREFIX_REGEX =
 const CUSTOM_SALE_PREFIX_ONLY_REGEX =
   /^\s*(\[Product:\s*[^\]]+\])\s*/s;
 
+export const CUSTOM_SALE_SENTINEL_ITEM_NAME = "__Custom Product Entry__";
+
+export function isSystemSentinelInventoryItem(description?: string | null): boolean {
+  return Boolean(
+    description &&
+      description.trim().toLowerCase() === CUSTOM_SALE_SENTINEL_ITEM_NAME.toLowerCase()
+  );
+}
+
 /**
  * Formats notes for a non-inventory / custom product sale so product name
  * and showroom location persist cleanly alongside any optional user notes.
@@ -97,26 +106,31 @@ export function resolveSaleItemDisplay(
     }
   }
 
-  const inventoryDesc = sale["inventory list"]?.["Item Description"]?.trim();
+  const rawInventoryDesc = sale["inventory list"]?.["Item Description"]?.trim();
+  const inventoryDesc = isSystemSentinelInventoryItem(rawInventoryDesc)
+    ? ""
+    : rawInventoryDesc;
   const inventoryLoc = sale["inventory list"]?.location?.trim();
+
+  // Always prefer explicit `[Product: ... | Location: ...]` metadata for custom product sales
+  // (works seamlessly both when `item_id` is NULL and when linked to a sentinel service row).
+  if (parsedCustomName) {
+    return {
+      itemName: parsedCustomName,
+      location: parsedCustomLocation || inventoryLoc || fallbackLocation,
+      notes: strippedCustomNotes,
+      rawNotes,
+      isCustomItem: true,
+    };
+  }
 
   if (inventoryDesc) {
     return {
       itemName: inventoryDesc,
       location: inventoryLoc || parsedCustomLocation || fallbackLocation,
-      notes: parsedCustomName ? strippedCustomNotes : trimmedRawNotes,
+      notes: trimmedRawNotes,
       rawNotes,
       isCustomItem: false,
-    };
-  }
-
-  if (parsedCustomName) {
-    return {
-      itemName: parsedCustomName,
-      location: parsedCustomLocation || fallbackLocation,
-      notes: strippedCustomNotes,
-      rawNotes,
-      isCustomItem: true,
     };
   }
 

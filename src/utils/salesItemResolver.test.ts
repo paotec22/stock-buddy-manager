@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
+  CUSTOM_SALE_SENTINEL_ITEM_NAME,
   formatCustomSaleNotes,
+  isSystemSentinelInventoryItem,
   preserveSaleNotesMetadata,
   resolveSaleItemDisplay,
 } from "./salesItemResolver";
@@ -74,6 +76,25 @@ describe("salesItemResolver utility", () => {
       expect(resolved.location).toBe("Port Harcourt");
       expect(resolved.isCustomItem).toBe(true);
       expect(resolved.notes).toBe("Priority batch");
+    });
+
+    it("should prioritize custom product metadata when backed by sentinel inventory row", () => {
+      const sale = {
+        item_id: 9999,
+        notes: "[Product: Custom Breaker Box | Location: Uyo] Express delivery",
+        "inventory list": {
+          "Item Description": CUSTOM_SALE_SENTINEL_ITEM_NAME,
+          location: "Ikeja",
+        },
+      };
+
+      const resolved = resolveSaleItemDisplay(sale);
+      expect(resolved.itemName).toBe("Custom Breaker Box");
+      expect(resolved.location).toBe("Uyo");
+      expect(resolved.isCustomItem).toBe(true);
+      expect(resolved.notes).toBe("Express delivery");
+      expect(isSystemSentinelInventoryItem(CUSTOM_SALE_SENTINEL_ITEM_NAME)).toBe(true);
+      expect(isSystemSentinelInventoryItem("Regular Product")).toBe(false);
     });
 
     it("should recognize installation service notes", () => {

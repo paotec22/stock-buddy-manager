@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
+import { isSystemSentinelInventoryItem } from "@/utils/salesItemResolver";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -55,7 +56,9 @@ export default function MarketingAgent() {
         .eq("location", location)
         .order("Item Description", { ascending: true });
       if (error) throw error;
-      return (data as InventoryItem[]) || [];
+      return ((data as InventoryItem[]) || []).filter(
+        (item) => !isSystemSentinelInventoryItem(item["Item Description"])
+      );
     },
   });
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { isSystemSentinelInventoryItem } from "@/utils/salesItemResolver";
 import {
   Select,
   SelectContent,
@@ -236,7 +237,9 @@ export default function PublicCatalogue() {
 
         if (cancelled) return;
 
-        const rawList = data || [];
+        const rawList = (data || []).filter(
+          (i: any) => !isSystemSentinelInventoryItem(i["Item Description"])
+        );
         const imagePaths = rawList
           .map((i: any) => i.image_url)
           .filter(

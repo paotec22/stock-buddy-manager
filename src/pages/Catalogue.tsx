@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { InventoryItem } from "@/utils/inventoryUtils";
+import { isSystemSentinelInventoryItem } from "@/utils/salesItemResolver";
 import {
   getInventoryImageUrls,
   getInventoryImageUrl,
@@ -201,7 +202,9 @@ export default function Catalogue() {
         .eq("location", "Ikeja")
         .order("Item Description", { ascending: true });
       if (error) throw error;
-      return (data as InventoryItem[]) || [];
+      return ((data as InventoryItem[]) || []).filter(
+        (item) => !isSystemSentinelInventoryItem(item["Item Description"])
+      );
     },
     staleTime: 5 * 60 * 1000, // 5 minutes fresh
     gcTime: 20 * 60 * 1000,

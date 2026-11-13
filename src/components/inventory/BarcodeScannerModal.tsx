@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
+import { CUSTOM_SALE_SENTINEL_ITEM_NAME } from "@/utils/salesItemResolver";
 import {
   ScanBarcode,
   Search,
@@ -51,6 +52,7 @@ export function BarcodeScannerModal({ open, onOpenChange }: BarcodeScannerModalP
       const { data, error } = await supabase
         .from("inventory list")
         .select('id, "Item Description", location, Quantity, Price')
+        .neq("Item Description", CUSTOM_SALE_SENTINEL_ITEM_NAME)
         .or(`"Item Description".ilike.%${trimmed}%,location.ilike.%${trimmed}%`)
         .limit(8);
 

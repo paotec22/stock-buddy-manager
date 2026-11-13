@@ -24,6 +24,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
+import { CUSTOM_SALE_SENTINEL_ITEM_NAME } from "@/utils/salesItemResolver";
 
 interface NotificationItem {
   id: string;
@@ -56,6 +57,7 @@ export function NotificationCenter() {
       const { data, error } = await supabase
         .from("inventory list")
         .select('id, "Item Description", Quantity, location')
+        .neq("Item Description", CUSTOM_SALE_SENTINEL_ITEM_NAME)
         .lte("Quantity", 5)
         .order("Quantity", { ascending: true })
         .limit(10);

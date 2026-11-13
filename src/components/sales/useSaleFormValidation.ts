@@ -1,7 +1,10 @@
 
 import { supabase } from "@/lib/supabase";
 import { getItemCostCache } from "@/utils/profitUtils";
-import { formatCustomSaleNotes } from "@/utils/salesItemResolver";
+import {
+  CUSTOM_SALE_SENTINEL_ITEM_NAME,
+  formatCustomSaleNotes,
+} from "@/utils/salesItemResolver";
 import { toSafeSaleDateISO } from "@/utils/dateParsing";
 
 interface ValidationParams {
@@ -61,6 +64,83 @@ export interface RecordSaleOptions {
   customItemName?: string;
   location?: string;
   saleDate?: Date | string | null;
+}
+
+function isNullItemConstraintError(error: any): boolean {
+  if (!error) return false;
+  const code = String(error.code || "");
+  const message = `${error.message || ""} ${error.details || ""} ${error.hint || ""}`.toLowerCase();
+  return (
+    code === "23502" ||
+    message.includes("item_id") && (message.includes("null") || message.includes("not-null")) ||
+    message.includes("inventory item with id")
+  );
+}
+
+async function getOrCreateCustomSaleSentinelId(
+  location: string,
+  quantityNeeded: number
+): Promise<number> {
+  const safeLocation = location.trim() || "Ikeja";
+  const targetStock = Math.max(999999, quantityNeeded + 1000);
+
+  // 1. Check if sentinel row exists for this location
+  const { data: existingByLoc } = await supabase
+    .from("inventory list")
+    .select("id, Quantity")
+    .eq("Item Description", CUSTOM_SALE_SENTINEL_ITEM_NAME)
+    .eq("location", safeLocation)
+    .limit(1)
+    .maybeSingle();
+
+  if (existingByLoc?.id != null) {
+    if (Number(existingByLoc.Quantity ?? 0) < quantityNeeded) {
+      await supabase
+        .from("inventory list")
+        .update({ Quantity: targetStock, Price: 0, Total: 0 })
+        .eq("id", existingByLoc.id);
+    }
+    return existingByLoc.id;
+  }
+
+  // 2. Try creating sentinel row for this location (Price: 0 so inventory valuation is unaffected)
+  const { data: created, error: insertError } = await supabase
+    .from("inventory list")
+    .insert({
+      "Item Description": CUSTOM_SALE_SENTINEL_ITEM_NAME,
+      location: safeLocation,
+      Price: 0,
+      Quantity: targetStock,
+      Total: 0,
+    })
+    .select("id")
+    .single();
+
+  if (!insertError && created?.id != null) {
+    return created.id;
+  }
+
+  // 3. Fallback: reuse sentinel row from any branch if location-specific insert failed
+  const { data: anyExisting } = await supabase
+    .from("inventory list")
+    .select("id, Quantity")
+    .eq("Item Description", CUSTOM_SALE_SENTINEL_ITEM_NAME)
+    .limit(1)
+    .maybeSingle();
+
+  if (anyExisting?.id != null) {
+    if (Number(anyExisting.Quantity ?? 0) < quantityNeeded) {
+      await supabase
+        .from("inventory list")
+        .update({ Quantity: targetStock, Price: 0, Total: 0 })
+        .eq("id", anyExisting.id);
+    }
+    return anyExisting.id;
+  }
+
+  throw new Error(
+    "Database does not yet allow null item_id for custom sales. Please apply migration 20261105120000_support_custom_product_sales.sql in Supabase."
+  );
 }
 
 export const recordSale = async (
@@ -135,6 +215,25 @@ export const recordSale = async (
     .insert([sale as any]);
 
   if (saleError) {
+    // If remote database still enforces NOT NULL on sales.item_id or an older inventory trigger,
+    // automatically resolve a zero-value sentinel service row so custom product sales still succeed.
+    if (isCustom && isNullItemConstraintError(saleError)) {
+      const sentinelId = await getOrCreateCustomSaleSentinelId(
+        options?.location || "Ikeja",
+        quantity
+      );
+      const { error: fallbackError } = await supabase
+        .from('sales')
+        .insert([{ ...sale, item_id: sentinelId } as any]);
+
+      if (!fallbackError) {
+        return;
+      }
+
+      console.error('Error recording custom sale via fallback:', fallbackError);
+      throw new Error(fallbackError.message || "Failed to record custom product sale");
+    }
+
     console.error('Error recording sale:', saleError);
     throw new Error(saleError.message || "Failed to record sale");
   }

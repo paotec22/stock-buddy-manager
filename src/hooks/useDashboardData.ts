@@ -12,7 +12,10 @@ import {
   subMonths 
 } from "date-fns";
 import { getItemCostCache } from "@/utils/profitUtils";
-import { resolveSaleItemDisplay } from "@/utils/salesItemResolver";
+import {
+  isSystemSentinelInventoryItem,
+  resolveSaleItemDisplay,
+} from "@/utils/salesItemResolver";
 import { safeParseDate } from "@/utils/dateParsing";
 
 export type DashboardTimeRange = 'today' | '7d' | '30d' | 'month' | 'all';
@@ -211,15 +214,19 @@ export const useDashboardData = (filters: DashboardMetricsFilter = { timeRange: 
       if (invoicesError) throw invoicesError;
       if (installationsError) throw installationsError;
 
+      const visibleInventory = (rawInventory || []).filter(
+        (item) => !isSystemSentinelInventoryItem(item["Item Description"])
+      );
+
       // Filter Inventory by location
-      const inventory = (rawInventory || []).filter(item => {
+      const inventory = visibleInventory.filter(item => {
         if (location === 'all') return true;
         return item.location?.toLowerCase() === location.toLowerCase();
       });
 
       // Available locations extracted from inventory
       const locationSet = new Set<string>();
-      (rawInventory || []).forEach(item => {
+      visibleInventory.forEach(item => {
         if (item.location) locationSet.add(item.location);
       });
       const availableLocations = Array.from(locationSet).sort();
