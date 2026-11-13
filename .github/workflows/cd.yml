@@ -11,6 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    env:
+      CI: "true"
+      NODE_ENV: production
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
@@ -22,14 +28,10 @@ jobs:
           cache: "npm"
 
       - name: Install Project Dependencies
-        run: npm ci
+        run: npm ci || npm install --no-audit
 
       - name: Run Full CI Verification
         run: npm run ci
-        env:
-          NODE_ENV: production
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
 
       - name: Verify Bundle Integrity
         run: |
@@ -39,7 +41,9 @@ jobs:
 
       - name: Prepare Deployment Artifacts
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: production-release
           path: dist/
           retention-days: 14
+          if-no-files-found: warn

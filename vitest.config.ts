@@ -9,6 +9,9 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    watch: false,
+    pool: "forks",
+    reporters: process.env.CI ? ["default", "github-actions"] : ["default"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

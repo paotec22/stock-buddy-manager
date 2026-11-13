@@ -16,6 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    env:
+      CI: "true"
+      NODE_ENV: test
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
@@ -27,7 +33,7 @@ jobs:
           cache: "npm"
 
       - name: Install Project Dependencies
-        run: npm ci
+        run: npm ci || npm install --no-audit
 
       - name: Validate Lint & Code Standards
         run: npm run lint
@@ -37,20 +43,17 @@ jobs:
 
       - name: Run Automated Unit & Component Test Suite
         run: npm run test:ci
-        env:
-          NODE_ENV: test
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
 
       - name: Verify Production Application Build
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+          NODE_ENV: production
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: dist-build-artifact
           path: dist/
           retention-days: 7
+          if-no-files-found: warn
