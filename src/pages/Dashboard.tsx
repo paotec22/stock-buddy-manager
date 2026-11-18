@@ -125,22 +125,22 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6 animate-fade-in pb-8">
+    <div className="space-y-3 sm:space-y-3.5 animate-fade-in pb-4">
         {/* =========================================================================
             1. HERO / COMMAND HEADER
            ========================================================================= */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5">
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <div className="rounded-xl border border-border/80 bg-card px-3.5 py-3 sm:px-4 sm:py-3.5 shadow-xs space-y-2.5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="space-y-0.5 min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
                 <span className="font-semibold uppercase tracking-wider">
                   Store Operations
                 </span>
                 <span aria-hidden="true">·</span>
                 <span>{format(new Date(), "EEEE, MMM d, yyyy")}</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
                   {greeting}, <span className="capitalize">{displayName}</span>
                 </h1>
                 {!hasCustomName && (
@@ -154,13 +154,13 @@ const Dashboard = () => {
                   </Link>
                 )}
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-                Real-time inventory valuation, revenue performance, order volume, and pending tasks across your sales channels.
+              <p className="text-xs text-muted-foreground max-w-2xl leading-snug">
+                Inventory valuation, revenue performance, order volume, and pending tasks across your channels.
               </p>
             </div>
 
             {/* Filter controls: Range Selector + Location + Refresh */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
               <div className="flex items-center gap-2">
                 {/* Location Filter */}
                 <div className="flex-1 sm:w-40">
@@ -240,15 +240,15 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Action Buttons Strip (Horizontal scroll track on mobile to keep KPIs above the fold) */}
-          <div className="pt-3.5 border-t border-border/60 flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap pb-0.5 sm:pb-0">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-1 hidden sm:inline shrink-0">
+          <div className="pt-2.5 border-t border-border/60 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar sm:flex-wrap pb-0.5 sm:pb-0">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mr-1 hidden sm:inline shrink-0">
               Quick Actions:
             </span>
 
             <Button
               asChild
               size="sm"
-              className="h-9 sm:h-8 px-3 text-xs font-semibold gap-1.5 shadow-xs whitespace-nowrap shrink-0"
+              className="h-8 px-2.5 text-xs font-semibold gap-1.5 shadow-xs whitespace-nowrap shrink-0"
             >
               <Link to="/create-invoice">
                 <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -261,7 +261,7 @@ const Dashboard = () => {
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
+                className="h-8 px-2.5 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
               >
                 <Link to="/sales">
                   <ShoppingCart className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -274,7 +274,7 @@ const Dashboard = () => {
               asChild
               variant="outline"
               size="sm"
-              className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
+              className="h-8 px-2.5 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
             >
               <Link to="/inventory">
                 <Boxes className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -287,7 +287,7 @@ const Dashboard = () => {
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
+                className="h-8 px-2.5 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
               >
                 <Link to="/expenses">
                   <Wallet className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
@@ -301,7 +301,7 @@ const Dashboard = () => {
                 asChild
                 variant="outline"
                 size="sm"
-                className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
+                className="h-8 px-2.5 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
               >
                 <Link to="/profit-analysis">
                   <PieChart className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
@@ -314,7 +314,7 @@ const Dashboard = () => {
               asChild
               variant="outline"
               size="sm"
-              className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
+              className="h-8 px-2.5 text-xs font-medium gap-1.5 bg-background hover:bg-muted whitespace-nowrap shrink-0"
             >
               <Link to="/catalogue">
                 <Eye className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -327,7 +327,7 @@ const Dashboard = () => {
               variant="outline"
               size="sm"
               onClick={() => setExportModalOpen(true)}
-              className="h-9 sm:h-8 px-3 text-xs font-medium gap-1.5 bg-background hover:bg-muted text-foreground whitespace-nowrap shrink-0"
+              className="h-8 px-2.5 text-xs font-medium gap-1.5 bg-background hover:bg-muted text-foreground whitespace-nowrap shrink-0"
               title="1-Click comprehensive CSV & JSON data exports"
             >
               <Download className="h-3.5 w-3.5 text-primary" />
@@ -339,29 +339,29 @@ const Dashboard = () => {
         {/* =========================================================================
             2. EXECUTIVE KPI CARDS
            ========================================================================= */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Card 1: Total Revenue / Sales */}
           <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardHeader className="flex flex-row items-center justify-between p-3.5 sm:p-4 pb-1.5 space-y-0">
+              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Total Sales Revenue
               </span>
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
-                <DollarSign className="h-4 w-4" />
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <DollarSign className="h-3.5 w-3.5" />
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-5 pt-0">
+            <CardContent className="p-3.5 sm:p-4 pt-0">
               {isLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-7 w-32" />
-                  <Skeleton className="h-4 w-24" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-3.5 w-24" />
                 </div>
               ) : (
                 <>
-                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+                  <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                     {formatCurrency(data?.totalRevenue || 0, currencies[0])}
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1.5 text-xs">
+                  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1 text-xs">
                     {data?.revenueGrowthPct !== null && data?.revenueGrowthPct !== undefined && (
                       <span className={`inline-flex items-center font-semibold font-mono tabular-nums ${
                         data.revenueGrowthPct >= 0 
@@ -369,9 +369,9 @@ const Dashboard = () => {
                           : 'text-destructive'
                       }`}>
                         {data.revenueGrowthPct >= 0 ? (
-                          <TrendingUp className="h-3.5 w-3.5 mr-0.5 inline" />
+                          <TrendingUp className="h-3 w-3 mr-0.5 inline" />
                         ) : (
-                          <TrendingDown className="h-3.5 w-3.5 mr-0.5 inline" />
+                          <TrendingDown className="h-3 w-3 mr-0.5 inline" />
                         )}
                         {data.revenueGrowthPct >= 0 ? `+${data.revenueGrowthPct}%` : `${data.revenueGrowthPct}%`}
                       </span>
@@ -388,30 +388,30 @@ const Dashboard = () => {
           {/* Card 2: Net Profit (Or Stock Items if inventory manager) */}
           {!isInventoryManager ? (
             <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <CardHeader className="flex flex-row items-center justify-between p-3.5 sm:p-4 pb-1.5 space-y-0">
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                   Net Estimated Profit
                 </span>
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
-                  <Activity className="h-4 w-4" />
+                <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+                  <Activity className="h-3.5 w-3.5" />
                 </div>
               </CardHeader>
-              <CardContent className="p-4 sm:p-5 pt-0">
+              <CardContent className="p-3.5 sm:p-4 pt-0">
                 {isLoading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-7 w-32" />
-                    <Skeleton className="h-4 w-24" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-3.5 w-24" />
                   </div>
                 ) : (
                   <>
-                    <div className={`text-xl sm:text-2xl font-bold font-mono tracking-tight tabular-nums ${
+                    <div className={`text-lg sm:text-xl font-bold font-mono tracking-tight tabular-nums ${
                       (data?.netProfit || 0) >= 0 
                         ? 'text-emerald-600 dark:text-emerald-400' 
                         : 'text-destructive'
                     }`}>
                       {formatCurrency(data?.netProfit || 0, currencies[0])}
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground tabular-nums">
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground tabular-nums">
                       <span className="font-semibold text-foreground">
                         {data?.profitMarginPct || 0}% margin
                       </span>
@@ -424,26 +424,26 @@ const Dashboard = () => {
             </Card>
           ) : (
             <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <CardHeader className="flex flex-row items-center justify-between p-3.5 sm:p-4 pb-1.5 space-y-0">
+                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                   Total Units in Stock
                 </span>
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
-                  <Boxes className="h-4 w-4" />
+                <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+                  <Boxes className="h-3.5 w-3.5" />
                 </div>
               </CardHeader>
-              <CardContent className="p-4 sm:p-5 pt-0">
+              <CardContent className="p-3.5 sm:p-4 pt-0">
                 {isLoading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-7 w-24" />
-                    <Skeleton className="h-4 w-28" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-3.5 w-28" />
                   </div>
                 ) : (
                   <>
-                    <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+                    <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                       {data?.totalStockUnits?.toLocaleString() || 0}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1.5">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Physical items across all shelves
                     </p>
                   </>
@@ -454,26 +454,26 @@ const Dashboard = () => {
 
           {/* Card 3: Inventory Valuation */}
           <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardHeader className="flex flex-row items-center justify-between p-3.5 sm:p-4 pb-1.5 space-y-0">
+              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Inventory Asset Value
               </span>
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
-                <Package className="h-4 w-4" />
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
+                <Package className="h-3.5 w-3.5" />
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-5 pt-0">
+            <CardContent className="p-3.5 sm:p-4 pt-0">
               {isLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-7 w-32" />
-                  <Skeleton className="h-4 w-24" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-3.5 w-24" />
                 </div>
               ) : (
                 <>
-                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+                  <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                     {formatCurrency(data?.inventoryValuation || 0, currencies[0])}
                   </div>
-                  <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground tabular-nums">
+                  <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground tabular-nums">
                     <span className="font-semibold text-foreground">
                       {data?.totalSkus || 0} SKUs
                     </span>
@@ -487,28 +487,28 @@ const Dashboard = () => {
 
           {/* Card 4: Operating Expenses / Invoiced Amount */}
           <Card className="border-border/80 bg-card shadow-xs hover:border-border transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-5 pb-2 space-y-0">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardHeader className="flex flex-row items-center justify-between p-3.5 sm:p-4 pb-1.5 space-y-0">
+              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 {!isInventoryManager ? "Operating Expenses" : "Active Invoices"}
               </span>
-              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
-                {!isInventoryManager ? <Wallet className="h-4 w-4" /> : <FileSpreadsheet className="h-4 w-4" />}
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+                {!isInventoryManager ? <Wallet className="h-3.5 w-3.5" /> : <FileSpreadsheet className="h-3.5 w-3.5" />}
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-5 pt-0">
+            <CardContent className="p-3.5 sm:p-4 pt-0">
               {isLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-7 w-32" />
-                  <Skeleton className="h-4 w-24" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-3.5 w-24" />
                 </div>
               ) : (
                 <>
-                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-foreground tabular-nums">
+                  <div className="text-lg sm:text-xl font-bold font-mono tracking-tight text-foreground tabular-nums">
                     {!isInventoryManager
                       ? formatCurrency(data?.totalExpenses || 0, currencies[0])
                       : `${data?.totalInvoicesCount || 0} Invoices`}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1.5 tabular-nums">
+                  <p className="text-xs text-muted-foreground mt-1 tabular-nums">
                     {!isInventoryManager
                       ? "Costs in selected period"
                       : `${formatCurrency(data?.totalInvoicedAmount || 0, currencies[0])} billed`}
@@ -522,36 +522,36 @@ const Dashboard = () => {
         {/* =========================================================================
             3. VISUAL CHARTS & BREAKDOWN
            ========================================================================= */}
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="grid gap-3 lg:grid-cols-12">
           {/* Main Chart: Revenue & Profit Trend (8 columns on desktop) */}
-          <Card className="lg:col-span-8 border-border/70 bg-card/80 backdrop-blur-xs shadow-xs">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="lg:col-span-8 border-border/80 bg-card shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between p-3.5 sm:p-4 pb-2 space-y-0">
               <div>
-                <CardTitle className="text-base sm:text-lg font-bold tracking-tight">
+                <CardTitle className="text-sm sm:text-base font-bold tracking-tight">
                   Revenue &amp; Cost Trajectory
                 </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
                   Timeline of gross sales and operating expenditures
                 </CardDescription>
               </div>
-              <Badge variant="outline" className="text-xs font-mono font-medium">
+              <Badge variant="outline" className="text-[11px] font-mono font-medium shrink-0">
                 {timeRange.toUpperCase()}
               </Badge>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3.5 sm:p-4 pt-0">
               {isLoading ? (
-                <Skeleton className="h-[320px] w-full mt-4 rounded-xl" />
+                <Skeleton className="h-[240px] sm:h-[260px] w-full mt-2 rounded-lg" />
               ) : (data?.chartData || []).length === 0 ? (
-                <div className="h-[320px] flex flex-col items-center justify-center text-muted-foreground text-xs">
-                  <Activity className="h-8 w-8 mb-2 opacity-40" />
+                <div className="h-[240px] sm:h-[260px] flex flex-col items-center justify-center text-muted-foreground text-xs">
+                  <Activity className="h-7 w-7 mb-1.5 opacity-40" />
                   No transactions recorded for this timeframe
                 </div>
               ) : (
-                <div className="h-[320px] w-full mt-2">
+                <div className="h-[240px] sm:h-[260px] w-full mt-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={data?.chartData || []}
-                      margin={{ top: 12, right: 16, left: 4, bottom: 0 }}
+                      margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
                     >
                       <defs>
                         <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
@@ -626,25 +626,25 @@ const Dashboard = () => {
           </Card>
 
           {/* Side Card: Payment Breakdown & Store Health (4 columns on desktop) */}
-          <Card className="lg:col-span-4 border-border/70 bg-card/80 backdrop-blur-xs shadow-xs flex flex-col justify-between">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg font-bold tracking-tight">
+          <Card className="lg:col-span-4 border-border/80 bg-card shadow-xs flex flex-col justify-between">
+            <CardHeader className="p-3.5 sm:p-4 pb-2 space-y-0.5">
+              <CardTitle className="text-sm sm:text-base font-bold tracking-tight">
                 Payment Collection Status
               </CardTitle>
               <CardDescription className="text-xs">
                 Settlement breakdown of sales transactions
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1">
+            <CardContent className="p-3.5 sm:p-4 pt-0 space-y-3 flex-1">
               {isLoading ? (
-                <div className="space-y-3 pt-2">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
+                <div className="space-y-2.5 pt-1">
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
                 </div>
               ) : (data?.paymentBreakdown || []).length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground text-xs">
-                  <CheckCircle2 className="h-7 w-7 mb-2 text-emerald-500 opacity-70" />
+                <div className="flex flex-col items-center justify-center h-40 text-muted-foreground text-xs">
+                  <CheckCircle2 className="h-6 w-6 mb-1.5 text-emerald-500 opacity-70" />
                   No payment records in selected period
                 </div>
               ) : (
@@ -656,7 +656,7 @@ const Dashboard = () => {
                     const isPartial = item.status.toLowerCase().includes('partial');
 
                     return (
-                      <div key={item.status} className="space-y-1.5 py-2.5 first:pt-0 last:pb-0">
+                      <div key={item.status} className="space-y-1 py-2 first:pt-0 last:pb-0">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-semibold text-foreground flex items-center gap-1.5">
                             <span className={`h-2 w-2 rounded-full ${
@@ -687,20 +687,20 @@ const Dashboard = () => {
 
               {/* Service Installation Alert Banner if pending */}
               {(data?.pendingInstallationsCount || 0) > 0 && (
-                <div className="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
-                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0">
-                    <Wrench className="h-4 w-4" />
+                <div className="mt-2.5 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
+                  <div className="p-1.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0">
+                    <Wrench className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1 text-xs">
                     <div className="font-bold text-amber-900 dark:text-amber-200">
                       {data?.pendingInstallationsCount} Pending Installation{data?.pendingInstallationsCount === 1 ? '' : 's'}
                     </div>
-                    <div className="text-amber-700 dark:text-amber-300/80 mt-0.5">
+                    <div className="text-amber-700 dark:text-amber-300/80 mt-0.5 leading-snug">
                       Technician appointments requiring scheduling or sign-off.
                     </div>
                     <Link
                       to="/expenses"
-                      className="inline-flex items-center gap-1 font-semibold text-amber-800 dark:text-amber-200 hover:underline mt-1.5"
+                      className="inline-flex items-center gap-1 font-semibold text-amber-800 dark:text-amber-200 hover:underline mt-1"
                     >
                       View queue <ArrowRight className="h-3 w-3" />
                     </Link>
@@ -714,31 +714,31 @@ const Dashboard = () => {
         {/* =========================================================================
             4. OPERATIONAL WORKBENCH: LOW STOCK ALERTS & LIVE STREAMS
            ========================================================================= */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {/* Section A: Stock Runway & Reorder Intelligence */}
-          <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs flex flex-col justify-between">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-bold tracking-tight flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  <span>Stock Runway & Reorder Intelligence</span>
+          <Card className="border-border/80 bg-card shadow-xs flex flex-col justify-between">
+            <CardHeader className="p-3.5 sm:p-4 pb-2 flex flex-row items-start justify-between gap-2 space-y-0">
+              <div className="min-w-0">
+                <CardTitle className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-1.5">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                  <span className="truncate">Stock Runway &amp; Reorder</span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  Predictive days-left based on 30-day sales velocity
+                  Predictive days-left based on 30-day velocity
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {(data?.stockRunwaySummary?.criticalCount || 0) > 0 && (
                   <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4 font-mono font-bold">
                     {data?.stockRunwaySummary.criticalCount} Critical
                   </Badge>
                 )}
-                <Badge variant="outline" className="font-mono text-xs">
+                <Badge variant="outline" className="font-mono text-[11px]">
                   {data?.lowStockItems?.length || 0} items
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 space-y-2.5">
+            <CardContent className="p-3.5 sm:p-4 pt-0 flex-1 space-y-2">
               {isLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-12 w-full" />
@@ -746,8 +746,8 @@ const Dashboard = () => {
                   <Skeleton className="h-12 w-full" />
                 </div>
               ) : (data?.lowStockItems || []).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500 mb-2 opacity-80" />
+                <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground">
+                  <CheckCircle2 className="h-7 w-7 text-emerald-500 mb-1.5 opacity-80" />
                   <p className="text-xs font-semibold text-foreground">Stock Runway Healthy</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5 max-w-xs">
                     All products have sufficient coverage. No immediate restock required.
@@ -758,7 +758,7 @@ const Dashboard = () => {
                   {data?.lowStockItems.map((item) => (
                     <div
                       key={item.id}
-                      className="py-2.5 first:pt-0 last:pb-0 text-xs space-y-1"
+                      className="py-2 first:pt-0 last:pb-0 text-xs space-y-0.5"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
@@ -808,8 +808,8 @@ const Dashboard = () => {
                 </div>
               )}
             </CardContent>
-            <div className="p-4 pt-2 border-t border-border/50 flex items-center justify-between gap-2">
-              <Button asChild variant="ghost" size="sm" className="text-xs font-semibold justify-between flex-1">
+            <div className="px-3.5 sm:px-4 py-2 border-t border-border/60 flex items-center justify-between gap-2">
+              <Button asChild variant="ghost" size="sm" className="text-xs font-semibold justify-between flex-1 h-8">
                 <Link to="/inventory">
                   <span>Manage Stock</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -824,33 +824,33 @@ const Dashboard = () => {
           </Card>
 
           {/* Section B: Recent Invoices Stream */}
-          <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs flex flex-col justify-between">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-bold tracking-tight flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4 text-primary" />
-                  <span>Recent Customer Invoices</span>
+          <Card className="border-border/80 bg-card shadow-xs flex flex-col justify-between">
+            <CardHeader className="p-3.5 sm:p-4 pb-2 flex flex-row items-start justify-between gap-2 space-y-0">
+              <div className="min-w-0">
+                <CardTitle className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-1.5">
+                  <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+                  <span className="truncate">Recent Customer Invoices</span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
                   Latest commercial invoices issued
                 </CardDescription>
               </div>
-              <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-2">
+              <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-2 shrink-0">
                 <Link to="/create-invoice">
                   <Plus className="h-3 w-3 mr-1" /> New
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="flex-1 space-y-2">
+            <CardContent className="p-3.5 sm:p-4 pt-0 flex-1 space-y-2">
               {isLoading ? (
                 <div className="space-y-2">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-11 w-full" />
+                  <Skeleton className="h-11 w-full" />
+                  <Skeleton className="h-11 w-full" />
                 </div>
               ) : (data?.recentInvoices || []).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
-                  <FileSpreadsheet className="h-8 w-8 mb-2 opacity-40" />
+                <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground">
+                  <FileSpreadsheet className="h-7 w-7 mb-1.5 opacity-40" />
                   <p className="text-xs font-semibold text-foreground">No Invoices Issued Yet</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5 max-w-xs">
                     Generate your first professional invoice with line item discounts and PDF export.
@@ -861,7 +861,7 @@ const Dashboard = () => {
                   {data?.recentInvoices.map((inv) => (
                     <div
                       key={inv.id}
-                      className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 text-xs"
+                      className="flex items-center justify-between py-2 first:pt-0 last:pb-0 text-xs"
                     >
                       <div className="min-w-0 pr-2">
                         <div className="flex items-center gap-2">
@@ -884,8 +884,8 @@ const Dashboard = () => {
                 </div>
               )}
             </CardContent>
-            <div className="p-4 pt-2 border-t border-border/50">
-              <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold justify-between">
+            <div className="px-3.5 sm:px-4 py-2 border-t border-border/60">
+              <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold justify-between h-8">
                 <Link to="/create-invoice">
                   <span>Open Invoice Generator</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -895,33 +895,33 @@ const Dashboard = () => {
           </Card>
 
           {/* Section C: Live Sales Feed */}
-          <Card className="border-border/70 bg-card/80 backdrop-blur-xs shadow-xs flex flex-col justify-between md:col-span-2 lg:col-span-1">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-bold tracking-tight flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Recent Sales Log</span>
+          <Card className="border-border/80 bg-card shadow-xs flex flex-col justify-between md:col-span-2 lg:col-span-1">
+            <CardHeader className="p-3.5 sm:p-4 pb-2 flex flex-row items-start justify-between gap-2 space-y-0">
+              <div className="min-w-0">
+                <CardTitle className="text-sm sm:text-base font-bold tracking-tight flex items-center gap-1.5">
+                  <ShoppingCart className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">Recent Sales Log</span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  Live record of completed customer transactions
+                  Live record of completed transactions
                 </CardDescription>
               </div>
-              <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-2">
+              <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-2 shrink-0">
                 <Link to="/sales">
                   <ArrowUpRight className="h-3 w-3 mr-1" /> View All
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="flex-1 space-y-2">
+            <CardContent className="p-3.5 sm:p-4 pt-0 flex-1 space-y-2">
               {isLoading ? (
                 <div className="space-y-2">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-11 w-full" />
+                  <Skeleton className="h-11 w-full" />
+                  <Skeleton className="h-11 w-full" />
                 </div>
               ) : (data?.recentSales || []).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
-                  <ShoppingCart className="h-8 w-8 mb-2 opacity-40" />
+                <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground">
+                  <ShoppingCart className="h-7 w-7 mb-1.5 opacity-40" />
                   <p className="text-xs font-semibold text-foreground">No Sales Logged</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5 max-w-xs">
                     Sales entered will automatically feed real-time insights and profit analysis.
@@ -932,7 +932,7 @@ const Dashboard = () => {
                   {data?.recentSales.map((sale) => (
                     <div
                       key={sale.id}
-                      className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 text-xs"
+                      className="flex items-center justify-between py-2 first:pt-0 last:pb-0 text-xs"
                     >
                       <div className="min-w-0 pr-2">
                         <p className="font-semibold text-foreground truncate">
@@ -960,8 +960,8 @@ const Dashboard = () => {
                 </div>
               )}
             </CardContent>
-            <div className="p-4 pt-2 border-t border-border/50">
-              <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold justify-between">
+            <div className="px-3.5 sm:px-4 py-2 border-t border-border/60">
+              <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold justify-between h-8">
                 <Link to="/sales">
                   <span>Open Full Sales Ledger</span>
                   <ArrowRight className="h-3.5 w-3.5" />

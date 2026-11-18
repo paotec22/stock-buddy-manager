@@ -57,7 +57,7 @@ export function AppLayout({ children, className, fullWidth }: AppLayoutProps) {
           className={
             fullWidth
               ? "w-full"
-              : "w-full max-w-7xl mx-auto px-3.5 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 print:p-0 print:m-0 print:w-full print:max-w-none"
+              : "w-full max-w-7xl mx-auto px-3.5 sm:px-4 md:px-6 py-3 sm:py-4 print:p-0 print:m-0 print:w-full print:max-w-none"
           }
         >
           {children}
